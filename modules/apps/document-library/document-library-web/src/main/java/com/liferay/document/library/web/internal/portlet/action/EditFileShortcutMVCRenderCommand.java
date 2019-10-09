@@ -16,10 +16,14 @@ package com.liferay.document.library.web.internal.portlet.action;
 
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.exception.NoSuchFileShortcutException;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.PortletException;
@@ -27,6 +31,7 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
@@ -49,25 +54,37 @@ public class EditFileShortcutMVCRenderCommand implements MVCRenderCommand {
 		throws PortletException {
 
 		try {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)renderRequest.getAttribute(WebKeys.THEME_DISPLAY);
+
 			FileShortcut fileShortcut = ActionUtil.getFileShortcut(
 				renderRequest);
 
-			renderRequest.setAttribute(
-				WebKeys.DOCUMENT_LIBRARY_FILE_SHORTCUT, fileShortcut);
-		}
-		catch (Exception e) {
-			if (e instanceof NoSuchFileShortcutException ||
-				e instanceof PrincipalException) {
-
-				SessionErrors.add(renderRequest, e.getClass());
-
-				return "/document_library/error.jsp";
+			if (fileShortcut != null) {
+				_fileShortcutModelResourcePermission.check(
+					themeDisplay.getPermissionChecker(), fileShortcut,
+					ActionKeys.UPDATE);
 			}
 
-			throw new PortletException(e);
-		}
+			renderRequest.setAttribute(
+				WebKeys.DOCUMENT_LIBRARY_FILE_SHORTCUT, fileShortcut);
 
-		return "/document_library/edit_file_shortcut.jsp";
+			return "/document_library/edit_file_shortcut.jsp";
+		}
+		catch (NoSuchFileShortcutException | PrincipalException e) {
+			SessionErrors.add(renderRequest, e.getClass());
+
+			return "/document_library/error.jsp";
+		}
+		catch (PortalException pe) {
+			throw new PortletException(pe);
+		}
 	}
+
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.repository.model.FileShortcut)"
+	)
+	private volatile ModelResourcePermission<FileShortcut>
+		_fileShortcutModelResourcePermission;
 
 }

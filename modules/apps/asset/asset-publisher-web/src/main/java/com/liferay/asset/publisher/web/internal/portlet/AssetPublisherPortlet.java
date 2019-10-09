@@ -22,7 +22,6 @@ import com.liferay.asset.publisher.util.AssetPublisherHelper;
 import com.liferay.asset.publisher.web.internal.action.AssetEntryActionRegistry;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration;
 import com.liferay.asset.publisher.web.internal.display.context.AssetPublisherDisplayContext;
-import com.liferay.asset.publisher.web.internal.util.AssetPublisherCustomizer;
 import com.liferay.asset.publisher.web.internal.util.AssetPublisherCustomizerRegistry;
 import com.liferay.asset.publisher.web.internal.util.AssetPublisherWebUtil;
 import com.liferay.asset.publisher.web.internal.util.AssetRSSUtil;
@@ -31,7 +30,7 @@ import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.storage.Field;
 import com.liferay.dynamic.data.mapping.storage.Fields;
 import com.liferay.dynamic.data.mapping.util.DDMUtil;
-import com.liferay.info.provider.InfoListProviderTracker;
+import com.liferay.info.list.provider.InfoListProviderTracker;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -109,8 +108,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.supported-public-render-parameter=categoryId",
 		"javax.portlet.supported-public-render-parameter=resetCur",
 		"javax.portlet.supported-public-render-parameter=tag",
-		"javax.portlet.supported-public-render-parameter=tags",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.supported-public-render-parameter=tags"
 	},
 	service = {AssetPublisherPortlet.class, Portlet.class}
 )
@@ -232,14 +230,12 @@ public class AssetPublisherPortlet extends MVCPortlet {
 			String rootPortletId = PortletIdCodec.decodePortletName(
 				portal.getPortletId(resourceRequest));
 
-			AssetPublisherCustomizer assetPublisherCustomizer =
-				assetPublisherCustomizerRegistry.getAssetPublisherCustomizer(
-					rootPortletId);
-
 			AssetPublisherDisplayContext assetPublisherDisplayContext =
 				new AssetPublisherDisplayContext(
 					assetEntryActionRegistry, assetHelper,
-					assetListAssetEntryProvider, assetPublisherCustomizer,
+					assetListAssetEntryProvider,
+					assetPublisherCustomizerRegistry.
+						getAssetPublisherCustomizer(rootPortletId),
 					assetPublisherHelper, assetPublisherWebConfiguration,
 					assetPublisherWebUtil, infoListProviderTracker,
 					resourceRequest, resourceResponse,
@@ -332,14 +328,12 @@ public class AssetPublisherPortlet extends MVCPortlet {
 			String rootPortletId = PortletIdCodec.decodePortletName(
 				portal.getPortletId(renderRequest));
 
-			AssetPublisherCustomizer assetPublisherCustomizer =
-				assetPublisherCustomizerRegistry.getAssetPublisherCustomizer(
-					rootPortletId);
-
 			AssetPublisherDisplayContext assetPublisherDisplayContext =
 				new AssetPublisherDisplayContext(
 					assetEntryActionRegistry, assetHelper,
-					assetListAssetEntryProvider, assetPublisherCustomizer,
+					assetListAssetEntryProvider,
+					assetPublisherCustomizerRegistry.
+						getAssetPublisherCustomizer(rootPortletId),
 					assetPublisherHelper, assetPublisherWebConfiguration,
 					assetPublisherWebUtil, infoListProviderTracker,
 					renderRequest, renderResponse,
@@ -413,7 +407,7 @@ public class AssetPublisherPortlet extends MVCPortlet {
 	protected Portal portal;
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.asset.publisher.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.1.0))))"
+		target = "(&(release.bundle.symbolic.name=com.liferay.asset.publisher.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))"
 	)
 	protected Release release;
 

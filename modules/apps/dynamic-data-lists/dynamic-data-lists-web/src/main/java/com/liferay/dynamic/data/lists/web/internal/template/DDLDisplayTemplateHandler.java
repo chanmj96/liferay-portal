@@ -69,7 +69,7 @@ public class DDLDisplayTemplateHandler extends BaseDDMTemplateHandler {
 
 	@Override
 	public Map<String, Object> getCustomContextObjects() {
-		Map<String, Object> contextObjects = new HashMap<>(1);
+		Map<String, Object> contextObjects = new HashMap<>();
 
 		contextObjects.put(
 			"ddlDisplayTemplateHelper",
@@ -132,11 +132,9 @@ public class DDLDisplayTemplateHandler extends BaseDDMTemplateHandler {
 		addTemplateVariableGroup(
 			templateVariableGroups, getUtilTemplateVariableGroup());
 
-		String[] restrictedVariables = getRestrictedVariables(language);
-
 		TemplateVariableGroup ddlServicesTemplateVariableGroup =
 			new TemplateVariableGroup(
-				"data-list-services", restrictedVariables);
+				"data-list-services", getRestrictedVariables(language));
 
 		ddlServicesTemplateVariableGroup.setAutocompleteEnabled(false);
 

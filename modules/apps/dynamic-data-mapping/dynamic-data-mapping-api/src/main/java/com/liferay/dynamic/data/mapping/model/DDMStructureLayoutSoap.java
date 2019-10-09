@@ -20,20 +20,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.dynamic.data.mapping.service.http.DDMStructureLayoutServiceSoap}.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DDMStructureLayoutSoap implements Serializable {
 
 	public static DDMStructureLayoutSoap toSoapModel(DDMStructureLayout model) {
 		DDMStructureLayoutSoap soapModel = new DDMStructureLayoutSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setStructureLayoutId(model.getStructureLayoutId());
 		soapModel.setGroupId(model.getGroupId());
@@ -108,6 +106,14 @@ public class DDMStructureLayoutSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setStructureLayoutId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -222,6 +228,7 @@ public class DDMStructureLayoutSoap implements Serializable {
 		_definition = definition;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _structureLayoutId;
 	private long _groupId;

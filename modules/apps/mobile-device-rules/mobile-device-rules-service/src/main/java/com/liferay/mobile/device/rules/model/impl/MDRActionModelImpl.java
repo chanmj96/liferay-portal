@@ -58,8 +58,6 @@ import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the MDRAction service. Represents a row in the &quot;MDRAction&quot; database table, with each column mapped to a property of this class.
  *
@@ -72,11 +70,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class MDRActionModelImpl
 	extends BaseModelImpl<MDRAction> implements MDRActionModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a mdr action model instance should use the <code>MDRAction</code> interface instead.
@@ -84,20 +81,22 @@ public class MDRActionModelImpl
 	public static final String TABLE_NAME = "MDRAction";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"actionId", Types.BIGINT},
-		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
-		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
-		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
-		{"classNameId", Types.BIGINT}, {"classPK", Types.BIGINT},
-		{"ruleGroupInstanceId", Types.BIGINT}, {"name", Types.VARCHAR},
-		{"description", Types.VARCHAR}, {"type_", Types.VARCHAR},
-		{"typeSettings", Types.CLOB}, {"lastPublishDate", Types.TIMESTAMP}
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"actionId", Types.BIGINT}, {"groupId", Types.BIGINT},
+		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
+		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
+		{"modifiedDate", Types.TIMESTAMP}, {"classNameId", Types.BIGINT},
+		{"classPK", Types.BIGINT}, {"ruleGroupInstanceId", Types.BIGINT},
+		{"name", Types.VARCHAR}, {"description", Types.VARCHAR},
+		{"type_", Types.VARCHAR}, {"typeSettings", Types.CLOB},
+		{"lastPublishDate", Types.TIMESTAMP}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("actionId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -117,7 +116,7 @@ public class MDRActionModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table MDRAction (uuid_ VARCHAR(75) null,actionId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,ruleGroupInstanceId LONG,name STRING null,description STRING null,type_ VARCHAR(255) null,typeSettings TEXT null,lastPublishDate DATE null)";
+		"create table MDRAction (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,actionId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,ruleGroupInstanceId LONG,name STRING null,description STRING null,type_ VARCHAR(255) null,typeSettings TEXT null,lastPublishDate DATE null)";
 
 	public static final String TABLE_SQL_DROP = "drop table MDRAction";
 
@@ -133,21 +132,6 @@ public class MDRActionModelImpl
 
 	public static final String TX_MANAGER = "liferayTransactionManager";
 
-	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.mobile.device.rules.service.util.ServiceProps.get(
-			"value.object.entity.cache.enabled.com.liferay.mobile.device.rules.model.MDRAction"),
-		true);
-
-	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.mobile.device.rules.service.util.ServiceProps.get(
-			"value.object.finder.cache.enabled.com.liferay.mobile.device.rules.model.MDRAction"),
-		true);
-
-	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(
-		com.liferay.mobile.device.rules.service.util.ServiceProps.get(
-			"value.object.column.bitmask.enabled.com.liferay.mobile.device.rules.model.MDRAction"),
-		true);
-
 	public static final long COMPANYID_COLUMN_BITMASK = 1L;
 
 	public static final long GROUPID_COLUMN_BITMASK = 2L;
@@ -157,6 +141,14 @@ public class MDRActionModelImpl
 	public static final long UUID_COLUMN_BITMASK = 8L;
 
 	public static final long ACTIONID_COLUMN_BITMASK = 16L;
+
+	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
+		_entityCacheEnabled = entityCacheEnabled;
+	}
+
+	public static void setFinderCacheEnabled(boolean finderCacheEnabled) {
+		_finderCacheEnabled = finderCacheEnabled;
+	}
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -171,6 +163,7 @@ public class MDRActionModelImpl
 
 		MDRAction model = new MDRActionImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
 		model.setActionId(soapModel.getActionId());
 		model.setGroupId(soapModel.getGroupId());
@@ -210,10 +203,6 @@ public class MDRActionModelImpl
 
 		return models;
 	}
-
-	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
-		com.liferay.mobile.device.rules.service.util.ServiceProps.get(
-			"lock.expiration.time.com.liferay.mobile.device.rules.model.MDRAction"));
 
 	public MDRActionModelImpl() {
 	}
@@ -339,6 +328,10 @@ public class MDRActionModelImpl
 		Map<String, BiConsumer<MDRAction, ?>> attributeSetterBiConsumers =
 			new LinkedHashMap<String, BiConsumer<MDRAction, ?>>();
 
+		attributeGetterFunctions.put("mvccVersion", MDRAction::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<MDRAction, Long>)MDRAction::setMvccVersion);
 		attributeGetterFunctions.put("uuid", MDRAction::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid", (BiConsumer<MDRAction, String>)MDRAction::setUuid);
@@ -403,6 +396,17 @@ public class MDRActionModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -1009,6 +1013,7 @@ public class MDRActionModelImpl
 	public Object clone() {
 		MDRActionImpl mdrActionImpl = new MDRActionImpl();
 
+		mdrActionImpl.setMvccVersion(getMvccVersion());
 		mdrActionImpl.setUuid(getUuid());
 		mdrActionImpl.setActionId(getActionId());
 		mdrActionImpl.setGroupId(getGroupId());
@@ -1075,12 +1080,12 @@ public class MDRActionModelImpl
 
 	@Override
 	public boolean isEntityCacheEnabled() {
-		return ENTITY_CACHE_ENABLED;
+		return _entityCacheEnabled;
 	}
 
 	@Override
 	public boolean isFinderCacheEnabled() {
-		return FINDER_CACHE_ENABLED;
+		return _finderCacheEnabled;
 	}
 
 	@Override
@@ -1110,6 +1115,8 @@ public class MDRActionModelImpl
 	@Override
 	public CacheModel<MDRAction> toCacheModel() {
 		MDRActionCacheModel mdrActionCacheModel = new MDRActionCacheModel();
+
+		mdrActionCacheModel.mvccVersion = getMvccVersion();
 
 		mdrActionCacheModel.uuid = getUuid();
 
@@ -1273,6 +1280,10 @@ public class MDRActionModelImpl
 
 	}
 
+	private static boolean _entityCacheEnabled;
+	private static boolean _finderCacheEnabled;
+
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _actionId;

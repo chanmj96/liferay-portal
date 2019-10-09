@@ -25,7 +25,7 @@ import com.liferay.dynamic.data.mapping.form.web.internal.configuration.activato
 import com.liferay.dynamic.data.mapping.form.web.internal.display.context.DDMFormAdminDisplayContext;
 import com.liferay.dynamic.data.mapping.form.web.internal.display.context.DDMFormAdminFieldSetDisplayContext;
 import com.liferay.dynamic.data.mapping.form.web.internal.instance.lifecycle.AddDefaultSharedFormLayoutPortalInstanceLifecycleListener;
-import com.liferay.dynamic.data.mapping.io.DDMFormFieldTypesSerializerTracker;
+import com.liferay.dynamic.data.mapping.io.DDMFormFieldTypesSerializer;
 import com.liferay.dynamic.data.mapping.io.exporter.DDMFormInstanceRecordWriterTracker;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordLocalService;
@@ -82,8 +82,7 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 		"javax.portlet.init-param.view-template=/admin/view.jsp",
 		"javax.portlet.name=" + DDMPortletKeys.DYNAMIC_DATA_MAPPING_FORM_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=power-user,user"
 	},
 	service = Portlet.class
 )
@@ -118,7 +117,7 @@ public class DDMFormAdminPortlet extends MVCPortlet {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.dynamic.data.mapping.form.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.1.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.dynamic.data.mapping.form.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {
@@ -140,8 +139,7 @@ public class DDMFormAdminPortlet extends MVCPortlet {
 					_ddmFormBuilderContextFactory,
 					_ddmFormBuilderSettingsRetriever,
 					_ddmFormFieldTypeServicesTracker,
-					_ddmFormFieldTypesSerializerTracker,
-					_ddmFormInstanceLocalService,
+					_ddmFormFieldTypesSerializer, _ddmFormInstanceLocalService,
 					_ddmFormInstanceRecordLocalService,
 					_ddmFormInstanceRecordWriterTracker,
 					_ddmFormInstanceService,
@@ -162,8 +160,7 @@ public class DDMFormAdminPortlet extends MVCPortlet {
 					_ddmFormBuilderContextFactory,
 					_ddmFormBuilderSettingsRetriever,
 					_ddmFormFieldTypeServicesTracker,
-					_ddmFormFieldTypesSerializerTracker,
-					_ddmFormInstanceLocalService,
+					_ddmFormFieldTypesSerializer, _ddmFormInstanceLocalService,
 					_ddmFormInstanceRecordLocalService,
 					_ddmFormInstanceRecordWriterTracker,
 					_ddmFormInstanceService,
@@ -199,9 +196,8 @@ public class DDMFormAdminPortlet extends MVCPortlet {
 	@Reference
 	private DDMFormFieldTypeServicesTracker _ddmFormFieldTypeServicesTracker;
 
-	@Reference
-	private DDMFormFieldTypesSerializerTracker
-		_ddmFormFieldTypesSerializerTracker;
+	@Reference(target = "(ddm.form.field.types.serializer.type=json)")
+	private DDMFormFieldTypesSerializer _ddmFormFieldTypesSerializer;
 
 	@Reference
 	private DDMFormInstanceLocalService _ddmFormInstanceLocalService;

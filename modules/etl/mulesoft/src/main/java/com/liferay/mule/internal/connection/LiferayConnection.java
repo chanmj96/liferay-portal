@@ -16,11 +16,13 @@ package com.liferay.mule.internal.connection;
 
 import com.liferay.mule.internal.connection.authentication.BasicAuthentication;
 import com.liferay.mule.internal.connection.authentication.HttpAuthentication;
+import com.liferay.mule.internal.connection.authentication.OAuth2Authentication;
+import com.liferay.mule.internal.oas.OASURLParser;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -32,6 +34,7 @@ import org.mule.runtime.http.api.HttpService;
 import org.mule.runtime.http.api.client.HttpClient;
 import org.mule.runtime.http.api.client.HttpClientConfiguration;
 import org.mule.runtime.http.api.client.HttpClientFactory;
+import org.mule.runtime.http.api.domain.entity.InputStreamHttpEntity;
 import org.mule.runtime.http.api.domain.message.request.HttpRequest;
 import org.mule.runtime.http.api.domain.message.request.HttpRequestBuilder;
 import org.mule.runtime.http.api.domain.message.response.HttpResponse;
@@ -52,10 +55,25 @@ public final class LiferayConnection {
 	}
 
 	public static LiferayConnection withOAuth2Authentication(
-		HttpService httpService, String openApiSpecPath, String consumerKey,
-		String consumerSecret) {
+			HttpService httpService, String openApiSpecPath, String consumerKey,
+			String consumerSecret)
+		throws ConnectionException {
 
-		throw new UnsupportedOperationException();
+		return new LiferayConnection(
+			httpService, openApiSpecPath, consumerKey, consumerSecret);
+	}
+
+	public HttpResponse delete(
+			MultiMap<String, String> pathParams,
+			MultiMap<String, String> queryParams, String endpoint)
+		throws IOException, TimeoutException {
+
+		return _httpClient.send(
+			_getHttpRequest(
+				HttpConstants.Method.DELETE,
+				_serverBaseURL + _resolvePathParams(endpoint, pathParams),
+				queryParams, null),
+			10000, true, null);
 	}
 
 	public HttpResponse get(
@@ -63,59 +81,116 @@ public final class LiferayConnection {
 			MultiMap<String, String> queryParams, String endpoint)
 		throws IOException, TimeoutException {
 
-		HttpRequestBuilder httpRequestBuilder = HttpRequest.builder();
-
 		return _httpClient.send(
-			httpRequestBuilder.method(
-				HttpConstants.Method.GET
-			).uri(
-				_serverURL + _resolvePathParams(endpoint, pathParams)
-			).queryParams(
-				queryParams
-			).addHeader(
-				"Authorization", _httpAuthentication.getAuthorizationHeader()
-			).build(),
+			_getHttpRequest(
+				HttpConstants.Method.GET,
+				_serverBaseURL + _resolvePathParams(endpoint, pathParams),
+				queryParams, null),
 			10000, true, null);
 	}
 
 	public HttpResponse getOpenAPISpec() throws IOException, TimeoutException {
-		HttpRequestBuilder httpRequestBuilder = HttpRequest.builder();
-
 		return _httpClient.send(
-			httpRequestBuilder.method(
-				HttpConstants.Method.GET
-			).uri(
-				_openAPISpecPath
-			).addHeader(
-				"Authorization", _httpAuthentication.getAuthorizationHeader()
-			).build(),
-			5000, true, null);
+			_getHttpRequest(
+				HttpConstants.Method.GET, _openAPISpecPath, new MultiMap<>(),
+				null),
+			10000, true, null);
 	}
 
 	public void invalidate() {
 		_httpClient.stop();
 	}
 
+	public HttpResponse patch(
+			InputStream inputStream, MultiMap<String, String> pathParams,
+			MultiMap<String, String> queryParams, String endpoint)
+		throws IOException, TimeoutException {
+
+		return _httpClient.send(
+			_getHttpRequest(
+				HttpConstants.Method.PATCH,
+				_serverBaseURL + _resolvePathParams(endpoint, pathParams),
+				queryParams, inputStream),
+			10000, true, null);
+	}
+
+	public HttpResponse post(
+			InputStream inputStream, MultiMap<String, String> pathParams,
+			MultiMap<String, String> queryParams, String endpoint)
+		throws IOException, TimeoutException {
+
+		return _httpClient.send(
+			_getHttpRequest(
+				HttpConstants.Method.POST,
+				_serverBaseURL + _resolvePathParams(endpoint, pathParams),
+				queryParams, inputStream),
+			10000, true, null);
+	}
+
 	private LiferayConnection(
 			HttpService httpService, String openApiSpecPath,
-			HttpAuthentication httpAuthentication)
+			BasicAuthentication basicAuthentication)
 		throws ConnectionException {
 
 		_openAPISpecPath = openApiSpecPath;
-		_serverURL = _getServerURL(openApiSpecPath);
-		_httpAuthentication = httpAuthentication;
+		_serverBaseURL = _getServerBaseURL(openApiSpecPath);
+		_httpAuthentication = basicAuthentication;
 
 		_initHttpClient(httpService);
 	}
 
-	private String _getServerURL(String openApiSpecPath)
+	private LiferayConnection(
+			HttpService httpService, String openApiSpecPath, String consumerKey,
+			String consumerSecret)
 		throws ConnectionException {
 
-		try {
-			URL url = new URL(openApiSpecPath);
+		_openAPISpecPath = openApiSpecPath;
+		_serverBaseURL = _getServerBaseURL(openApiSpecPath);
 
-			return url.getProtocol() + "://" + url.getHost() + ":" +
-				url.getPort() + "/o/headless-commerce-admin-catalog";
+		_initHttpClient(httpService);
+
+		try {
+			_httpAuthentication = new OAuth2Authentication(
+				consumerKey, consumerSecret, _httpClient, _openAPISpecPath);
+		}
+		catch (MalformedURLException murle) {
+			throw new ConnectionException(murle);
+		}
+	}
+
+	private HttpRequest _getHttpRequest(
+			HttpConstants.Method method, String uri,
+			MultiMap<String, String> queryParams, InputStream inputStream)
+		throws IOException, TimeoutException {
+
+		HttpRequestBuilder httpRequestBuilder = HttpRequest.builder();
+
+		httpRequestBuilder.addHeader(
+			"Authorization", _httpAuthentication.getAuthorizationHeader()
+		).addHeader(
+			"Content-Type", "application/json"
+		).method(
+			method
+		).queryParams(
+			queryParams
+		).uri(
+			uri
+		);
+
+		if (inputStream != null) {
+			httpRequestBuilder.entity(new InputStreamHttpEntity(inputStream));
+		}
+
+		return httpRequestBuilder.build();
+	}
+
+	private String _getServerBaseURL(String openApiSpecPath)
+		throws ConnectionException {
+
+		OASURLParser oasURLParser = new OASURLParser(openApiSpecPath);
+
+		try {
+			return oasURLParser.getServerBaseURL();
 		}
 		catch (MalformedURLException murle) {
 			throw new ConnectionException(murle);
@@ -149,6 +224,6 @@ public final class LiferayConnection {
 	private final HttpAuthentication _httpAuthentication;
 	private HttpClient _httpClient;
 	private final String _openAPISpecPath;
-	private final String _serverURL;
+	private final String _serverBaseURL;
 
 }

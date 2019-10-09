@@ -6,7 +6,6 @@ buildPluginDescriptor {
 	}
 
 	finalizedBy formatSource
-	finalizedBy formatXML
 
 	goalPrefix = "bundle-support"
 	useSetterComments = false
@@ -25,7 +24,7 @@ dependencies {
 	compileInclude group: "org.apache.httpcomponents", name: "httpcore", version: "4.4.4"
 	compileInclude group: "org.tukaani", name: "xz", version: "1.6"
 
-	compileOnly group: "org.apache.ant", name: "ant", transitive: false, version: "1.9.7"
+	compileOnly group: "org.apache.ant", name: "ant", transitive: false, version: "1.9.14"
 	compileOnly group: "org.apache.maven", name: "maven-core", transitive: false, version: "3.2.5"
 	compileOnly group: "org.apache.maven", name: "maven-model", transitive: false, version: "3.2.5"
 	compileOnly group: "org.apache.maven", name: "maven-plugin-api", transitive: false, version: "3.2.5"
@@ -38,10 +37,6 @@ dependencies {
 	testCompile group: "com.sun.net.httpserver", name: "http", version: "20070405"
 	testCompile group: "org.apache.ant", name: "ant-testutil", version: "1.9.7"
 	testCompile group: "org.littleshoot", name: "littleproxy", version: "1.1.1"
-}
-
-formatSource {
-	mustRunAfter formatXML
 }
 
 liferayOSGi {

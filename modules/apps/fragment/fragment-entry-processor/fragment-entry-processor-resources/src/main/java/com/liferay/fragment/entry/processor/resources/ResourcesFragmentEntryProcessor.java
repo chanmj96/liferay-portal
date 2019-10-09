@@ -26,6 +26,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -91,12 +92,12 @@ public class ResourcesFragmentEntryProcessor implements FragmentEntryProcessor {
 			String fileEntryURL = StringPool.BLANK;
 
 			if (fileEntry != null) {
-				fileEntryURL = DLUtil.getPreviewURL(
+				fileEntryURL = DLUtil.getDownloadURL(
 					fileEntry, fileEntry.getFileVersion(), null,
 					StringPool.BLANK, false, false);
 			}
 
-			code = code.replace(matcher.group(), fileEntryURL);
+			code = StringUtil.replace(code, matcher.group(), fileEntryURL);
 		}
 
 		return code;

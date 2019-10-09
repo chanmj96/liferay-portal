@@ -48,8 +48,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the AnnouncementsDelivery service. Represents a row in the &quot;AnnouncementsDelivery&quot; database table, with each column mapped to a property of this class.
  *
@@ -62,12 +60,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class AnnouncementsDeliveryModelImpl
 	extends BaseModelImpl<AnnouncementsDelivery>
 	implements AnnouncementsDeliveryModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a announcements delivery model instance should use the <code>AnnouncementsDelivery</code> interface instead.
@@ -127,11 +124,13 @@ public class AnnouncementsDeliveryModelImpl
 			"value.object.column.bitmask.enabled.com.liferay.announcements.kernel.model.AnnouncementsDelivery"),
 		true);
 
-	public static final long TYPE_COLUMN_BITMASK = 1L;
+	public static final long COMPANYID_COLUMN_BITMASK = 1L;
 
-	public static final long USERID_COLUMN_BITMASK = 2L;
+	public static final long TYPE_COLUMN_BITMASK = 2L;
 
-	public static final long DELIVERYID_COLUMN_BITMASK = 4L;
+	public static final long USERID_COLUMN_BITMASK = 4L;
+
+	public static final long DELIVERYID_COLUMN_BITMASK = 8L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -381,7 +380,19 @@ public class AnnouncementsDeliveryModelImpl
 
 	@Override
 	public void setCompanyId(long companyId) {
+		_columnBitmask |= COMPANYID_COLUMN_BITMASK;
+
+		if (!_setOriginalCompanyId) {
+			_setOriginalCompanyId = true;
+
+			_originalCompanyId = _companyId;
+		}
+
 		_companyId = companyId;
+	}
+
+	public long getOriginalCompanyId() {
+		return _originalCompanyId;
 	}
 
 	@JSON
@@ -608,6 +619,11 @@ public class AnnouncementsDeliveryModelImpl
 	public void resetOriginalValues() {
 		AnnouncementsDeliveryModelImpl announcementsDeliveryModelImpl = this;
 
+		announcementsDeliveryModelImpl._originalCompanyId =
+			announcementsDeliveryModelImpl._companyId;
+
+		announcementsDeliveryModelImpl._setOriginalCompanyId = false;
+
 		announcementsDeliveryModelImpl._originalUserId =
 			announcementsDeliveryModelImpl._userId;
 
@@ -721,6 +737,8 @@ public class AnnouncementsDeliveryModelImpl
 
 	private long _deliveryId;
 	private long _companyId;
+	private long _originalCompanyId;
+	private boolean _setOriginalCompanyId;
 	private long _userId;
 	private long _originalUserId;
 	private boolean _setOriginalUserId;

@@ -12,8 +12,6 @@
  * details.
  */
 
-/* eslint no-unused-vars: "warn" */
-
 import State, {Config} from 'metal-state';
 
 /**
@@ -58,7 +56,7 @@ class GeoJSONBase extends State {
 	}
 
 	/**
-	 * Parses a nativeFeaturesData object and return an array of the
+	 * Parses an object and return an array of the
 	 * parsed features. If no feature has been parsed it may return an
 	 * empty array.
 	 * @abstract
@@ -67,7 +65,11 @@ class GeoJSONBase extends State {
 	 * @return {Object[]} List of native features to be added
 	 * @review
 	 */
-	_getNativeFeatures(nativeFeaturesData) {
+	_getNativeFeatures(
+		/* eslint-disable no-unused-vars */
+		nativeFeaturesData
+		/* eslint-enable no-unused-vars */
+	) {
 		throw new Error('Must be implemented');
 	}
 
@@ -79,7 +81,11 @@ class GeoJSONBase extends State {
 	 * @return {Object} Wrapped native feature
 	 * @review
 	 */
-	_wrapNativeFeature(nativeFeature) {
+	_wrapNativeFeature(
+		/* eslint-disable no-unused-vars */
+		nativeFeature
+		/* eslint-enable no-unused-vars */
+	) {
 		throw new Error('Must be implemented');
 	}
 }

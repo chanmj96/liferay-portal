@@ -107,6 +107,12 @@ if (ListUtil.isEmpty(folders) && ListUtil.isEmpty(fileEntries) && ListUtil.isEmp
 							<dd class="sidebar-dd">
 								<%= HtmlUtil.escape(folder.getUserName()) %>
 							</dd>
+
+							<%
+							request.setAttribute("info_panel_location.jsp-parentFolder", folder.getParentFolder());
+							%>
+
+							<liferay-util:include page="/document_library/info_panel_location.jsp" servletContext="<%= application %>" />
 						</c:if>
 					</dl>
 				</liferay-ui:section>
@@ -258,7 +264,7 @@ if (ListUtil.isEmpty(folders) && ListUtil.isEmpty(fileEntries) && ListUtil.isEmp
 	<c:otherwise>
 		<div class="sidebar-header">
 			<h1 class="sidebar-title">
-				<liferay-ui:message arguments="<%= folders.size() + fileEntries.size() + fileShortcuts.size() %>" key="x-items-are-selected" />
+				<liferay-ui:message key="selection" />
 			</h1>
 		</div>
 

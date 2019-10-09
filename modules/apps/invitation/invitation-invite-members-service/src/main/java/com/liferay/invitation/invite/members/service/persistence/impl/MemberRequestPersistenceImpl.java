@@ -56,7 +56,6 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -73,12 +72,11 @@ import org.osgi.service.component.annotations.Reference;
  * @generated
  */
 @Component(service = MemberRequestPersistence.class)
-@ProviderType
 public class MemberRequestPersistenceImpl
 	extends BasePersistenceImpl<MemberRequest>
 	implements MemberRequestPersistence {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Always use <code>MemberRequestUtil</code> to access the member request persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
@@ -146,18 +144,22 @@ public class MemberRequestPersistenceImpl
 	 * Returns the member request where key = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
 	 * @param key the key
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching member request, or <code>null</code> if a matching member request could not be found
 	 */
 	@Override
-	public MemberRequest fetchByKey(String key, boolean retrieveFromCache) {
+	public MemberRequest fetchByKey(String key, boolean useFinderCache) {
 		key = Objects.toString(key, "");
 
-		Object[] finderArgs = new Object[] {key};
+		Object[] finderArgs = null;
+
+		if (useFinderCache) {
+			finderArgs = new Object[] {key};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			result = finderCache.getResult(
 				_finderPathFetchByKey, finderArgs, this);
 		}
@@ -204,14 +206,20 @@ public class MemberRequestPersistenceImpl
 				List<MemberRequest> list = q.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(
-						_finderPathFetchByKey, finderArgs, list);
+					if (useFinderCache) {
+						finderCache.putResult(
+							_finderPathFetchByKey, finderArgs, list);
+					}
 				}
 				else {
 					if (list.size() > 1) {
 						Collections.sort(list, Collections.reverseOrder());
 
 						if (_log.isWarnEnabled()) {
+							if (!useFinderCache) {
+								finderArgs = new Object[] {key};
+							}
+
 							_log.warn(
 								"MemberRequestPersistenceImpl.fetchByKey(String, boolean) with parameters (" +
 									StringUtil.merge(finderArgs) +
@@ -227,7 +235,9 @@ public class MemberRequestPersistenceImpl
 				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(_finderPathFetchByKey, finderArgs);
+				if (useFinderCache) {
+					finderCache.removeResult(_finderPathFetchByKey, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -397,14 +407,14 @@ public class MemberRequestPersistenceImpl
 	 * @param start the lower bound of the range of member requests
 	 * @param end the upper bound of the range of member requests (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching member requests
 	 */
 	@Override
 	public List<MemberRequest> findByReceiverUserId(
 		long receiverUserId, int start, int end,
 		OrderByComparator<MemberRequest> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -414,10 +424,13 @@ public class MemberRequestPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByReceiverUserId;
-			finderArgs = new Object[] {receiverUserId};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByReceiverUserId;
+				finderArgs = new Object[] {receiverUserId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByReceiverUserId;
 			finderArgs = new Object[] {
 				receiverUserId, start, end, orderByComparator
@@ -426,13 +439,13 @@ public class MemberRequestPersistenceImpl
 
 		List<MemberRequest> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<MemberRequest>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (MemberRequest memberRequest : list) {
-					if ((receiverUserId != memberRequest.getReceiverUserId())) {
+					if (receiverUserId != memberRequest.getReceiverUserId()) {
 						list = null;
 
 						break;
@@ -492,10 +505,14 @@ public class MemberRequestPersistenceImpl
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					finderCache.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -918,14 +935,14 @@ public class MemberRequestPersistenceImpl
 	 * @param start the lower bound of the range of member requests
 	 * @param end the upper bound of the range of member requests (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching member requests
 	 */
 	@Override
 	public List<MemberRequest> findByR_S(
 		long receiverUserId, int status, int start, int end,
 		OrderByComparator<MemberRequest> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -935,10 +952,13 @@ public class MemberRequestPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByR_S;
-			finderArgs = new Object[] {receiverUserId, status};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByR_S;
+				finderArgs = new Object[] {receiverUserId, status};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByR_S;
 			finderArgs = new Object[] {
 				receiverUserId, status, start, end, orderByComparator
@@ -947,7 +967,7 @@ public class MemberRequestPersistenceImpl
 
 		List<MemberRequest> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<MemberRequest>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -1019,10 +1039,14 @@ public class MemberRequestPersistenceImpl
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					finderCache.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -1465,19 +1489,22 @@ public class MemberRequestPersistenceImpl
 	 * @param groupId the group ID
 	 * @param receiverUserId the receiver user ID
 	 * @param status the status
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching member request, or <code>null</code> if a matching member request could not be found
 	 */
 	@Override
 	public MemberRequest fetchByG_R_S(
-		long groupId, long receiverUserId, int status,
-		boolean retrieveFromCache) {
+		long groupId, long receiverUserId, int status, boolean useFinderCache) {
 
-		Object[] finderArgs = new Object[] {groupId, receiverUserId, status};
+		Object[] finderArgs = null;
+
+		if (useFinderCache) {
+			finderArgs = new Object[] {groupId, receiverUserId, status};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			result = finderCache.getResult(
 				_finderPathFetchByG_R_S, finderArgs, this);
 		}
@@ -1524,14 +1551,22 @@ public class MemberRequestPersistenceImpl
 				List<MemberRequest> list = q.list();
 
 				if (list.isEmpty()) {
-					finderCache.putResult(
-						_finderPathFetchByG_R_S, finderArgs, list);
+					if (useFinderCache) {
+						finderCache.putResult(
+							_finderPathFetchByG_R_S, finderArgs, list);
+					}
 				}
 				else {
 					if (list.size() > 1) {
 						Collections.sort(list, Collections.reverseOrder());
 
 						if (_log.isWarnEnabled()) {
+							if (!useFinderCache) {
+								finderArgs = new Object[] {
+									groupId, receiverUserId, status
+								};
+							}
+
 							_log.warn(
 								"MemberRequestPersistenceImpl.fetchByG_R_S(long, long, int, boolean) with parameters (" +
 									StringUtil.merge(finderArgs) +
@@ -1547,7 +1582,10 @@ public class MemberRequestPersistenceImpl
 				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(_finderPathFetchByG_R_S, finderArgs);
+				if (useFinderCache) {
+					finderCache.removeResult(
+						_finderPathFetchByG_R_S, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -2195,13 +2233,13 @@ public class MemberRequestPersistenceImpl
 	 * @param start the lower bound of the range of member requests
 	 * @param end the upper bound of the range of member requests (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of member requests
 	 */
 	@Override
 	public List<MemberRequest> findAll(
 		int start, int end, OrderByComparator<MemberRequest> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -2211,17 +2249,20 @@ public class MemberRequestPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<MemberRequest> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<MemberRequest>)finderCache.getResult(
 				finderPath, finderArgs, this);
 		}
@@ -2271,10 +2312,14 @@ public class MemberRequestPersistenceImpl
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					finderCache.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -2464,7 +2509,7 @@ public class MemberRequestPersistenceImpl
 
 	@Override
 	@Reference(
-		target = IMPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		target = IMPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
 		unbind = "-"
 	)
 	public void setConfiguration(Configuration configuration) {
@@ -2527,5 +2572,14 @@ public class MemberRequestPersistenceImpl
 
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(
 		new String[] {"key"});
+
+	static {
+		try {
+			Class.forName(IMPersistenceConstants.class.getName());
+		}
+		catch (ClassNotFoundException cnfe) {
+			throw new ExceptionInInitializerError(cnfe);
+		}
+	}
 
 }

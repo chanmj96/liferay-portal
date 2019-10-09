@@ -12,9 +12,12 @@
  * details.
  */
 
-import CriteriaBuilder from 'components/criteria_builder/CriteriaBuilder.es';
+import {cleanup, render} from '@testing-library/react';
 import React from 'react';
-import {cleanup, render} from 'react-testing-library';
+import {wrapInTestContext} from 'react-dnd-test-utils';
+import {default as Component} from '../../../../src/main/resources/META-INF/resources/js/components/criteria_builder/CriteriaBuilder.es';
+
+const CriteriaBuilder = wrapInTestContext(Component);
 
 describe('CriteriaBuilder', () => {
 	afterEach(cleanup);
@@ -25,9 +28,9 @@ describe('CriteriaBuilder', () => {
 				editing={false}
 				editingCriteria={false}
 				emptyContributors={false}
-				entityName='User'
-				id='0'
-				propertyKey='user'
+				entityName="User"
+				id="0"
+				propertyKey="user"
 				supportedProperties={[]}
 			/>
 		);

@@ -16,13 +16,10 @@ package com.liferay.portal.kernel.service.persistence;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class GroupFinderUtil {
 
 	public static int countByLayouts(
@@ -101,14 +98,6 @@ public class GroupFinderUtil {
 		findByLiveGroups() {
 
 		return getFinder().findByLiveGroups();
-	}
-
-	public static java.util.List<com.liferay.portal.kernel.model.Group>
-		findByNoLayouts(
-			long classNameId, boolean privateLayout, int start, int end) {
-
-		return getFinder().findByNoLayouts(
-			classNameId, privateLayout, start, end);
 	}
 
 	public static java.util.List<com.liferay.portal.kernel.model.Group>

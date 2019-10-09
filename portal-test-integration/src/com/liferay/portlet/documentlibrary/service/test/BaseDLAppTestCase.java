@@ -42,7 +42,9 @@ import org.junit.Rule;
 
 /**
  * @author Alexander Chow
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 public abstract class BaseDLAppTestCase {
 
 	public static final String CONTENT =

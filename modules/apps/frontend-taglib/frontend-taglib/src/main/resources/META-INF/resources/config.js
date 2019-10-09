@@ -24,7 +24,6 @@
 						path:
 							'diff_version_comparator/js/diff_version_comparator.js',
 						requires: [
-							'aui-io-request',
 							'autocomplete-base',
 							'autocomplete-filters',
 							'liferay-portlet-base'
@@ -39,7 +38,6 @@
 						requires: [
 							'aui-base',
 							'aui-debounce',
-							'aui-io-request',
 							'aui-parse-content',
 							'liferay-portlet-base'
 						]

@@ -1,5 +1,4 @@
-@import 'bourbon';
-@import 'mixins';
+@import 'atlas-variables';
 
 .calendar-booking-invitations {
 	min-height: 110px;
@@ -75,8 +74,11 @@
 .calendar-list-item-hover,
 .calendar-list-item-active {
 	background-color: #dce3ea;
-
-	@include force-wrap();
+	white-space: -moz-pre-wrap;
+	white-space: pre-line;
+	white-space: pre-wrap;
+	white-space: pre;
+	word-wrap: break-word;
 
 	.calendar-list-item-arrow {
 		display: block;
@@ -101,7 +103,7 @@
 		padding: 0 3px;
 	}
 
-	@include respond-to(phone, tablet) {
+	@include media-breakpoint-down(md) {
 		font-size: 1.75em;
 		top: 4px;
 
@@ -139,7 +141,7 @@
 		text-align: center;
 	}
 
-	@include respond-to(tablet) {
+	@include media-breakpoint-between(md, lg) {
 		.calendar-portlet-column-parent {
 			.calendar-portlet-column-grid,
 			.calendar-portlet-column-options {
@@ -165,10 +167,10 @@
 				cursor: pointer;
 			}
 
-			.icon-caret-left,
-			.icon-caret-right {
+			.lexicon-icon-caret-left,
+			.lexicon-icon-caret-right {
 				left: 50%;
-				margin: -14px 0 0 -1px;
+				margin: -14px 0 0 -7px;
 				position: absolute;
 				top: 50%;
 			}
@@ -334,7 +336,7 @@
 	.calendar-list-item-arrow {
 		top: 12px;
 
-		@include respond-to(phone, tablet) {
+		@include media-breakpoint-down(md) {
 			top: 6px;
 		}
 	}
@@ -432,7 +434,7 @@
 		.calendar-add-event-btn {
 			margin-right: 3px;
 
-			@include respond-to(phone) {
+			@include media-breakpoint-down(sm) {
 				width: 100%;
 			}
 		}
@@ -573,7 +575,7 @@
 	margin: 0 4px 4px 0;
 	width: 14px;
 
-	@include respond-to(phone, tablet) {
+	@include media-breakpoint-down(md) {
 		height: 18px;
 		width: 18px;
 	}
@@ -656,8 +658,7 @@
 /* ---------- Extras ---------- */
 
 .scheduler-event-recorder-content {
-	@include background-image(linear-gradient(top, #f7f7f7, #fff));
-
+	background-image: linear-gradient(to bottom, #f7f7f7, #fff);
 	box-shadow: inset 0 1px 2px #ddd;
 
 	@include transition(background 0.3s ease-in, border-color 0.3s ease-out);
@@ -701,13 +702,13 @@
 	@include transition(border-color 0s);
 }
 
-@include respond-to(phone, tablet) {
+@include media-breakpoint-down(md) {
 	.scheduler-view-table-header-day div {
 		overflow: hidden;
 	}
 }
 
-@include respond-to(phone) {
+@include media-breakpoint-down(sm) {
 	.scheduler-base-content {
 		.scheduler-base-controls,
 		.scheduler-base-controls .btn-group,
@@ -943,7 +944,7 @@
 	}
 }
 
-@include md {
+@include media-breakpoint-up(md) {
 	.col-md-4,
 	.col-md-6 {
 		@include col-md-4;
@@ -954,7 +955,7 @@
 	}
 }
 
-@include lg {
+@include media-breakpoint-up(lg) {
 	.col-md-4 {
 		@include col-md-4;
 	}

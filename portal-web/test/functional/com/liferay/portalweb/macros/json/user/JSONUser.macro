@@ -1,0 +1,83 @@
+definition {
+
+	macro addUser {
+		Variables.assertDefined(parameterList = "${userEmailAddress},${userFirstName},${userLastName},${userScreenName}");
+
+		var userFirstName = JSONUserSetter.setUserFirstName(userFirstName = "${userFirstName}");
+
+		var userLastName = JSONUserSetter.setUserLastName(userLastName = "${userLastName}");
+
+		JSONUserAPI._addUser(
+			userEmailAddress = "${userEmailAddress}",
+			userFirstName = "${userFirstName}",
+			userLastName = "${userLastName}",
+			userScreenName = "${userScreenName}");
+	}
+
+	macro addUserToSite {
+		Variables.assertDefined(parameterList = "${groupName},${userEmailAddress}");
+
+		var groupId = JSONUserSetter.setGroupId(groupName = "${groupName}");
+
+		var userId = JSONUserSetter.setUserId(userEmailAddress = "${userEmailAddress}");
+
+		JSONUserAPI._addUserToSite(
+			groupId = "${groupId}",
+			userId = "${userId}");
+	}
+
+	macro deleteUserByEmailAddress {
+		Variables.assertDefined(parameterList = "${userEmailAddress}");
+
+		var userId = JSONUserSetter.setUserId(userEmailAddress = "${userEmailAddress}");
+
+		JSONUserAPI._deleteUser(userId = "${userId}");
+	}
+
+	macro deleteUserByUserId {
+		Variables.assertDefined(parameterList = "${userId}");
+
+		JSONUserAPI._deleteUser(userId = "${userId}");
+	}
+
+	macro setFirstPassword {
+
+		// Using this macro will require reconfiguring portal.properties. See LRQA-52401.
+
+		Variables.assertDefined(parameterList = "${userEmailAddress}");
+
+		var newPassword = JSONUserSetter.setNewPassword(newPassword = "${newPassword}");
+
+		var requireReset = JSONUserSetter.setRequireReset(requireReset = "${requireReset}");
+
+		var userId = JSONUserSetter.setUserId(userEmailAddress = "${userEmailAddress}");
+
+		JSONUserAPI._updatePassword(
+			newPassword = "${newPassword}",
+			requireReset = "${requireReset}",
+			userId = "${userId}");
+
+		if ("${requireReset}" == "false") {
+			JSONUserAPI._disablePasswordChangeRequired();
+		}
+
+		if ("${agreeToTermsAndAnswerReminderQuery}" == "true") {
+			JSONUserAPI._agreeToTermsAndAnswerReminderQuery(userId = "${userId}");
+		}
+	}
+
+	macro tearDownByFirstName {
+		Variables.assertDefined(parameterList = "${userFirstName}");
+
+		var userId = JSONUserAPI._getUserIds();
+
+		for (var userId : list "${userIds}") {
+			var currentUserFirstName = JSONUserGetter.getFirstName(userId = "${userId}");
+
+			if (contains("${currentUserFirstName}", "${userFirstName}")) {
+				JSONUser.deleteUserByUserId(userId = "${userId}");
+			}
+		}
+	}
+
+}

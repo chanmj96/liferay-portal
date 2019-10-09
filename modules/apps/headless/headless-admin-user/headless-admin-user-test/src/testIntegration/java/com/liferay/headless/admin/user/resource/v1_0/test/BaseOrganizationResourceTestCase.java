@@ -30,6 +30,10 @@ import com.liferay.headless.admin.user.client.resource.v1_0.OrganizationResource
 import com.liferay.headless.admin.user.client.serdes.v1_0.OrganizationSerDes;
 import com.liferay.petra.function.UnsafeTriConsumer;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -52,9 +56,11 @@ import java.lang.reflect.Method;
 
 import java.text.DateFormat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -195,7 +201,8 @@ public abstract class BaseOrganizationResourceTestCase {
 	@Test
 	public void testGetOrganizationsPage() throws Exception {
 		Page<Organization> page = organizationResource.getOrganizationsPage(
-			RandomTestUtil.randomString(), null, Pagination.of(1, 2), null);
+			null, RandomTestUtil.randomString(), null, Pagination.of(1, 2),
+			null);
 
 		Assert.assertEquals(0, page.getTotalCount());
 
@@ -206,7 +213,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			randomOrganization());
 
 		page = organizationResource.getOrganizationsPage(
-			null, null, Pagination.of(1, 2), null);
+			null, null, null, Pagination.of(1, 2), null);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -233,7 +240,8 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		for (EntityField entityField : entityFields) {
 			Page<Organization> page = organizationResource.getOrganizationsPage(
-				null, getFilterString(entityField, "between", organization1),
+				null, null,
+				getFilterString(entityField, "between", organization1),
 				Pagination.of(1, 2), null);
 
 			assertEquals(
@@ -262,7 +270,7 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		for (EntityField entityField : entityFields) {
 			Page<Organization> page = organizationResource.getOrganizationsPage(
-				null, getFilterString(entityField, "eq", organization1),
+				null, null, getFilterString(entityField, "eq", organization1),
 				Pagination.of(1, 2), null);
 
 			assertEquals(
@@ -283,7 +291,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			randomOrganization());
 
 		Page<Organization> page1 = organizationResource.getOrganizationsPage(
-			null, null, Pagination.of(1, 2), null);
+			null, null, null, Pagination.of(1, 2), null);
 
 		List<Organization> organizations1 =
 			(List<Organization>)page1.getItems();
@@ -292,7 +300,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			organizations1.toString(), 2, organizations1.size());
 
 		Page<Organization> page2 = organizationResource.getOrganizationsPage(
-			null, null, Pagination.of(2, 2), null);
+			null, null, null, Pagination.of(2, 2), null);
 
 		Assert.assertEquals(3, page2.getTotalCount());
 
@@ -303,7 +311,7 @@ public abstract class BaseOrganizationResourceTestCase {
 			organizations2.toString(), 1, organizations2.size());
 
 		Page<Organization> page3 = organizationResource.getOrganizationsPage(
-			null, null, Pagination.of(1, 3), null);
+			null, null, null, Pagination.of(1, 3), null);
 
 		assertEqualsIgnoringOrder(
 			Arrays.asList(organization1, organization2, organization3),
@@ -336,7 +344,7 @@ public abstract class BaseOrganizationResourceTestCase {
 		testGetOrganizationsPageWithSort(
 			EntityField.Type.STRING,
 			(entityField, organization1, organization2) -> {
-				Class clazz = organization1.getClass();
+				Class<?> clazz = organization1.getClass();
 
 				Method method = clazz.getMethod(
 					"get" +
@@ -388,7 +396,7 @@ public abstract class BaseOrganizationResourceTestCase {
 		for (EntityField entityField : entityFields) {
 			Page<Organization> ascPage =
 				organizationResource.getOrganizationsPage(
-					null, null, Pagination.of(1, 2),
+					null, null, null, Pagination.of(1, 2),
 					entityField.getName() + ":asc");
 
 			assertEquals(
@@ -397,7 +405,7 @@ public abstract class BaseOrganizationResourceTestCase {
 
 			Page<Organization> descPage =
 				organizationResource.getOrganizationsPage(
-					null, null, Pagination.of(1, 2),
+					null, null, null, Pagination.of(1, 2),
 					entityField.getName() + ":desc");
 
 			assertEquals(
@@ -412,6 +420,58 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetOrganizationsPage() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		List<GraphQLField> itemsGraphQLFields = getGraphQLFields();
+
+		graphQLFields.add(
+			new GraphQLField(
+				"items", itemsGraphQLFields.toArray(new GraphQLField[0])));
+
+		graphQLFields.add(new GraphQLField("page"));
+		graphQLFields.add(new GraphQLField("totalCount"));
+
+		GraphQLField graphQLField = new GraphQLField(
+			"query",
+			new GraphQLField(
+				"organizations",
+				new HashMap<String, Object>() {
+					{
+						put("page", 1);
+						put("pageSize", 2);
+					}
+				},
+				graphQLFields.toArray(new GraphQLField[0])));
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			invoke(graphQLField.toString()));
+
+		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
+
+		JSONObject organizationsJSONObject = dataJSONObject.getJSONObject(
+			"organizations");
+
+		Assert.assertEquals(0, organizationsJSONObject.get("totalCount"));
+
+		Organization organization1 = testGraphQLOrganization_addOrganization();
+		Organization organization2 = testGraphQLOrganization_addOrganization();
+
+		jsonObject = JSONFactoryUtil.createJSONObject(
+			invoke(graphQLField.toString()));
+
+		dataJSONObject = jsonObject.getJSONObject("data");
+
+		organizationsJSONObject = dataJSONObject.getJSONObject("organizations");
+
+		Assert.assertEquals(2, organizationsJSONObject.get("totalCount"));
+
+		assertEqualsJSONArray(
+			Arrays.asList(organization1, organization2),
+			organizationsJSONObject.getJSONArray("items"));
 	}
 
 	@Test
@@ -433,11 +493,39 @@ public abstract class BaseOrganizationResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLGetOrganization() throws Exception {
+		Organization organization = testGraphQLOrganization_addOrganization();
+
+		List<GraphQLField> graphQLFields = getGraphQLFields();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"query",
+			new GraphQLField(
+				"organization",
+				new HashMap<String, Object>() {
+					{
+						put("organizationId", organization.getId());
+					}
+				},
+				graphQLFields.toArray(new GraphQLField[0])));
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			invoke(graphQLField.toString()));
+
+		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
+
+		Assert.assertTrue(
+			equalsJSONObject(
+				organization, dataJSONObject.getJSONObject("organization")));
+	}
+
+	@Test
 	public void testGetOrganizationOrganizationsPage() throws Exception {
 		Page<Organization> page =
 			organizationResource.getOrganizationOrganizationsPage(
 				testGetOrganizationOrganizationsPage_getParentOrganizationId(),
-				RandomTestUtil.randomString(), null, Pagination.of(1, 2), null);
+				null, RandomTestUtil.randomString(), null, Pagination.of(1, 2),
+				null);
 
 		Assert.assertEquals(0, page.getTotalCount());
 
@@ -453,8 +541,8 @@ public abstract class BaseOrganizationResourceTestCase {
 					randomIrrelevantOrganization());
 
 			page = organizationResource.getOrganizationOrganizationsPage(
-				irrelevantParentOrganizationId, null, null, Pagination.of(1, 2),
-				null);
+				irrelevantParentOrganizationId, null, null, null,
+				Pagination.of(1, 2), null);
 
 			Assert.assertEquals(1, page.getTotalCount());
 
@@ -473,7 +561,7 @@ public abstract class BaseOrganizationResourceTestCase {
 				parentOrganizationId, randomOrganization());
 
 		page = organizationResource.getOrganizationOrganizationsPage(
-			parentOrganizationId, null, null, Pagination.of(1, 2), null);
+			parentOrganizationId, null, null, null, Pagination.of(1, 2), null);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -505,7 +593,7 @@ public abstract class BaseOrganizationResourceTestCase {
 		for (EntityField entityField : entityFields) {
 			Page<Organization> page =
 				organizationResource.getOrganizationOrganizationsPage(
-					parentOrganizationId, null,
+					parentOrganizationId, null, null,
 					getFilterString(entityField, "between", organization1),
 					Pagination.of(1, 2), null);
 
@@ -541,7 +629,7 @@ public abstract class BaseOrganizationResourceTestCase {
 		for (EntityField entityField : entityFields) {
 			Page<Organization> page =
 				organizationResource.getOrganizationOrganizationsPage(
-					parentOrganizationId, null,
+					parentOrganizationId, null, null,
 					getFilterString(entityField, "eq", organization1),
 					Pagination.of(1, 2), null);
 
@@ -572,7 +660,8 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		Page<Organization> page1 =
 			organizationResource.getOrganizationOrganizationsPage(
-				parentOrganizationId, null, null, Pagination.of(1, 2), null);
+				parentOrganizationId, null, null, null, Pagination.of(1, 2),
+				null);
 
 		List<Organization> organizations1 =
 			(List<Organization>)page1.getItems();
@@ -582,7 +671,8 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		Page<Organization> page2 =
 			organizationResource.getOrganizationOrganizationsPage(
-				parentOrganizationId, null, null, Pagination.of(2, 2), null);
+				parentOrganizationId, null, null, null, Pagination.of(2, 2),
+				null);
 
 		Assert.assertEquals(3, page2.getTotalCount());
 
@@ -594,7 +684,8 @@ public abstract class BaseOrganizationResourceTestCase {
 
 		Page<Organization> page3 =
 			organizationResource.getOrganizationOrganizationsPage(
-				parentOrganizationId, null, null, Pagination.of(1, 3), null);
+				parentOrganizationId, null, null, null, Pagination.of(1, 3),
+				null);
 
 		assertEqualsIgnoringOrder(
 			Arrays.asList(organization1, organization2, organization3),
@@ -633,7 +724,7 @@ public abstract class BaseOrganizationResourceTestCase {
 		testGetOrganizationOrganizationsPageWithSort(
 			EntityField.Type.STRING,
 			(entityField, organization1, organization2) -> {
-				Class clazz = organization1.getClass();
+				Class<?> clazz = organization1.getClass();
 
 				Method method = clazz.getMethod(
 					"get" +
@@ -690,7 +781,7 @@ public abstract class BaseOrganizationResourceTestCase {
 		for (EntityField entityField : entityFields) {
 			Page<Organization> ascPage =
 				organizationResource.getOrganizationOrganizationsPage(
-					parentOrganizationId, null, null, Pagination.of(1, 2),
+					parentOrganizationId, null, null, null, Pagination.of(1, 2),
 					entityField.getName() + ":asc");
 
 			assertEquals(
@@ -699,7 +790,7 @@ public abstract class BaseOrganizationResourceTestCase {
 
 			Page<Organization> descPage =
 				organizationResource.getOrganizationOrganizationsPage(
-					parentOrganizationId, null, null, Pagination.of(1, 2),
+					parentOrganizationId, null, null, null, Pagination.of(1, 2),
 					entityField.getName() + ":desc");
 
 			assertEquals(
@@ -729,6 +820,13 @@ public abstract class BaseOrganizationResourceTestCase {
 		throws Exception {
 
 		return null;
+	}
+
+	protected Organization testGraphQLOrganization_addOrganization()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	protected void assertHttpResponseStatusCode(
@@ -779,6 +877,25 @@ public abstract class BaseOrganizationResourceTestCase {
 			Assert.assertTrue(
 				organizations2 + " does not contain " + organization1,
 				contains);
+		}
+	}
+
+	protected void assertEqualsJSONArray(
+		List<Organization> organizations, JSONArray jsonArray) {
+
+		for (Organization organization : organizations) {
+			boolean contains = false;
+
+			for (Object object : jsonArray) {
+				if (equalsJSONObject(organization, (JSONObject)object)) {
+					contains = true;
+
+					break;
+				}
+			}
+
+			Assert.assertTrue(
+				jsonArray + " does not contain " + organization, contains);
 		}
 	}
 
@@ -913,6 +1030,18 @@ public abstract class BaseOrganizationResourceTestCase {
 
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[0];
+	}
+
+	protected List<GraphQLField> getGraphQLFields() {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (String additionalAssertFieldName :
+				getAdditionalAssertFieldNames()) {
+
+			graphQLFields.add(new GraphQLField(additionalAssertFieldName));
+		}
+
+		return graphQLFields;
 	}
 
 	protected String[] getIgnoredEntityFieldNames() {
@@ -1078,6 +1207,70 @@ public abstract class BaseOrganizationResourceTestCase {
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
+		}
+
+		return true;
+	}
+
+	protected boolean equalsJSONObject(
+		Organization organization, JSONObject jsonObject) {
+
+		for (String fieldName : getAdditionalAssertFieldNames()) {
+			if (Objects.equals("comment", fieldName)) {
+				if (!Objects.deepEquals(
+						organization.getComment(),
+						jsonObject.getString("comment"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("id", fieldName)) {
+				if (!Objects.deepEquals(
+						organization.getId(), jsonObject.getLong("id"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("image", fieldName)) {
+				if (!Objects.deepEquals(
+						organization.getImage(),
+						jsonObject.getString("image"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("name", fieldName)) {
+				if (!Objects.deepEquals(
+						organization.getName(), jsonObject.getString("name"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("numberOfOrganizations", fieldName)) {
+				if (!Objects.deepEquals(
+						organization.getNumberOfOrganizations(),
+						jsonObject.getInt("numberOfOrganizations"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			throw new IllegalArgumentException(
+				"Invalid field name " + fieldName);
 		}
 
 		return true;
@@ -1267,6 +1460,23 @@ public abstract class BaseOrganizationResourceTestCase {
 			"Invalid entity field " + entityFieldName);
 	}
 
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
 	protected Organization randomOrganization() throws Exception {
 		return new Organization() {
 			{
@@ -1276,6 +1486,7 @@ public abstract class BaseOrganizationResourceTestCase {
 				id = RandomTestUtil.randomLong();
 				image = RandomTestUtil.randomString();
 				name = RandomTestUtil.randomString();
+				numberOfOrganizations = RandomTestUtil.randomInt();
 			}
 		};
 	}
@@ -1294,6 +1505,64 @@ public abstract class BaseOrganizationResourceTestCase {
 	protected Group irrelevantGroup;
 	protected Company testCompany;
 	protected Group testGroup;
+
+	protected class GraphQLField {
+
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
+
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
+
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
+
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
+			}
+
+			if (_graphQLFields.length > 0) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
+			}
+
+			return sb.toString();
+		}
+
+		private final GraphQLField[] _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
+
+	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		BaseOrganizationResourceTestCase.class);

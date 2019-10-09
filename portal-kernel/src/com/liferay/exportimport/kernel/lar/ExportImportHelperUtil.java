@@ -36,12 +36,9 @@ import java.util.Map;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Zsolt Berentey
  */
-@ProviderType
 public class ExportImportHelperUtil {
 
 	public static long[] getAllLayoutIds(long groupId, boolean privateLayout) {
@@ -342,6 +339,12 @@ public class ExportImportHelperUtil {
 
 		return _exportImportHelper.isAlwaysIncludeReference(
 			portletDataContext, referenceStagedModel);
+	}
+
+	public static boolean isExportPortletData(
+		PortletDataContext portletDataContext) {
+
+		return _exportImportHelper.isExportPortletData(portletDataContext);
 	}
 
 	public static boolean isLayoutRevisionInReview(Layout layout) {

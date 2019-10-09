@@ -306,6 +306,7 @@ definition {
 		CustomFields.addCP(
 			customFieldName = "Text Field",
 			customFieldType = "Input Field",
+			customInputDataType = "Text",
 			resourceName = "Knowledge Base Article");
 
 		JSONLayout.addPublicLayout(
@@ -1530,8 +1531,6 @@ definition {
 
 		Navigator.gotoPage(pageName = "Knowledge Base Display Page");
 
-		KBArticle.gotoSuggestionsNavigationPG();
-
 		KBArticleSuggestion.viewSuggestionStatus(
 			kbSuggestionBody = "KB Article Suggestion Content",
 			status = "New");
@@ -1853,8 +1852,6 @@ definition {
 
 		Navigator.gotoPage(pageName = "Knowledge Base Display Page");
 
-		KBArticle.gotoSuggestionsNavigationPG();
-
 		KBArticleSuggestion.gotoSuggestionStatusNew(suggestionCount = "1");
 
 		KBArticleSuggestion.viewPG(
@@ -1917,8 +1914,6 @@ definition {
 		AssertTextEquals.assertPartialText(
 			locator1 = "KnowledgeBase#LINK_THERE_ARE_SUGGESTIONS",
 			value1 = "There are 4 suggestions.");
-
-		KBArticle.gotoSuggestionsNavigationPG();
 
 		KBArticleSuggestion.viewPG(
 			kbSuggestionBody = "User 2 Knowledge Base Article Suggestion 1",

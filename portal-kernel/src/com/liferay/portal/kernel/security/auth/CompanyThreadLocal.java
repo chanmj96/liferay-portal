@@ -15,6 +15,7 @@
 package com.liferay.portal.kernel.security.auth;
 
 import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.CompanyConstants;
@@ -23,12 +24,9 @@ import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.TimeZoneThreadLocal;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class CompanyThreadLocal {
 
 	public static Long getCompanyId() {
@@ -75,6 +73,8 @@ public class CompanyThreadLocal {
 			LocaleThreadLocal.setDefaultLocale(null);
 			TimeZoneThreadLocal.setDefaultTimeZone(null);
 		}
+
+		CTCollectionThreadLocal.removeCTCollectionId();
 	}
 
 	public static void setDeleteInProcess(boolean deleteInProcess) {

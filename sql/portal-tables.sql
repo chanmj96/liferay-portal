@@ -81,6 +81,7 @@ create table AnnouncementsFlag (
 );
 
 create table AssetCategory (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	externalReferenceCode VARCHAR(75) null,
 	categoryId LONG not null primary key,
@@ -115,6 +116,7 @@ create table AssetEntries_AssetTags (
 );
 
 create table AssetEntry (
+	mvccVersion LONG default 0 not null,
 	entryId LONG not null primary key,
 	groupId LONG,
 	companyId LONG,
@@ -145,6 +147,7 @@ create table AssetEntry (
 );
 
 create table AssetLink (
+	mvccVersion LONG default 0 not null,
 	linkId LONG not null primary key,
 	companyId LONG,
 	userId LONG,
@@ -157,6 +160,7 @@ create table AssetLink (
 );
 
 create table AssetTag (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	tagId LONG not null primary key,
 	groupId LONG,
@@ -171,6 +175,7 @@ create table AssetTag (
 );
 
 create table AssetVocabulary (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	externalReferenceCode VARCHAR(75) null,
 	vocabularyId LONG not null primary key,
@@ -273,6 +278,7 @@ create table Country (
 );
 
 create table DLFileEntry (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	fileEntryId LONG not null primary key,
 	groupId LONG,
@@ -306,6 +312,7 @@ create table DLFileEntry (
 );
 
 create table DLFileEntryMetadata (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	fileEntryMetadataId LONG not null primary key,
 	companyId LONG,
@@ -316,6 +323,7 @@ create table DLFileEntryMetadata (
 );
 
 create table DLFileEntryType (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	fileEntryTypeId LONG not null primary key,
 	groupId LONG,
@@ -338,6 +346,7 @@ create table DLFileEntryTypes_DLFolders (
 );
 
 create table DLFileShortcut (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	fileShortcutId LONG not null primary key,
 	groupId LONG,
@@ -359,6 +368,7 @@ create table DLFileShortcut (
 );
 
 create table DLFileVersion (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	fileVersionId LONG not null primary key,
 	groupId LONG,
@@ -390,6 +400,7 @@ create table DLFileVersion (
 );
 
 create table DLFolder (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	folderId LONG not null primary key,
 	groupId LONG,
@@ -545,10 +556,9 @@ create table Image (
 
 create table Layout (
 	mvccVersion LONG default 0 not null,
+	ctCollectionId LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
-	headId LONG,
-	head BOOLEAN,
-	plid LONG not null primary key,
+	plid LONG not null,
 	groupId LONG,
 	companyId LONG,
 	userId LONG,
@@ -580,7 +590,8 @@ create table Layout (
 	layoutPrototypeLinkEnabled BOOLEAN,
 	sourcePrototypeLayoutUuid VARCHAR(75) null,
 	publishDate DATE null,
-	lastPublishDate DATE null
+	lastPublishDate DATE null,
+	primary key (plid, ctCollectionId)
 );
 
 create table LayoutBranch (
@@ -663,8 +674,6 @@ create table LayoutRevision (
 
 create table LayoutSet (
 	mvccVersion LONG default 0 not null,
-	headId LONG,
-	head BOOLEAN,
 	layoutSetId LONG not null primary key,
 	groupId LONG,
 	companyId LONG,
@@ -675,7 +684,6 @@ create table LayoutSet (
 	themeId VARCHAR(75) null,
 	colorSchemeId VARCHAR(75) null,
 	css TEXT null,
-	pageCount INTEGER,
 	settings_ TEXT null,
 	layoutSetPrototypeUuid VARCHAR(75) null,
 	layoutSetPrototypeLinkEnabled BOOLEAN
@@ -716,64 +724,6 @@ create table LayoutSetPrototype (
 	description TEXT null,
 	settings_ STRING null,
 	active_ BOOLEAN
-);
-
-create table LayoutSetVersion (
-	layoutSetVersionId LONG not null primary key,
-	version INTEGER,
-	layoutSetId LONG,
-	groupId LONG,
-	companyId LONG,
-	createDate DATE null,
-	modifiedDate DATE null,
-	privateLayout BOOLEAN,
-	logoId LONG,
-	themeId VARCHAR(75) null,
-	colorSchemeId VARCHAR(75) null,
-	css TEXT null,
-	pageCount INTEGER,
-	settings_ TEXT null,
-	layoutSetPrototypeUuid VARCHAR(75) null,
-	layoutSetPrototypeLinkEnabled BOOLEAN
-);
-
-create table LayoutVersion (
-	layoutVersionId LONG not null primary key,
-	version INTEGER,
-	uuid_ VARCHAR(75) null,
-	plid LONG,
-	groupId LONG,
-	companyId LONG,
-	userId LONG,
-	userName VARCHAR(75) null,
-	createDate DATE null,
-	modifiedDate DATE null,
-	parentPlid LONG,
-	privateLayout BOOLEAN,
-	layoutId LONG,
-	parentLayoutId LONG,
-	classNameId LONG,
-	classPK LONG,
-	name STRING null,
-	title STRING null,
-	description STRING null,
-	keywords STRING null,
-	robots STRING null,
-	type_ VARCHAR(75) null,
-	typeSettings TEXT null,
-	hidden_ BOOLEAN,
-	system_ BOOLEAN,
-	friendlyURL VARCHAR(255) null,
-	iconImageId LONG,
-	themeId VARCHAR(75) null,
-	colorSchemeId VARCHAR(75) null,
-	css TEXT null,
-	priority INTEGER,
-	layoutPrototypeUuid VARCHAR(75) null,
-	layoutPrototypeLinkEnabled BOOLEAN,
-	sourcePrototypeLayoutUuid VARCHAR(75) null,
-	publishDate DATE null,
-	lastPublishDate DATE null
 );
 
 create table ListType (
@@ -1096,25 +1046,6 @@ create table ResourceAction (
 	bitwiseValue LONG
 );
 
-create table ResourceBlock (
-	mvccVersion LONG default 0 not null,
-	resourceBlockId LONG not null primary key,
-	companyId LONG,
-	groupId LONG,
-	name VARCHAR(75) null,
-	permissionsHash VARCHAR(75) null,
-	referenceCount LONG
-);
-
-create table ResourceBlockPermission (
-	mvccVersion LONG default 0 not null,
-	resourceBlockPermissionId LONG not null primary key,
-	companyId LONG,
-	resourceBlockId LONG,
-	roleId LONG,
-	actionIds LONG
-);
-
 create table ResourcePermission (
 	mvccVersion LONG default 0 not null,
 	resourcePermissionId LONG not null primary key,
@@ -1127,16 +1058,6 @@ create table ResourcePermission (
 	ownerId LONG,
 	actionIds LONG,
 	viewActionId BOOLEAN
-);
-
-create table ResourceTypePermission (
-	mvccVersion LONG default 0 not null,
-	resourceTypePermissionId LONG not null primary key,
-	companyId LONG,
-	groupId LONG,
-	name VARCHAR(75) null,
-	roleId LONG,
-	actionIds LONG
 );
 
 create table Role_ (

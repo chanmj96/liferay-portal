@@ -34,11 +34,13 @@ import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.segments.exception.NoSuchExperimentException;
 import com.liferay.segments.model.SegmentsExperiment;
 
 import java.io.Serializable;
 
 import java.util.List;
+import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -60,14 +62,15 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface SegmentsExperimentLocalService
 	extends BaseLocalService, PersistedModelLocalService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link SegmentsExperimentLocalServiceUtil} to access the segments experiment local service. Add custom service methods to <code>com.liferay.segments.service.impl.SegmentsExperimentLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 	public SegmentsExperiment addSegmentsExperiment(
 			long segmentsExperienceId, long classNameId, long classPK,
-			String name, String description, ServiceContext serviceContext)
+			String name, String description, String goal, String goalTarget,
+			ServiceContext serviceContext)
 		throws PortalException;
 
 	/**
@@ -120,6 +123,11 @@ public interface SegmentsExperimentLocalService
 	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
 	public SegmentsExperiment deleteSegmentsExperiment(
 			SegmentsExperiment segmentsExperiment)
+		throws PortalException;
+
+	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
+	public SegmentsExperiment deleteSegmentsExperiment(
+			SegmentsExperiment segmentsExperiment, boolean force)
 		throws PortalException;
 
 	public void deleteSegmentsExperiments(
@@ -196,6 +204,15 @@ public interface SegmentsExperimentLocalService
 	public SegmentsExperiment fetchSegmentsExperiment(
 		long segmentsExperimentId);
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public SegmentsExperiment fetchSegmentsExperiment(
+		long segmentsExperienceId, long classNameId, long classPK,
+		int[] statuses);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public SegmentsExperiment fetchSegmentsExperiment(
+		long groupId, String segmentsExperimentKey);
+
 	/**
 	 * Returns the segments experiment matching the UUID and group.
 	 *
@@ -230,8 +247,17 @@ public interface SegmentsExperimentLocalService
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<SegmentsExperiment> getSegmentsEntrySegmentsExperiments(
+		long segmentsEntryId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<SegmentsExperiment> getSegmentsExperienceSegmentsExperiments(
 		long segmentsExperienceId, long classNameId, long classPK);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<SegmentsExperiment> getSegmentsExperienceSegmentsExperiments(
+		long[] segmentsExperienceIds, long classNameId, long classPK,
+		int[] statuses, int start, int end);
 
 	/**
 	 * Returns the segments experiment with the primary key.
@@ -243,6 +269,11 @@ public interface SegmentsExperimentLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public SegmentsExperiment getSegmentsExperiment(long segmentsExperimentId)
 		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public SegmentsExperiment getSegmentsExperiment(
+			String segmentsExperimentKey)
+		throws NoSuchExperimentException;
 
 	/**
 	 * Returns the segments experiment matching the UUID and group.
@@ -274,6 +305,12 @@ public interface SegmentsExperimentLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<SegmentsExperiment> getSegmentsExperiments(
 		long groupId, long classNameId, long classPK);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<SegmentsExperiment> getSegmentsExperiments(
+		long segmentsExperienceId, long classNameId, long classPK,
+		int[] statuses,
+		OrderByComparator<SegmentsExperiment> orderByComparator);
 
 	/**
 	 * Returns all the segments experiments matching the UUID and company.
@@ -309,6 +346,21 @@ public interface SegmentsExperimentLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getSegmentsExperimentsCount();
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public boolean hasSegmentsExperiment(
+		long segmentsExperienceId, long classNameId, long classPK,
+		int[] statuses);
+
+	public SegmentsExperiment runSegmentsExperiment(
+			long segmentsExperimentId, double confidenceLevel,
+			Map<Long, Double> segmentsExperienceIdSplitMap)
+		throws PortalException;
+
+	public SegmentsExperiment updateSegmentsExperiment(
+			long segmentsExperimentId, String name, String description,
+			String goal, String goalTarget)
+		throws PortalException;
+
 	/**
 	 * Updates the segments experiment in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
@@ -318,5 +370,14 @@ public interface SegmentsExperimentLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public SegmentsExperiment updateSegmentsExperiment(
 		SegmentsExperiment segmentsExperiment);
+
+	public SegmentsExperiment updateSegmentsExperimentStatus(
+			long segmentsExperimentId, int status)
+		throws PortalException;
+
+	public SegmentsExperiment updateSegmentsExperimentStatus(
+			long segmentsExperimentId, long winnerSegmentsExperienceId,
+			int status)
+		throws PortalException;
 
 }

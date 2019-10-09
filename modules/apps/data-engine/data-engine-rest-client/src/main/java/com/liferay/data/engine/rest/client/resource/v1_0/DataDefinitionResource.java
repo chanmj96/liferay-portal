@@ -20,7 +20,9 @@ import com.liferay.data.engine.rest.client.pagination.Page;
 import com.liferay.data.engine.rest.client.pagination.Pagination;
 import com.liferay.data.engine.rest.client.serdes.v1_0.DataDefinitionSerDes;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +38,13 @@ public interface DataDefinitionResource {
 	public static Builder builder() {
 		return new Builder();
 	}
+
+	public String getDataDefinitionDataDefinitionFieldFieldType()
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			getDataDefinitionDataDefinitionFieldFieldTypeHttpResponse()
+		throws Exception;
 
 	public void deleteDataDefinition(Long dataDefinitionId) throws Exception;
 
@@ -131,8 +140,20 @@ public interface DataDefinitionResource {
 			return this;
 		}
 
+		public Builder header(String key, String value) {
+			_headers.put(key, value);
+
+			return this;
+		}
+
 		public Builder locale(Locale locale) {
 			_locale = locale;
+
+			return this;
+		}
+
+		public Builder parameter(String key, String value) {
+			_parameters.put(key, value);
 
 			return this;
 		}
@@ -140,10 +161,12 @@ public interface DataDefinitionResource {
 		private Builder() {
 		}
 
+		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
 		private String _login = "test@liferay.com";
 		private String _password = "test";
+		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
 
@@ -151,6 +174,59 @@ public interface DataDefinitionResource {
 
 	public static class DataDefinitionResourceImpl
 		implements DataDefinitionResource {
+
+		public String getDataDefinitionDataDefinitionFieldFieldType()
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getDataDefinitionDataDefinitionFieldFieldTypeHttpResponse();
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			return content;
+		}
+
+		public HttpInvoker.HttpResponse
+				getDataDefinitionDataDefinitionFieldFieldTypeHttpResponse()
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/data-engine/v1.0/data-definitions/data-definition-fields/field-types");
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
 
 		public void deleteDataDefinition(Long dataDefinitionId)
 			throws Exception {
@@ -176,6 +252,18 @@ public interface DataDefinitionResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
@@ -227,6 +315,18 @@ public interface DataDefinitionResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
@@ -283,6 +383,18 @@ public interface DataDefinitionResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PUT);
 
 			httpInvoker.path(
@@ -331,6 +443,18 @@ public interface DataDefinitionResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
@@ -387,6 +511,18 @@ public interface DataDefinitionResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
 
 			if (operation != null) {
@@ -435,6 +571,18 @@ public interface DataDefinitionResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
@@ -506,6 +654,18 @@ public interface DataDefinitionResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
 
 			httpInvoker.path(
@@ -556,6 +716,18 @@ public interface DataDefinitionResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);

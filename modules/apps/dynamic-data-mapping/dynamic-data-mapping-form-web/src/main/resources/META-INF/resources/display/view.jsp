@@ -28,7 +28,7 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 			<liferay-ui:message key="select-an-existing-form-or-add-a-form-to-be-displayed-in-this-application" />
 		</div>
 	</c:when>
-	<c:when test="<%= !ddmFormDisplayContext.hasViewPermission() %>">
+	<c:when test="<%= !ddmFormDisplayContext.hasAddFormInstanceRecordPermission() && !ddmFormDisplayContext.hasViewPermission() %>">
 		<div class="ddm-form-basic-info">
 			<div class="container-fluid-1280">
 				<clay:alert
@@ -86,7 +86,7 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 				%>
 
 				<div class="portlet-forms">
-					<aui:form action="<%= addFormInstanceRecordActionURL %>" data-DDMFormInstanceId="<%= formInstanceId %>" method="post" name="fm">
+					<aui:form action="<%= addFormInstanceRecordActionURL %>" data-DDMFormInstanceId="<%= formInstanceId %>" data-senna-off="true" method="post" name="fm">
 
 						<%
 						String redirectURL = ddmFormDisplayContext.getRedirectURL();
@@ -214,13 +214,15 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 							</liferay-portlet:resourceURL>
 
 							function <portlet:namespace />autoSave() {
-								A.io.request(
+								const data = new URLSearchParams({
+									<portlet:namespace />formInstanceId: <%= formInstanceId %>,
+									<portlet:namespace />serializedDDMFormValues: JSON.stringify(<portlet:namespace />form.toJSON())
+								});
+
+								Liferay.Util.fetch(
 									'<%= autoSaveFormInstanceRecordURL.toString() %>',
 									{
-										data: {
-											<portlet:namespace />formInstanceId: <%= formInstanceId %>,
-											<portlet:namespace />serializedDDMFormValues: JSON.stringify(<portlet:namespace />form.toJSON())
-										},
+										body: data,
 										method: 'POST'
 									}
 								);
@@ -305,8 +307,9 @@ long formInstanceId = ddmFormDisplayContext.getFormInstanceId();
 		<div class="btn-group lfr-icon-actions">
 			<liferay-ui:icon
 				cssClass="btn btn-link"
-				iconCssClass="icon-cog"
+				icon="cog"
 				label="<%= true %>"
+				markupView="lexicon"
 				message="select-form"
 				method="get"
 				onClick="<%= portletDisplay.getURLConfigurationJS() %>"

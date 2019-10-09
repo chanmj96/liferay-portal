@@ -12,6 +12,10 @@ import ${configYAML.apiPackagePath}.client.serdes.${escapedVersion}.${schemaName
 
 import java.io.File;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
@@ -61,8 +65,20 @@ public interface ${schemaName}Resource {
 			return this;
 		}
 
+		public Builder header(String key, String value) {
+			_headers.put(key, value);
+
+			return this;
+		}
+
 		public Builder locale(Locale locale) {
 			_locale = locale;
+
+			return this;
+		}
+
+		public Builder parameter(String key, String value) {
+			_parameters.put(key, value);
 
 			return this;
 		}
@@ -70,10 +86,12 @@ public interface ${schemaName}Resource {
 		private Builder() {
 		}
 
+		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
 		private String _login = "test@liferay.com";
 		private String _password = "test";
+		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
 
@@ -144,7 +162,23 @@ public interface ${schemaName}Resource {
 					httpInvoker.header("Accept-Language", _builder._locale.toLanguageTag());
 				}
 
+				for (Map.Entry<String, String> entry : _builder._headers.entrySet()) {
+					httpInvoker.header(entry.getKey(), entry.getValue());
+				}
+
+				for (Map.Entry<String, String> entry : _builder._parameters.entrySet()) {
+					httpInvoker.parameter(entry.getKey(), entry.getValue());
+				}
+
 				httpInvoker.httpMethod(HttpInvoker.HttpMethod.${freeMarkerTool.getHTTPMethod(javaMethodSignature.operation)?upper_case});
+
+				<#list javaMethodSignature.javaMethodParameters as javaMethodParameter>
+					<#if stringUtil.equals(javaMethodParameter.parameterType, "java.util.Date")>
+						DateFormat liferayToJSONDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+						<#break>
+					</#if>
+				</#list>
 
 				<#list javaMethodSignature.javaMethodParameters as javaMethodParameter>
 					<#if stringUtil.equals(javaMethodParameter.parameterName, "filter")>
@@ -164,10 +198,18 @@ public interface ${schemaName}Resource {
 						if (${javaMethodParameter.parameterName} != null) {
 							<#if stringUtil.startsWith(javaMethodParameter.parameterType, "[")>
 								for (int i = 0; i < ${javaMethodParameter.parameterName}.length; i++) {
-									httpInvoker.parameter("${javaMethodParameter.parameterName}", String.valueOf(${javaMethodParameter.parameterName}[i]));
+									<#if stringUtil.equals(javaMethodParameter.parameterType, "java.util.Date")>
+										httpInvoker.parameter("${javaMethodParameter.parameterName}", liferayToJSONDateFormat.format((${javaMethodParameter.parameterName}[i]));
+									<#else>
+										httpInvoker.parameter("${javaMethodParameter.parameterName}", String.valueOf(${javaMethodParameter.parameterName}[i]));
+									</#if>
 								}
 							<#else>
-								httpInvoker.parameter("${javaMethodParameter.parameterName}", String.valueOf(${javaMethodParameter.parameterName}));
+								<#if stringUtil.equals(javaMethodParameter.parameterType, "java.util.Date")>
+									httpInvoker.parameter("${javaMethodParameter.parameterName}", liferayToJSONDateFormat.format(${javaMethodParameter.parameterName}));
+								<#else>
+									httpInvoker.parameter("${javaMethodParameter.parameterName}", String.valueOf(${javaMethodParameter.parameterName}));
+								</#if>
 							</#if>
 						}
 					</#if>

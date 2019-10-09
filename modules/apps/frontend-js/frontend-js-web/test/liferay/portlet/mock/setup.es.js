@@ -12,8 +12,6 @@
  * details.
  */
 
-/* eslint no-undef: "warn" */
-
 import {portlet} from './portlet_data.es';
 
 function fetchMock(data) {

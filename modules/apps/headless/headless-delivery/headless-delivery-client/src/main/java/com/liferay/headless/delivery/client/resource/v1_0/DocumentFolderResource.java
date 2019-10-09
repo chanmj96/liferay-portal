@@ -20,7 +20,9 @@ import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
 import com.liferay.headless.delivery.client.serdes.v1_0.DocumentFolderSerDes;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,14 +69,14 @@ public interface DocumentFolderResource {
 		throws Exception;
 
 	public Page<DocumentFolder> getDocumentFolderDocumentFoldersPage(
-			Long parentDocumentFolderId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long parentDocumentFolderId, Boolean flatten, String search,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getDocumentFolderDocumentFoldersPageHttpResponse(
-				Long parentDocumentFolderId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long parentDocumentFolderId, Boolean flatten, String search,
+				String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public DocumentFolder postDocumentFolderDocumentFolder(
@@ -125,8 +127,20 @@ public interface DocumentFolderResource {
 			return this;
 		}
 
+		public Builder header(String key, String value) {
+			_headers.put(key, value);
+
+			return this;
+		}
+
 		public Builder locale(Locale locale) {
 			_locale = locale;
+
+			return this;
+		}
+
+		public Builder parameter(String key, String value) {
+			_parameters.put(key, value);
 
 			return this;
 		}
@@ -134,10 +148,12 @@ public interface DocumentFolderResource {
 		private Builder() {
 		}
 
+		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
 		private String _login = "test@liferay.com";
 		private String _password = "test";
+		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
 
@@ -170,6 +186,18 @@ public interface DocumentFolderResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
@@ -221,6 +249,18 @@ public interface DocumentFolderResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
@@ -278,6 +318,18 @@ public interface DocumentFolderResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PATCH);
 
 			httpInvoker.path(
@@ -332,6 +384,18 @@ public interface DocumentFolderResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PUT);
 
 			httpInvoker.path(
@@ -347,14 +411,14 @@ public interface DocumentFolderResource {
 		}
 
 		public Page<DocumentFolder> getDocumentFolderDocumentFoldersPage(
-				Long parentDocumentFolderId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long parentDocumentFolderId, Boolean flatten, String search,
+				String filterString, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getDocumentFolderDocumentFoldersPageHttpResponse(
-					parentDocumentFolderId, search, filterString, pagination,
-					sortString);
+					parentDocumentFolderId, flatten, search, filterString,
+					pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -369,7 +433,7 @@ public interface DocumentFolderResource {
 
 		public HttpInvoker.HttpResponse
 				getDocumentFolderDocumentFoldersPageHttpResponse(
-					Long parentDocumentFolderId, String search,
+					Long parentDocumentFolderId, Boolean flatten, String search,
 					String filterString, Pagination pagination,
 					String sortString)
 			throws Exception {
@@ -381,7 +445,23 @@ public interface DocumentFolderResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			if (flatten != null) {
+				httpInvoker.parameter("flatten", String.valueOf(flatten));
+			}
 
 			if (search != null) {
 				httpInvoker.parameter("search", String.valueOf(search));
@@ -456,6 +536,18 @@ public interface DocumentFolderResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
 
 			httpInvoker.path(
@@ -501,6 +593,18 @@ public interface DocumentFolderResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
@@ -578,6 +682,18 @@ public interface DocumentFolderResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);

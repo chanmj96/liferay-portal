@@ -53,12 +53,9 @@ import java.util.TimeZone;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Máté Thurzó
  */
-@ProviderType
 public class ExportImportDateUtil {
 
 	public static final String RANGE = "range";
@@ -105,12 +102,11 @@ public class ExportImportDateUtil {
 			portletRequest, paramPrefix + "Minute");
 		int dateAmPm = ParamUtil.getInteger(
 			portletRequest, paramPrefix + "AmPm");
-		TimeZone timeZone = TimeZoneUtil.getTimeZone(
-			ParamUtil.getString(portletRequest, "timeZoneId"));
 
 		return getCalendar(
 			dateAmPm, dateYear, dateMonth, dateDay, dateHour, dateMinute,
-			themeDisplay.getLocale(), timeZone, timeZoneSensitive);
+			themeDisplay.getLocale(), themeDisplay.getTimeZone(),
+			timeZoneSensitive);
 	}
 
 	public static DateRange getDateRange(
@@ -178,11 +174,9 @@ public class ExportImportDateUtil {
 	public static DateRange getDateRange(long exportImportConfigurationId)
 		throws PortalException {
 
-		ExportImportConfiguration exportImportConfiguration =
+		return getDateRange(
 			ExportImportConfigurationLocalServiceUtil.
-				getExportImportConfiguration(exportImportConfigurationId);
-
-		return getDateRange(exportImportConfiguration);
+				getExportImportConfiguration(exportImportConfigurationId));
 	}
 
 	public static DateRange getDateRange(

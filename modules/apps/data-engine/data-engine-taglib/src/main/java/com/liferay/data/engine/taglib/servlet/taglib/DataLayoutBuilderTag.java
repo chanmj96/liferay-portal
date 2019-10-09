@@ -16,11 +16,12 @@ package com.liferay.data.engine.taglib.servlet.taglib;
 
 import com.liferay.data.engine.taglib.servlet.taglib.base.BaseDataLayoutBuilderTag;
 import com.liferay.data.engine.taglib.servlet.taglib.util.DataLayoutTaglibUtil;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
-import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.GroupThreadLocal;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Locale;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.JspException;
 
 /**
  * @author Jeyvison Nascimento
@@ -29,26 +30,34 @@ import javax.servlet.http.HttpServletRequest;
 public class DataLayoutBuilderTag extends BaseDataLayoutBuilderTag {
 
 	@Override
-	protected void setAttributes(HttpServletRequest httpServletRequest) {
-		super.setAttributes(httpServletRequest);
+	public int doStartTag() throws JspException {
+		int result = super.doStartTag();
+
+		Set<Locale> availableLocales = DataLayoutTaglibUtil.getAvailableLocales(
+			getDataLayoutId(), request);
 
 		setNamespacedAttribute(
-			httpServletRequest, "availableLocales",
-			LanguageUtil.getAvailableLocales(GroupThreadLocal.getGroupId()));
+			request, "availableLocales",
+			availableLocales.toArray(new Locale[0]));
 		setNamespacedAttribute(
-			httpServletRequest, "dataLayout",
-			JSONFactoryUtil.createJSONObject());
+			request, "dataLayout",
+			DataLayoutTaglibUtil.getDataLayoutJSONObject(
+				availableLocales, getDataLayoutId(), request,
+				(HttpServletResponse)pageContext.getResponse()));
+
 		setNamespacedAttribute(
-			httpServletRequest, "dataLayoutBuilderModule",
+			request, "dataLayoutBuilderModule",
 			DataLayoutTaglibUtil.resolveModule(
 				"data-engine-taglib/data_layout_builder/js" +
 					"/DataLayoutBuilder.es"));
 		setNamespacedAttribute(
-			httpServletRequest, "fieldTypes",
-			DataLayoutTaglibUtil.getFieldTypesJSONArray(httpServletRequest));
+			request, "fieldTypes",
+			DataLayoutTaglibUtil.getFieldTypesJSONArray(request));
 		setNamespacedAttribute(
-			httpServletRequest, "fieldTypesModules",
+			request, "fieldTypesModules",
 			DataLayoutTaglibUtil.resolveFieldTypesModules());
+
+		return result;
 	}
 
 }

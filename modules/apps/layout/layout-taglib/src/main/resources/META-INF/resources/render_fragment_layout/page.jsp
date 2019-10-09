@@ -23,10 +23,12 @@ long previewClassPK = (long)request.getAttribute("liferay-layout:render-fragment
 int previewType = (int)request.getAttribute("liferay-layout:render-fragment-layout:previewType");
 long[] segmentsExperienceIds = (long[])request.getAttribute("liferay-layout:render-fragment-layout:segmentsExperienceIds");
 JSONArray structureJSONArray = (JSONArray)request.getAttribute("liferay-layout:render-fragment-layout:structureJSONArray");
+
+RenderFragmentLayoutDisplayContext renderFragmentLayoutDisplayContext = new RenderFragmentLayoutDisplayContext(request);
 %>
 
 <c:if test="<%= structureJSONArray != null %>">
-	<div class="layout-content" id="main-content" role="main">
+	<div class="layout-content portlet-layout" id="main-content" role="main">
 
 		<%
 		try {
@@ -35,7 +37,7 @@ JSONArray structureJSONArray = (JSONArray)request.getAttribute("liferay-layout:r
 			for (int i = 0; i < structureJSONArray.length(); i++) {
 				JSONObject rowJSONObject = structureJSONArray.getJSONObject(i);
 
-				int type = GetterUtil.getInteger(rowJSONObject.getInt("type"), FragmentConstants.TYPE_COMPONENT);
+				int type = rowJSONObject.getInt("type", FragmentConstants.TYPE_COMPONENT);
 
 				if (type == FragmentConstants.TYPE_COMPONENT) {
 					String backgroundColorCssClass = StringPool.BLANK;
@@ -49,11 +51,11 @@ JSONArray structureJSONArray = (JSONArray)request.getAttribute("liferay-layout:r
 
 					if (rowConfigJSONObject != null) {
 						backgroundColorCssClass = rowConfigJSONObject.getString("backgroundColorCssClass");
-						backgroundImage = rowConfigJSONObject.getString("backgroundImage");
-						columnSpacing = GetterUtil.getBoolean(rowConfigJSONObject.getString("columnSpacing"), true);
+						backgroundImage = renderFragmentLayoutDisplayContext.getBackgroundImage(rowConfigJSONObject);
+						columnSpacing = rowConfigJSONObject.getBoolean("columnSpacing", true);
 						containerType = rowConfigJSONObject.getString("containerType");
-						paddingHorizontal = GetterUtil.getLong(rowConfigJSONObject.getString("paddingHorizontal"), paddingHorizontal);
-						paddingVertical = GetterUtil.getLong(rowConfigJSONObject.getString("paddingVertical"), paddingVertical);
+						paddingHorizontal = rowConfigJSONObject.getLong("paddingHorizontal", paddingHorizontal);
+						paddingVertical = rowConfigJSONObject.getLong("paddingVertical", paddingVertical);
 					}
 		%>
 
@@ -70,7 +72,7 @@ JSONArray structureJSONArray = (JSONArray)request.getAttribute("liferay-layout:r
 									String size = columnJSONObject.getString("size");
 								%>
 
-									<div class="col <%= Validator.isNotNull(size) ? "col-" + size : StringPool.BLANK %>">
+									<div class="<%= Validator.isNotNull(size) ? "col-md-" + size : StringPool.BLANK %>">
 
 										<%
 										JSONArray fragmentEntryLinkIdsJSONArray = columnJSONObject.getJSONArray("fragmentEntryLinkIds");

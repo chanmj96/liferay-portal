@@ -48,7 +48,6 @@ import com.liferay.portal.workflow.kaleo.model.KaleoDefinitionVersion;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstance;
 import com.liferay.portal.workflow.kaleo.model.KaleoInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.KaleoNode;
-import com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.KaleoTimerInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.KaleoTransition;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
@@ -212,10 +211,8 @@ public class DefaultWorkflowEngineImpl
 				kaleoInstanceToken, kaleoTimerInstanceToken, workflowContext,
 				serviceContext);
 
-			KaleoTaskInstanceToken kaleoTaskInstanceToken =
-				kaleoTimerInstanceToken.getKaleoTaskInstanceToken();
-
-			executionContext.setKaleoTaskInstanceToken(kaleoTaskInstanceToken);
+			executionContext.setKaleoTaskInstanceToken(
+				kaleoTimerInstanceToken.getKaleoTaskInstanceToken());
 
 			final KaleoNode currentKaleoNode =
 				kaleoInstanceToken.getCurrentKaleoNode();
@@ -283,11 +280,9 @@ public class DefaultWorkflowEngineImpl
 			KaleoInstance kaleoInstance =
 				kaleoInstanceLocalService.getKaleoInstance(workflowInstanceId);
 
-			KaleoInstanceToken rootKaleoInstanceToken =
-				kaleoInstance.getRootKaleoInstanceToken(serviceContext);
-
 			return _kaleoWorkflowModelConverter.toWorkflowInstance(
-				kaleoInstance, rootKaleoInstanceToken);
+				kaleoInstance,
+				kaleoInstance.getRootKaleoInstanceToken(serviceContext));
 		}
 		catch (WorkflowException we) {
 			throw we;
@@ -701,11 +696,9 @@ public class DefaultWorkflowEngineImpl
 			KaleoInstance kaleoInstance = doUpdateContext(
 				workflowInstanceId, workflowContext, serviceContext);
 
-			KaleoInstanceToken rootKaleoInstanceToken =
-				kaleoInstance.getRootKaleoInstanceToken(serviceContext);
-
 			return _kaleoWorkflowModelConverter.toWorkflowInstance(
-				kaleoInstance, rootKaleoInstanceToken);
+				kaleoInstance,
+				kaleoInstance.getRootKaleoInstanceToken(serviceContext));
 		}
 		catch (Exception e) {
 			throw new WorkflowException(e);
@@ -823,12 +816,10 @@ public class DefaultWorkflowEngineImpl
 			kaleoInstances.size());
 
 		for (KaleoInstance kaleoInstance : kaleoInstances) {
-			KaleoInstanceToken rootKaleoInstanceToken =
-				kaleoInstance.getRootKaleoInstanceToken(serviceContext);
-
 			workflowInstances.add(
 				_kaleoWorkflowModelConverter.toWorkflowInstance(
-					kaleoInstance, rootKaleoInstanceToken));
+					kaleoInstance,
+					kaleoInstance.getRootKaleoInstanceToken(serviceContext)));
 		}
 
 		return workflowInstances;

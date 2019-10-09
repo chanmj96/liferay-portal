@@ -41,9 +41,9 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class ImageServiceBaseImpl
-	extends BaseServiceImpl implements ImageService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, ImageService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>ImageService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.ImageServiceUtil</code>.

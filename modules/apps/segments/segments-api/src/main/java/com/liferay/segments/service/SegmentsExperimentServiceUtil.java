@@ -14,7 +14,6 @@
 
 package com.liferay.segments.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,24 +30,61 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see SegmentsExperimentService
  * @generated
  */
-@ProviderType
 public class SegmentsExperimentServiceUtil {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.segments.service.impl.SegmentsExperimentServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this interface directly. Always use {@link SegmentsExperimentServiceUtil} to access the segments experiment remote service. Add custom service methods to <code>com.liferay.segments.service.impl.SegmentsExperimentServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 */
 	public static com.liferay.segments.model.SegmentsExperiment
 			addSegmentsExperiment(
 				long segmentsExperienceId, long classNameId, long classPK,
-				String name, String description,
+				String name, String description, String goal, String goalTarget,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().addSegmentsExperiment(
-			segmentsExperienceId, classNameId, classPK, name, description,
-			serviceContext);
+			segmentsExperienceId, classNameId, classPK, name, description, goal,
+			goalTarget, serviceContext);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			deleteSegmentsExperiment(long segmentsExperimentId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().deleteSegmentsExperiment(segmentsExperimentId);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			deleteSegmentsExperiment(String segmentsExperimentKey)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().deleteSegmentsExperiment(segmentsExperimentKey);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			fetchSegmentsExperiment(
+				long segmentsExperienceId, long classNameId, long classPK,
+				int[] statuses)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().fetchSegmentsExperiment(
+			segmentsExperienceId, classNameId, classPK, statuses);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			fetchSegmentsExperiment(long groupId, String segmentsExperimentKey)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().fetchSegmentsExperiment(
+			groupId, segmentsExperimentKey);
 	}
 
 	/**
@@ -58,6 +94,16 @@ public class SegmentsExperimentServiceUtil {
 	 */
 	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
+	}
+
+	public static java.util.List<com.liferay.segments.model.SegmentsExperiment>
+			getSegmentsExperienceSegmentsExperiments(
+				long[] segmentsExperienceIds, long classNameId, long classPK,
+				int[] statuses, int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().getSegmentsExperienceSegmentsExperiments(
+			segmentsExperienceIds, classNameId, classPK, statuses, start, end);
 	}
 
 	public static com.liferay.segments.model.SegmentsExperiment
@@ -72,6 +118,89 @@ public class SegmentsExperimentServiceUtil {
 
 		return getService().getSegmentsExperiments(
 			groupId, classNameId, classPK);
+	}
+
+	public static java.util.List<com.liferay.segments.model.SegmentsExperiment>
+		getSegmentsExperiments(
+			long segmentsExperienceId, long classNameId, long classPK,
+			int[] statuses,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.segments.model.SegmentsExperiment>
+					orderByComparator) {
+
+		return getService().getSegmentsExperiments(
+			segmentsExperienceId, classNameId, classPK, statuses,
+			orderByComparator);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			runSegmentsExperiment(
+				long segmentsExperimentId, double confidenceLevel,
+				java.util.Map<Long, Double> segmentsExperienceIdSplitMap)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().runSegmentsExperiment(
+			segmentsExperimentId, confidenceLevel,
+			segmentsExperienceIdSplitMap);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			runSegmentsExperiment(
+				String segmentsExperimentKey, double confidenceLevel,
+				java.util.Map<String, Double> segmentsExperienceKeySplitMap)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().runSegmentsExperiment(
+			segmentsExperimentKey, confidenceLevel,
+			segmentsExperienceKeySplitMap);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			updateSegmentsExperiment(
+				long segmentsExperimentId, String name, String description,
+				String goal, String goalTarget)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateSegmentsExperiment(
+			segmentsExperimentId, name, description, goal, goalTarget);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			updateSegmentsExperimentStatus(
+				long segmentsExperimentId, int status)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateSegmentsExperimentStatus(
+			segmentsExperimentId, status);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			updateSegmentsExperimentStatus(
+				long segmentsExperimentId, long winnerSegmentsExperienceId,
+				int status)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateSegmentsExperimentStatus(
+			segmentsExperimentId, winnerSegmentsExperienceId, status);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			updateSegmentsExperimentStatus(
+				String segmentsExperimentKey, int status)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateSegmentsExperimentStatus(
+			segmentsExperimentKey, status);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperiment
+			updateSegmentsExperimentStatus(
+				String segmentsExperimentKey,
+				String winnerSegmentsExperienceKey, int status)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateSegmentsExperimentStatus(
+			segmentsExperimentKey, winnerSegmentsExperienceKey, status);
 	}
 
 	public static SegmentsExperimentService getService() {

@@ -20,20 +20,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AssetEntryUsageSoap implements Serializable {
 
 	public static AssetEntryUsageSoap toSoapModel(AssetEntryUsage model) {
 		AssetEntryUsageSoap soapModel = new AssetEntryUsageSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setAssetEntryUsageId(model.getAssetEntryUsageId());
 		soapModel.setGroupId(model.getGroupId());
@@ -102,6 +100,14 @@ public class AssetEntryUsageSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setAssetEntryUsageId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -192,6 +198,7 @@ public class AssetEntryUsageSoap implements Serializable {
 		_lastPublishDate = lastPublishDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _assetEntryUsageId;
 	private long _groupId;

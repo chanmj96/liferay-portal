@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link OAuthConsumer}.
@@ -32,10 +30,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see OAuthConsumer
  * @generated
  */
-@ProviderType
 public class OAuthConsumerWrapper
 	extends BaseModelWrapper<OAuthConsumer>
-	implements OAuthConsumer, ModelWrapper<OAuthConsumer> {
+	implements ModelWrapper<OAuthConsumer>, OAuthConsumer {
 
 	public OAuthConsumerWrapper(OAuthConsumer oAuthConsumer) {
 		super(oAuthConsumer);
@@ -220,6 +217,11 @@ public class OAuthConsumerWrapper
 		return model.getServiceName();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a o auth consumer model instance should use the <code>OAuthConsumer</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();

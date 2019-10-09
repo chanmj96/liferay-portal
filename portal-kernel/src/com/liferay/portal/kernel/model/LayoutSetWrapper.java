@@ -20,8 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link LayoutSet}.
@@ -31,7 +29,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see LayoutSet
  * @generated
  */
-@ProviderType
 public class LayoutSetWrapper
 	extends BaseModelWrapper<LayoutSet>
 	implements LayoutSet, ModelWrapper<LayoutSet> {
@@ -45,7 +42,6 @@ public class LayoutSetWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("mvccVersion", getMvccVersion());
-		attributes.put("headId", getHeadId());
 		attributes.put("layoutSetId", getLayoutSetId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -56,7 +52,6 @@ public class LayoutSetWrapper
 		attributes.put("themeId", getThemeId());
 		attributes.put("colorSchemeId", getColorSchemeId());
 		attributes.put("css", getCss());
-		attributes.put("pageCount", getPageCount());
 		attributes.put("settings", getSettings());
 		attributes.put("layoutSetPrototypeUuid", getLayoutSetPrototypeUuid());
 		attributes.put(
@@ -71,12 +66,6 @@ public class LayoutSetWrapper
 
 		if (mvccVersion != null) {
 			setMvccVersion(mvccVersion);
-		}
-
-		Long headId = (Long)attributes.get("headId");
-
-		if (headId != null) {
-			setHeadId(headId);
 		}
 
 		Long layoutSetId = (Long)attributes.get("layoutSetId");
@@ -137,12 +126,6 @@ public class LayoutSetWrapper
 
 		if (css != null) {
 			setCss(css);
-		}
-
-		Integer pageCount = (Integer)attributes.get("pageCount");
-
-		if (pageCount != null) {
-			setPageCount(pageCount);
 		}
 
 		String settings = (String)attributes.get("settings");
@@ -250,16 +233,6 @@ public class LayoutSetWrapper
 	}
 
 	/**
-	 * Returns the head ID of this layout set.
-	 *
-	 * @return the head ID of this layout set
-	 */
-	@Override
-	public long getHeadId() {
-		return model.getHeadId();
-	}
-
-	/**
 	 * Returns the layout set ID of this layout set.
 	 *
 	 * @return the layout set ID of this layout set
@@ -347,11 +320,6 @@ public class LayoutSetWrapper
 		return model.getMvccVersion();
 	}
 
-	/**
-	 * Returns the page count of this layout set.
-	 *
-	 * @return the page count of this layout set
-	 */
 	@Override
 	public int getPageCount() {
 		return model.getPageCount();
@@ -470,6 +438,11 @@ public class LayoutSetWrapper
 		return model.isPrivateLayout();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a layout set model instance should use the <code>LayoutSet</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -530,16 +503,6 @@ public class LayoutSetWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
-	}
-
-	/**
-	 * Sets the head ID of this layout set.
-	 *
-	 * @param headId the head ID of this layout set
-	 */
-	@Override
-	public void setHeadId(long headId) {
-		model.setHeadId(headId);
 	}
 
 	/**
@@ -605,16 +568,6 @@ public class LayoutSetWrapper
 	}
 
 	/**
-	 * Sets the page count of this layout set.
-	 *
-	 * @param pageCount the page count of this layout set
-	 */
-	@Override
-	public void setPageCount(int pageCount) {
-		model.setPageCount(pageCount);
-	}
-
-	/**
 	 * Sets the primary key of this layout set.
 	 *
 	 * @param primaryKey the primary key of this layout set
@@ -670,16 +623,6 @@ public class LayoutSetWrapper
 	@Override
 	public void setVirtualHostname(String virtualHostname) {
 		model.setVirtualHostname(virtualHostname);
-	}
-
-	@Override
-	public boolean isHead() {
-		return model.isHead();
-	}
-
-	@Override
-	public void populateVersionModel(LayoutSetVersion layoutSetVersion) {
-		model.populateVersionModel(layoutSetVersion);
 	}
 
 	@Override

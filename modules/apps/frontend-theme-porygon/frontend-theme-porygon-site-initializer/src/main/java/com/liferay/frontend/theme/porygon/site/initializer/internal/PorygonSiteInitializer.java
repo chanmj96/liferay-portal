@@ -32,6 +32,7 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.util.DDM;
+import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryModel;
@@ -42,6 +43,7 @@ import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -374,10 +376,12 @@ public class PorygonSiteInitializer implements SiteInitializer {
 				_fragmentEntryLocalService.addFragmentEntry(
 					serviceContext.getUserId(),
 					serviceContext.getScopeGroupId(),
-					fragmentCollection.getFragmentCollectionId(),
+					fragmentCollection.getFragmentCollectionId(), null,
 					fragmentEntryName, css, html, StringPool.BLANK,
+					StringPool.BLANK,
 					_getPreviewFileEntryId(
 						filePath, fragmentEntryId + ".jpg", serviceContext),
+					FragmentConstants.TYPE_SECTION,
 					WorkflowConstants.STATUS_APPROVED, serviceContext);
 
 			fragmentEntries.add(fragmentEntry);
@@ -555,7 +559,7 @@ public class PorygonSiteInitializer implements SiteInitializer {
 			String articleName = StringUtil.upperCaseFirstLetter(
 				CamelCaseUtil.toCamelCase(
 					StringUtil.replace(
-						fileName, StringPool.UNDERLINE, StringPool.SPACE)));
+						fileName, CharPool.UNDERLINE, CharPool.SPACE)));
 
 			Map<Locale, String> nameMap = new HashMap<>();
 

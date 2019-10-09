@@ -129,7 +129,9 @@ definition {
 
 		LexiconEntry.gotoEllipsisMenuItem(menuItem = "Approve");
 
-		Alert.viewSuccessMessage();
+		Workflow.confirmWorkflowAction();
+
+		Pause(locator1 = "1000");
 
 		Workflow.viewCompletedTask(
 			ddlDataDefinitionName = "${ddlDataDefinitionName}",
@@ -222,6 +224,22 @@ definition {
 			workflowTask = "${workflowTask}");
 	}
 
+	macro completeWorkflowBlogInstance {
+		var key_workflowInstanceTitle = "${workflowInstanceName}";
+
+		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
+
+		Workflow.assignToMeTaskByActions(
+			workflowAssetTitle = "${key_workflowInstanceTitle}",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+
+		Workflow.approveTaskByActions(
+			workflowAssetTitle = "${key_workflowInstanceTitle}",
+			workflowAssetType = "Blogs Entry",
+			workflowTask = "Review");
+	}
+
 	macro configureDMWorkflowViaFolderInfo {
 		Click(locator1 = "Icon#INFO");
 
@@ -235,7 +253,7 @@ definition {
 	}
 
 	macro configureWCWorkflowViaFolderInfo {
-		Click(locator1 = "Icon#INFO");
+		Click.pauseClickAt(locator1 = "Icon#INFO");
 
 		Click(locator1 = "Icon#VERTICAL_ELLIPSIS_BUTTON");
 
@@ -249,7 +267,7 @@ definition {
 	}
 
 	macro configureWorkflow {
-		AssertClick(
+		AssertClick.pauseAssertTextClickAt(
 			key_rowEntry = "${workflowResourceValue}",
 			locator1 = "Button#EDIT_ROW",
 			value1 = "Edit");
@@ -289,6 +307,15 @@ definition {
 		Click(locator1 = "Button#DONE");
 
 		Alert.viewSuccessMessage();
+	}
+
+	macro createWorkflowBlogInstance {
+		var key_workflowInstanceTitle = "${workflowInstanceName}";
+
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry Content",
+			entrySubtitle = "",
+			entryTitle = "${key_workflowInstanceTitle}");
 	}
 
 	macro deleteWorkflowDefinition {
@@ -449,7 +476,9 @@ definition {
 				value1 = "${workflowActivityComment}");
 		}
 
-		Alert.viewSuccessMessage();
+		Workflow.confirmWorkflowAction();
+
+		Pause(locator1 = "1000");
 
 		Workflow.viewCompletedTask(
 			ddlDataDefinitionName = "${ddlDataDefinitionName}",
@@ -473,7 +502,9 @@ definition {
 
 		LexiconEntry.gotoEllipsisMenuItem(menuItem = "Reject");
 
-		Alert.viewSuccessMessage();
+		Workflow.confirmWorkflowAction();
+
+		Pause(locator1 = "1000");
 
 		Workflow.viewCompletedTask(
 			ddlDataDefinitionName = "${ddlDataDefinitionName}",
@@ -699,7 +730,9 @@ definition {
 				value1 = "${workflowActivityComment}");
 		}
 
-		Alert.viewSuccessMessage();
+		Workflow.confirmWorkflowAction();
+
+		Pause(locator1 = "1000");
 
 		Workflow.viewTaskAssignedToMyRoles(
 			ddlDataDefinitionName = "${ddlDataDefinitionName}",
@@ -1098,7 +1131,7 @@ definition {
 
 		var key_workflowAssetTitle = "${workflowAssetTitle}";
 
-		AssertClick(
+		AssertClick.assertPartialTextClickAt(
 			locator1 = "MyWorkflowTasks#TABLE_GENERIC_ASSET_TITLE",
 			value1 = "${workflowAssetTitle}");
 
@@ -1159,7 +1192,7 @@ definition {
 		var key_workflowAssetTitle = "${workflowAssetTitle}";
 		var key_workflowTask = "${workflowTask}";
 
-		AssertClick(
+		AssertClick.assertPartialTextClickAt(
 			locator1 = "MyWorkflowTasks#ASSIGNED_TO_MY_ROLES_TABLE_ASSET_TITLE",
 			value1 = "${workflowAssetTitle}");
 

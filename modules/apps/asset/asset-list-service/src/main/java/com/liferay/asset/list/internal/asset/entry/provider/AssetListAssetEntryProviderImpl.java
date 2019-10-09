@@ -48,7 +48,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.segments.constants.SegmentsConstants;
+import com.liferay.segments.constants.SegmentsEntryConstants;
 
 import java.io.Serializable;
 
@@ -89,16 +89,8 @@ public class AssetListAssetEntryProviderImpl
 		AssetListEntry assetListEntry, long segmentsEntryId, int start,
 		int end) {
 
-		if (Objects.equals(
-				assetListEntry.getType(),
-				AssetListEntryTypeConstants.TYPE_MANUAL)) {
-
-			return _getManualAssetEntries(
-				assetListEntry, segmentsEntryId, start, end);
-		}
-
-		return _getDynamicAssetEntries(
-			assetListEntry, segmentsEntryId, StringPool.BLANK, start, end);
+		return getAssetEntries(
+			assetListEntry, new long[] {segmentsEntryId}, start, end);
 	}
 
 	@Override
@@ -106,8 +98,8 @@ public class AssetListAssetEntryProviderImpl
 		AssetListEntry assetListEntry, long[] segmentsEntryIds) {
 
 		return getAssetEntries(
-			assetListEntry,
-			_getFirstSegmentsEntryId(assetListEntry, segmentsEntryIds));
+			assetListEntry, segmentsEntryIds, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS);
 	}
 
 	@Override
@@ -116,9 +108,7 @@ public class AssetListAssetEntryProviderImpl
 		int end) {
 
 		return getAssetEntries(
-			assetListEntry,
-			_getFirstSegmentsEntryId(assetListEntry, segmentsEntryIds), start,
-			end);
+			assetListEntry, segmentsEntryIds, StringPool.BLANK, start, end);
 	}
 
 	@Override
@@ -126,8 +116,8 @@ public class AssetListAssetEntryProviderImpl
 		AssetListEntry assetListEntry, long[] segmentsEntryIds, String userId) {
 
 		return getAssetEntries(
-			assetListEntry,
-			_getFirstSegmentsEntryId(assetListEntry, segmentsEntryIds));
+			assetListEntry, segmentsEntryIds, userId, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS);
 	}
 
 	@Override
@@ -135,27 +125,24 @@ public class AssetListAssetEntryProviderImpl
 		AssetListEntry assetListEntry, long[] segmentsEntryIds, String userId,
 		int start, int end) {
 
-		return getAssetEntries(
-			assetListEntry,
-			_getFirstSegmentsEntryId(assetListEntry, segmentsEntryIds), start,
-			end);
+		if (Objects.equals(
+				assetListEntry.getType(),
+				AssetListEntryTypeConstants.TYPE_MANUAL)) {
+
+			return _getManualAssetEntries(
+				assetListEntry, segmentsEntryIds, start, end);
+		}
+
+		return _getDynamicAssetEntries(
+			assetListEntry, segmentsEntryIds, userId, start, end);
 	}
 
 	@Override
 	public int getAssetEntriesCount(
 		AssetListEntry assetListEntry, long segmentsEntryId) {
 
-		if (Objects.equals(
-				assetListEntry.getType(),
-				AssetListEntryTypeConstants.TYPE_MANUAL)) {
-
-			return _assetListEntryAssetEntryRelLocalService.
-				getAssetListEntryAssetEntryRelsCount(
-					assetListEntry.getAssetListEntryId(), segmentsEntryId);
-		}
-
-		return _assetEntryLocalService.getEntriesCount(
-			getAssetEntryQuery(assetListEntry, segmentsEntryId));
+		return getAssetEntriesCount(
+			assetListEntry, new long[] {segmentsEntryId});
 	}
 
 	@Override
@@ -163,17 +150,25 @@ public class AssetListAssetEntryProviderImpl
 		AssetListEntry assetListEntry, long[] segmentsEntryIds) {
 
 		return getAssetEntriesCount(
-			assetListEntry,
-			_getFirstSegmentsEntryId(assetListEntry, segmentsEntryIds));
+			assetListEntry, segmentsEntryIds, StringPool.BLANK);
 	}
 
 	@Override
 	public int getAssetEntriesCount(
 		AssetListEntry assetListEntry, long[] segmentsEntryIds, String userId) {
 
-		return getAssetEntriesCount(
-			assetListEntry,
-			_getFirstSegmentsEntryId(assetListEntry, segmentsEntryIds));
+		if (Objects.equals(
+				assetListEntry.getType(),
+				AssetListEntryTypeConstants.TYPE_MANUAL)) {
+
+			return _assetListEntryAssetEntryRelLocalService.
+				getAssetListEntryAssetEntryRelsCount(
+					assetListEntry.getAssetListEntryId(),
+					_getFirstSegmentsEntryId(assetListEntry, segmentsEntryIds));
+		}
+
+		return _assetEntryLocalService.getEntriesCount(
+			getAssetEntryQuery(assetListEntry, segmentsEntryIds, userId));
 	}
 
 	@Override
@@ -189,9 +184,7 @@ public class AssetListAssetEntryProviderImpl
 		AssetListEntry assetListEntry, long[] segmentsEntryIds) {
 
 		return getAssetEntryQuery(
-			assetListEntry,
-			_getFirstSegmentsEntryId(assetListEntry, segmentsEntryIds),
-			StringPool.BLANK);
+			assetListEntry, segmentsEntryIds, StringPool.BLANK);
 	}
 
 	@Override
@@ -240,11 +233,11 @@ public class AssetListAssetEntryProviderImpl
 			assetEntryQuery.setClassNameIds(classNameIds);
 
 			for (long classNameId : classNameIds) {
-				String className = _portal.getClassName(classNameId);
-
 				classTypeIds = ArrayUtil.append(
 					classTypeIds,
-					_getClassTypeIds(assetListEntry, properties, className));
+					_getClassTypeIds(
+						assetListEntry, properties,
+						_portal.getClassName(classNameId)));
 			}
 
 			assetEntryQuery.setClassTypeIds(classTypeIds);
@@ -489,11 +482,11 @@ public class AssetListAssetEntryProviderImpl
 	}
 
 	private List<AssetEntry> _getDynamicAssetEntries(
-		AssetListEntry assetListEntry, long segmentsEntryId, String userId,
+		AssetListEntry assetListEntry, long[] segmentsEntryIds, String userId,
 		int start, int end) {
 
 		AssetEntryQuery assetEntryQuery = getAssetEntryQuery(
-			assetListEntry, segmentsEntryId, userId);
+			assetListEntry, segmentsEntryIds, userId);
 
 		assetEntryQuery.setEnd(end);
 		assetEntryQuery.setStart(start);
@@ -508,9 +501,7 @@ public class AssetListAssetEntryProviderImpl
 
 		return stream.filter(
 			segmentsEntryId -> {
-				if (segmentsEntryId ==
-						SegmentsConstants.SEGMENTS_ENTRY_ID_DEFAULT) {
-
+				if (segmentsEntryId == SegmentsEntryConstants.ID_DEFAULT) {
 					return false;
 				}
 
@@ -524,18 +515,19 @@ public class AssetListAssetEntryProviderImpl
 			}
 		).findFirst(
 		).orElse(
-			SegmentsConstants.SEGMENTS_ENTRY_ID_DEFAULT
+			SegmentsEntryConstants.ID_DEFAULT
 		);
 	}
 
 	private List<AssetEntry> _getManualAssetEntries(
-		AssetListEntry assetListEntry, long segmentsEntryId, int start,
+		AssetListEntry assetListEntry, long[] segmentsEntryId, int start,
 		int end) {
 
 		List<AssetListEntryAssetEntryRel> assetListEntryAssetEntryRels =
 			_assetListEntryAssetEntryRelLocalService.
 				getAssetListEntryAssetEntryRels(
-					assetListEntry.getAssetListEntryId(), segmentsEntryId,
+					assetListEntry.getAssetListEntryId(),
+					_getFirstSegmentsEntryId(assetListEntry, segmentsEntryId),
 					start, end);
 
 		Stream<AssetListEntryAssetEntryRel> stream =

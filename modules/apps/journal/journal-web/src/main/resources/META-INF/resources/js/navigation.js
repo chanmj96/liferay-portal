@@ -43,35 +43,6 @@ AUI.add(
 			NAME: 'journalnavigation',
 
 			prototype: {
-				initializer(config) {
-					var instance = this;
-
-					var namespace = instance.NS;
-
-					var searchContainer = Liferay.SearchContainer.get(
-						namespace + instance.get('searchContainerId')
-					);
-
-					searchContainer.registerAction(
-						'move-to-folder',
-						A.bind('_moveToFolder', instance)
-					);
-					searchContainer.registerAction(
-						'move-to-trash',
-						A.bind('_moveToTrash', instance)
-					);
-
-					instance._searchContainer = searchContainer;
-
-					instance._bindUI();
-				},
-
-				destructor() {
-					var instance = this;
-
-					new A.EventHandle(instance._eventHandles).detach();
-				},
-
 				_bindUI() {
 					var instance = this;
 
@@ -159,6 +130,35 @@ AUI.add(
 					form.get(namespace + 'redirect').val(redirectUrl);
 
 					submitForm(form, url);
+				},
+
+				destructor() {
+					var instance = this;
+
+					new A.EventHandle(instance._eventHandles).detach();
+				},
+
+				initializer() {
+					var instance = this;
+
+					var namespace = instance.NS;
+
+					var searchContainer = Liferay.SearchContainer.get(
+						namespace + instance.get('searchContainerId')
+					);
+
+					searchContainer.registerAction(
+						'move-to-folder',
+						A.bind('_moveToFolder', instance)
+					);
+					searchContainer.registerAction(
+						'move-to-trash',
+						A.bind('_moveToTrash', instance)
+					);
+
+					instance._searchContainer = searchContainer;
+
+					instance._bindUI();
 				}
 			}
 		});

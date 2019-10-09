@@ -12,15 +12,11 @@
  * details.
  */
 
-/* eslint no-console: "warn" */
-/* eslint no-for-of-loops/no-for-of-loops: "warn" */
-/* eslint no-unused-vars: "warn" */
-
 import dom from 'metal-dom';
 import {EventHandler} from 'metal-events';
 import {Config} from 'metal-state';
 
-import {PortletBase} from 'frontend-js-web';
+import {createPortletURL, PortletBase} from 'frontend-js-web';
 
 /**
  * Handles actions to display user name field for a given locale.
@@ -85,7 +81,9 @@ class UserNameFields extends PortletBase {
 	 * @protected
 	 */
 	_cacheData() {
-		for (const [name, value] of new FormData(this.formNode)) {
+		const formData = new FormData(this.formNode);
+
+		formData.forEach((value, name) => {
 			const field = this.userNameFieldsNode.querySelector('#' + name);
 
 			if (field) {
@@ -97,7 +95,7 @@ class UserNameFields extends PortletBase {
 					);
 				}
 			}
-		}
+		});
 	}
 
 	/**
@@ -131,13 +129,11 @@ class UserNameFields extends PortletBase {
 	 */
 	_getURL(languageId) {
 		return new Promise(resolve => {
-			AUI().use('liferay-portlet-url', A => {
-				const url = Liferay.PortletURL.createURL(this.baseURL);
-
-				url.setParameter('languageId', languageId);
-
-				resolve(url);
+			const url = createPortletURL(this.baseURL, {
+				languageId
 			});
+
+			resolve(url);
 		});
 	}
 
@@ -148,6 +144,7 @@ class UserNameFields extends PortletBase {
 	 * @protected
 	 */
 	_handleError(error) {
+		// eslint-disable-next-line no-console
 		console.error(error);
 
 		this._removeLoadingIndicator();
@@ -191,20 +188,22 @@ class UserNameFields extends PortletBase {
 	 * @protected
 	 */
 	_populateData() {
-		for (const [name, value] of Object.entries(this._formDataCache)) {
+		const entries = Object.entries(this._formDataCache);
+
+		entries.forEach(([name, value]) => {
 			const newField = this.userNameFieldsNode.querySelector('#' + name);
 
 			if (newField) {
 				newField.value = value;
 
-				if (this._maxLengthsCache.hasOwnProperty(name)) {
+				if (Object.hasOwnProperty.call(this._maxLengthsCache, name)) {
 					newField.setAttribute(
 						'maxLength',
 						this._maxLengthsCache[name]
 					);
 				}
 			}
-		}
+		});
 	}
 
 	/**

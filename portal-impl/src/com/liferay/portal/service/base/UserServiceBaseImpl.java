@@ -81,9 +81,9 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class UserServiceBaseImpl
-	extends BaseServiceImpl implements UserService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, UserService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>UserService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.UserServiceUtil</code>.

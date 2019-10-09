@@ -16,8 +16,6 @@ package com.liferay.trash.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link TrashEntryService}.
  *
@@ -25,9 +23,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see TrashEntryService
  * @generated
  */
-@ProviderType
 public class TrashEntryServiceWrapper
-	implements TrashEntryService, ServiceWrapper<TrashEntryService> {
+	implements ServiceWrapper<TrashEntryService>, TrashEntryService {
 
 	public TrashEntryServiceWrapper(TrashEntryService trashEntryService) {
 		_trashEntryService = trashEntryService;

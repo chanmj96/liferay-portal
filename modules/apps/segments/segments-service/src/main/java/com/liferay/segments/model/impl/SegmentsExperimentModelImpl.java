@@ -53,8 +53,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the SegmentsExperiment service. Represents a row in the &quot;SegmentsExperiment&quot; database table, with each column mapped to a property of this class.
  *
@@ -67,12 +65,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class SegmentsExperimentModelImpl
 	extends BaseModelImpl<SegmentsExperiment>
 	implements SegmentsExperimentModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a segments experiment model instance should use the <code>SegmentsExperiment</code> interface instead.
@@ -80,22 +77,23 @@ public class SegmentsExperimentModelImpl
 	public static final String TABLE_NAME = "SegmentsExperiment";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"segmentsExperimentId", Types.BIGINT},
-		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
-		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
-		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
-		{"segmentsEntryId", Types.BIGINT},
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"segmentsExperimentId", Types.BIGINT}, {"groupId", Types.BIGINT},
+		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
+		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
+		{"modifiedDate", Types.TIMESTAMP}, {"segmentsEntryId", Types.BIGINT},
 		{"segmentsExperienceId", Types.BIGINT},
 		{"segmentsExperimentKey", Types.VARCHAR}, {"classNameId", Types.BIGINT},
 		{"classPK", Types.BIGINT}, {"name", Types.VARCHAR},
-		{"description", Types.VARCHAR}, {"status", Types.INTEGER},
-		{"typeSettings", Types.CLOB}
+		{"description", Types.VARCHAR}, {"typeSettings", Types.CLOB},
+		{"status", Types.INTEGER}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("segmentsExperimentId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -111,12 +109,12 @@ public class SegmentsExperimentModelImpl
 		TABLE_COLUMNS_MAP.put("classPK", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("name", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("description", Types.VARCHAR);
-		TABLE_COLUMNS_MAP.put("status", Types.INTEGER);
 		TABLE_COLUMNS_MAP.put("typeSettings", Types.CLOB);
+		TABLE_COLUMNS_MAP.put("status", Types.INTEGER);
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table SegmentsExperiment (uuid_ VARCHAR(75) null,segmentsExperimentId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,segmentsEntryId LONG,segmentsExperienceId LONG,segmentsExperimentKey VARCHAR(75) null,classNameId LONG,classPK LONG,name VARCHAR(75) null,description VARCHAR(75) null,status INTEGER,typeSettings TEXT null)";
+		"create table SegmentsExperiment (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,segmentsExperimentId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,segmentsEntryId LONG,segmentsExperienceId LONG,segmentsExperimentKey VARCHAR(75) null,classNameId LONG,classPK LONG,name VARCHAR(75) null,description STRING null,typeSettings TEXT null,status INTEGER)";
 
 	public static final String TABLE_SQL_DROP = "drop table SegmentsExperiment";
 
@@ -131,21 +129,6 @@ public class SegmentsExperimentModelImpl
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
 
 	public static final String TX_MANAGER = "liferayTransactionManager";
-
-	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.segments.service.util.ServiceProps.get(
-			"value.object.entity.cache.enabled.com.liferay.segments.model.SegmentsExperiment"),
-		true);
-
-	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.segments.service.util.ServiceProps.get(
-			"value.object.finder.cache.enabled.com.liferay.segments.model.SegmentsExperiment"),
-		true);
-
-	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(
-		com.liferay.segments.service.util.ServiceProps.get(
-			"value.object.column.bitmask.enabled.com.liferay.segments.model.SegmentsExperiment"),
-		true);
 
 	public static final long CLASSNAMEID_COLUMN_BITMASK = 1L;
 
@@ -165,6 +148,14 @@ public class SegmentsExperimentModelImpl
 
 	public static final long CREATEDATE_COLUMN_BITMASK = 256L;
 
+	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
+		_entityCacheEnabled = entityCacheEnabled;
+	}
+
+	public static void setFinderCacheEnabled(boolean finderCacheEnabled) {
+		_finderCacheEnabled = finderCacheEnabled;
+	}
+
 	/**
 	 * Converts the soap model instance into a normal model instance.
 	 *
@@ -178,6 +169,7 @@ public class SegmentsExperimentModelImpl
 
 		SegmentsExperiment model = new SegmentsExperimentImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
 		model.setSegmentsExperimentId(soapModel.getSegmentsExperimentId());
 		model.setGroupId(soapModel.getGroupId());
@@ -193,8 +185,8 @@ public class SegmentsExperimentModelImpl
 		model.setClassPK(soapModel.getClassPK());
 		model.setName(soapModel.getName());
 		model.setDescription(soapModel.getDescription());
-		model.setStatus(soapModel.getStatus());
 		model.setTypeSettings(soapModel.getTypeSettings());
+		model.setStatus(soapModel.getStatus());
 
 		return model;
 	}
@@ -221,10 +213,6 @@ public class SegmentsExperimentModelImpl
 
 		return models;
 	}
-
-	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
-		com.liferay.segments.service.util.ServiceProps.get(
-			"lock.expiration.time.com.liferay.segments.model.SegmentsExperiment"));
 
 	public SegmentsExperimentModelImpl() {
 	}
@@ -354,6 +342,12 @@ public class SegmentsExperimentModelImpl
 			attributeSetterBiConsumers =
 				new LinkedHashMap<String, BiConsumer<SegmentsExperiment, ?>>();
 
+		attributeGetterFunctions.put(
+			"mvccVersion", SegmentsExperiment::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<SegmentsExperiment, Long>)
+				SegmentsExperiment::setMvccVersion);
 		attributeGetterFunctions.put("uuid", SegmentsExperiment::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid",
@@ -442,22 +436,33 @@ public class SegmentsExperimentModelImpl
 			"description",
 			(BiConsumer<SegmentsExperiment, String>)
 				SegmentsExperiment::setDescription);
-		attributeGetterFunctions.put("status", SegmentsExperiment::getStatus);
-		attributeSetterBiConsumers.put(
-			"status",
-			(BiConsumer<SegmentsExperiment, Integer>)
-				SegmentsExperiment::setStatus);
 		attributeGetterFunctions.put(
 			"typeSettings", SegmentsExperiment::getTypeSettings);
 		attributeSetterBiConsumers.put(
 			"typeSettings",
 			(BiConsumer<SegmentsExperiment, String>)
 				SegmentsExperiment::setTypeSettings);
+		attributeGetterFunctions.put("status", SegmentsExperiment::getStatus);
+		attributeSetterBiConsumers.put(
+			"status",
+			(BiConsumer<SegmentsExperiment, Integer>)
+				SegmentsExperiment::setStatus);
 
 		_attributeGetterFunctions = Collections.unmodifiableMap(
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -776,6 +781,22 @@ public class SegmentsExperimentModelImpl
 
 	@JSON
 	@Override
+	public String getTypeSettings() {
+		if (_typeSettings == null) {
+			return "";
+		}
+		else {
+			return _typeSettings;
+		}
+	}
+
+	@Override
+	public void setTypeSettings(String typeSettings) {
+		_typeSettings = typeSettings;
+	}
+
+	@JSON
+	@Override
 	public int getStatus() {
 		return _status;
 	}
@@ -795,22 +816,6 @@ public class SegmentsExperimentModelImpl
 
 	public int getOriginalStatus() {
 		return _originalStatus;
-	}
-
-	@JSON
-	@Override
-	public String getTypeSettings() {
-		if (_typeSettings == null) {
-			return "";
-		}
-		else {
-			return _typeSettings;
-		}
-	}
-
-	@Override
-	public void setTypeSettings(String typeSettings) {
-		_typeSettings = typeSettings;
 	}
 
 	@Override
@@ -858,6 +863,7 @@ public class SegmentsExperimentModelImpl
 		SegmentsExperimentImpl segmentsExperimentImpl =
 			new SegmentsExperimentImpl();
 
+		segmentsExperimentImpl.setMvccVersion(getMvccVersion());
 		segmentsExperimentImpl.setUuid(getUuid());
 		segmentsExperimentImpl.setSegmentsExperimentId(
 			getSegmentsExperimentId());
@@ -876,8 +882,8 @@ public class SegmentsExperimentModelImpl
 		segmentsExperimentImpl.setClassPK(getClassPK());
 		segmentsExperimentImpl.setName(getName());
 		segmentsExperimentImpl.setDescription(getDescription());
-		segmentsExperimentImpl.setStatus(getStatus());
 		segmentsExperimentImpl.setTypeSettings(getTypeSettings());
+		segmentsExperimentImpl.setStatus(getStatus());
 
 		segmentsExperimentImpl.resetOriginalValues();
 
@@ -929,12 +935,12 @@ public class SegmentsExperimentModelImpl
 
 	@Override
 	public boolean isEntityCacheEnabled() {
-		return ENTITY_CACHE_ENABLED;
+		return _entityCacheEnabled;
 	}
 
 	@Override
 	public boolean isFinderCacheEnabled() {
-		return FINDER_CACHE_ENABLED;
+		return _finderCacheEnabled;
 	}
 
 	@Override
@@ -986,6 +992,8 @@ public class SegmentsExperimentModelImpl
 	public CacheModel<SegmentsExperiment> toCacheModel() {
 		SegmentsExperimentCacheModel segmentsExperimentCacheModel =
 			new SegmentsExperimentCacheModel();
+
+		segmentsExperimentCacheModel.mvccVersion = getMvccVersion();
 
 		segmentsExperimentCacheModel.uuid = getUuid();
 
@@ -1067,8 +1075,6 @@ public class SegmentsExperimentModelImpl
 			segmentsExperimentCacheModel.description = null;
 		}
 
-		segmentsExperimentCacheModel.status = getStatus();
-
 		segmentsExperimentCacheModel.typeSettings = getTypeSettings();
 
 		String typeSettings = segmentsExperimentCacheModel.typeSettings;
@@ -1076,6 +1082,8 @@ public class SegmentsExperimentModelImpl
 		if ((typeSettings != null) && (typeSettings.length() == 0)) {
 			segmentsExperimentCacheModel.typeSettings = null;
 		}
+
+		segmentsExperimentCacheModel.status = getStatus();
 
 		return segmentsExperimentCacheModel;
 	}
@@ -1150,6 +1158,10 @@ public class SegmentsExperimentModelImpl
 
 	}
 
+	private static boolean _entityCacheEnabled;
+	private static boolean _finderCacheEnabled;
+
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _segmentsExperimentId;
@@ -1178,10 +1190,10 @@ public class SegmentsExperimentModelImpl
 	private boolean _setOriginalClassPK;
 	private String _name;
 	private String _description;
+	private String _typeSettings;
 	private int _status;
 	private int _originalStatus;
 	private boolean _setOriginalStatus;
-	private String _typeSettings;
 	private long _columnBitmask;
 	private SegmentsExperiment _escapedModel;
 

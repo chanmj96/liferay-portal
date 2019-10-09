@@ -64,7 +64,7 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface UserLocalService
 	extends BaseLocalService, PersistedModelLocalService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link UserLocalServiceUtil} to access the user local service. Add custom service methods to <code>com.liferay.portal.service.impl.UserLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -2097,6 +2097,7 @@ public interface UserLocalService
 	 * @param emailAddress2 the user's new email address confirmation
 	 * @return the user
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public User updateEmailAddress(
 			long userId, String password, String emailAddress1,
 			String emailAddress2)
@@ -2114,6 +2115,7 @@ public interface UserLocalService
 	 remote host, and agent for the user.
 	 * @return the user
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public User updateEmailAddress(
 			long userId, String password, String emailAddress1,
 			String emailAddress2, ServiceContext serviceContext)
@@ -2217,6 +2219,7 @@ public interface UserLocalService
 	 * @param jobTitle the user's job title
 	 * @return the user
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public User updateJobTitle(long userId, String jobTitle)
 		throws PortalException;
 
@@ -2281,6 +2284,7 @@ public interface UserLocalService
 	 * @param modifiedDate the new modified date
 	 * @return the user
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public User updateModifiedDate(long userId, Date modifiedDate)
 		throws PortalException;
 
@@ -2397,6 +2401,7 @@ public interface UserLocalService
 	 * @param screenName the user's new screen name
 	 * @return the user
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	public User updateScreenName(long userId, String screenName)
 		throws PortalException;
 

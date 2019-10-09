@@ -16,8 +16,6 @@ package com.liferay.social.kernel.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link SocialRelationLocalService}.
  *
@@ -25,10 +23,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialRelationLocalService
  * @generated
  */
-@ProviderType
 public class SocialRelationLocalServiceWrapper
-	implements SocialRelationLocalService,
-			   ServiceWrapper<SocialRelationLocalService> {
+	implements ServiceWrapper<SocialRelationLocalService>,
+			   SocialRelationLocalService {
 
 	public SocialRelationLocalServiceWrapper(
 		SocialRelationLocalService socialRelationLocalService) {

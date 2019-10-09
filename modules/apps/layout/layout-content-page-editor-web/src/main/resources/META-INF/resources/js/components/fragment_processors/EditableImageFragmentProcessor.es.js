@@ -18,24 +18,24 @@ import {openImageSelector} from '../../utils/FragmentsEditorDialogUtils';
 /**
  * Handle item selector image changes and propagate them with an
  * "editableChanged" event.
- * @param {string} url
+ * @param {object} image
  * @param {HTMLElement} editableElement
  * @param {string} fragmentEntryLinkId
  * @param {function} changedCallback
  * @private
  */
 function _handleImageEditorChange(
-	url,
+	image,
 	editableElement,
 	fragmentEntryLinkId,
 	changedCallback
 ) {
 	const imageElement = editableElement.querySelector('img');
 
-	if (imageElement && url) {
-		imageElement.src = url;
+	if (imageElement && image.url) {
+		imageElement.src = image.url;
 
-		changedCallback(url);
+		changedCallback(image);
 	}
 }
 
@@ -51,12 +51,35 @@ function destroy() {}
  * @return {object[]} Floating toolbar panels
  */
 function getFloatingToolbarButtons(editableValues) {
-	return editableValues.mappedField
-		? [FLOATING_TOOLBAR_BUTTONS.imageLink, FLOATING_TOOLBAR_BUTTONS.map]
-		: [
-				FLOATING_TOOLBAR_BUTTONS.imageProperties,
-				FLOATING_TOOLBAR_BUTTONS.map
-		  ];
+	const buttons = [];
+
+	const linkButton = Object.assign({}, FLOATING_TOOLBAR_BUTTONS.link);
+
+	if (
+		editableValues.config &&
+		(editableValues.config.fieldId ||
+			editableValues.config.href ||
+			editableValues.config.mappedField)
+	) {
+		linkButton.cssClass =
+			'fragments-editor__floating-toolbar--linked-field';
+	}
+
+	buttons.push(linkButton);
+
+	if (!editableValues.mappedField && !editableValues.fieldId) {
+		buttons.push(FLOATING_TOOLBAR_BUTTONS.imageProperties);
+	}
+
+	const mapButton = Object.assign({}, FLOATING_TOOLBAR_BUTTONS.map);
+
+	if (editableValues.fieldId || editableValues.mappedField) {
+		mapButton.cssClass = 'fragments-editor__floating-toolbar--mapped-field';
+	}
+
+	buttons.push(mapButton);
+
+	return buttons;
 }
 
 /**
@@ -81,9 +104,9 @@ function init(
 	const {imageSelectorURL} = options;
 
 	openImageSelector({
-		callback: url => {
+		callback: image => {
 			_handleImageEditorChange(
-				url,
+				image,
 				editableElement,
 				fragmentEntryLinkId,
 				changedCallback
@@ -97,21 +120,43 @@ function init(
 
 /**
  * @param {string} content editableField's original HTML
- * @param {string} value Translated/segmented value
+ * @param {object} value Translated/segmented value
+ * @param {object} editableValues values of the element
  * @return {string} Transformed content
  */
-function render(content, value) {
+function render(content, value, editableValues) {
 	const wrapper = document.createElement('div');
+
+	const config = (editableValues && editableValues.config) || {};
 
 	wrapper.innerHTML = content;
 
 	const image = wrapper.querySelector('img');
 
 	if (image) {
-		image.src = value;
+		image.src = value.url || value;
+
+		if (config.alt) {
+			image.alt = config.alt;
+		}
 	}
 
-	return wrapper.innerHTML;
+	if (editableValues && editableValues.config && editableValues.config.href) {
+		const link = document.createElement('a');
+		const {config} = editableValues;
+
+		link.href = config.href;
+
+		if (config.target) {
+			link.target = config.target;
+		}
+
+		link.appendChild(image);
+
+		return link.outerHTML;
+	} else {
+		return wrapper.innerHTML;
+	}
 }
 
 export default {

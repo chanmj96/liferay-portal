@@ -106,11 +106,10 @@ public interface PoshiNode<A extends Node, B extends PoshiNode<A, B>>
 					previousPoshiScript);
 
 			if (poshiScriptBlockMatcher.find()) {
-				String blockName = parentPoshiElement.getBlockName(
-					previousPoshiScript);
+				int newLineCount = StringUtil.count(
+					parentPoshiElement.getBlockName(previousPoshiScript), "\n");
 
-				poshiScriptLineNumber =
-					poshiScriptLineNumber - StringUtil.count(blockName, "\n");
+				poshiScriptLineNumber = poshiScriptLineNumber - newLineCount;
 			}
 
 			return poshiScriptLineNumber;
@@ -123,6 +122,12 @@ public interface PoshiNode<A extends Node, B extends PoshiNode<A, B>>
 
 		return previousPoshiNode.getPoshiScriptLineNumber() +
 			StringUtil.count(previousPoshiNode.getPoshiScript(), "\n");
+	}
+
+	public default boolean isValidPoshiXML() {
+		PoshiNode parentPoshiNode = (PoshiNode)getParent();
+
+		return parentPoshiNode.isValidPoshiXML();
 	}
 
 	public void parsePoshiScript(String poshiScript)

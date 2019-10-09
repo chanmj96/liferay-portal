@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link CTEntry}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CTEntry
  * @generated
  */
-@ProviderType
 public class CTEntryWrapper
 	extends BaseModelWrapper<CTEntry>
 	implements CTEntry, ModelWrapper<CTEntry> {
@@ -45,16 +42,16 @@ public class CTEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("ctEntryId", getCtEntryId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
-		attributes.put("userName", getUserName());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
 		attributes.put("ctCollectionId", getCtCollectionId());
-		attributes.put("originalCTCollectionId", getOriginalCTCollectionId());
 		attributes.put("modelClassNameId", getModelClassNameId());
 		attributes.put("modelClassPK", getModelClassPK());
+		attributes.put("modelMvccVersion", getModelMvccVersion());
 		attributes.put("modelResourcePrimKey", getModelResourcePrimKey());
 		attributes.put("changeType", getChangeType());
 		attributes.put("collision", isCollision());
@@ -65,6 +62,12 @@ public class CTEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long ctEntryId = (Long)attributes.get("ctEntryId");
 
 		if (ctEntryId != null) {
@@ -81,12 +84,6 @@ public class CTEntryWrapper
 
 		if (userId != null) {
 			setUserId(userId);
-		}
-
-		String userName = (String)attributes.get("userName");
-
-		if (userName != null) {
-			setUserName(userName);
 		}
 
 		Date createDate = (Date)attributes.get("createDate");
@@ -107,13 +104,6 @@ public class CTEntryWrapper
 			setCtCollectionId(ctCollectionId);
 		}
 
-		Long originalCTCollectionId = (Long)attributes.get(
-			"originalCTCollectionId");
-
-		if (originalCTCollectionId != null) {
-			setOriginalCTCollectionId(originalCTCollectionId);
-		}
-
 		Long modelClassNameId = (Long)attributes.get("modelClassNameId");
 
 		if (modelClassNameId != null) {
@@ -124,6 +114,12 @@ public class CTEntryWrapper
 
 		if (modelClassPK != null) {
 			setModelClassPK(modelClassPK);
+		}
+
+		Long modelMvccVersion = (Long)attributes.get("modelMvccVersion");
+
+		if (modelMvccVersion != null) {
+			setModelMvccVersion(modelMvccVersion);
 		}
 
 		Long modelResourcePrimKey = (Long)attributes.get(
@@ -202,11 +198,6 @@ public class CTEntryWrapper
 		return model.getCtCollectionId();
 	}
 
-	@Override
-	public java.util.List<CTEntryAggregate> getCTEntryAggregates() {
-		return model.getCTEntryAggregates();
-	}
-
 	/**
 	 * Returns the ct entry ID of this ct entry.
 	 *
@@ -238,6 +229,16 @@ public class CTEntryWrapper
 	}
 
 	/**
+	 * Returns the model mvcc version of this ct entry.
+	 *
+	 * @return the model mvcc version of this ct entry
+	 */
+	@Override
+	public long getModelMvccVersion() {
+		return model.getModelMvccVersion();
+	}
+
+	/**
 	 * Returns the model resource prim key of this ct entry.
 	 *
 	 * @return the model resource prim key of this ct entry
@@ -258,13 +259,13 @@ public class CTEntryWrapper
 	}
 
 	/**
-	 * Returns the original ct collection ID of this ct entry.
+	 * Returns the mvcc version of this ct entry.
 	 *
-	 * @return the original ct collection ID of this ct entry
+	 * @return the mvcc version of this ct entry
 	 */
 	@Override
-	public long getOriginalCTCollectionId() {
-		return model.getOriginalCTCollectionId();
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -297,11 +298,6 @@ public class CTEntryWrapper
 		return model.getUserId();
 	}
 
-	/**
-	 * Returns the user name of this ct entry.
-	 *
-	 * @return the user name of this ct entry
-	 */
 	@Override
 	public String getUserName() {
 		return model.getUserName();
@@ -317,11 +313,6 @@ public class CTEntryWrapper
 		return model.getUserUuid();
 	}
 
-	@Override
-	public boolean hasCTEntryAggregate() {
-		return model.hasCTEntryAggregate();
-	}
-
 	/**
 	 * Returns <code>true</code> if this ct entry is collision.
 	 *
@@ -332,6 +323,11 @@ public class CTEntryWrapper
 		return model.isCollision();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a ct entry model instance should use the <code>CTEntry</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -418,6 +414,16 @@ public class CTEntryWrapper
 	}
 
 	/**
+	 * Sets the model mvcc version of this ct entry.
+	 *
+	 * @param modelMvccVersion the model mvcc version of this ct entry
+	 */
+	@Override
+	public void setModelMvccVersion(long modelMvccVersion) {
+		model.setModelMvccVersion(modelMvccVersion);
+	}
+
+	/**
 	 * Sets the model resource prim key of this ct entry.
 	 *
 	 * @param modelResourcePrimKey the model resource prim key of this ct entry
@@ -438,13 +444,13 @@ public class CTEntryWrapper
 	}
 
 	/**
-	 * Sets the original ct collection ID of this ct entry.
+	 * Sets the mvcc version of this ct entry.
 	 *
-	 * @param originalCTCollectionId the original ct collection ID of this ct entry
+	 * @param mvccVersion the mvcc version of this ct entry
 	 */
 	@Override
-	public void setOriginalCTCollectionId(long originalCTCollectionId) {
-		model.setOriginalCTCollectionId(originalCTCollectionId);
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
@@ -475,16 +481,6 @@ public class CTEntryWrapper
 	@Override
 	public void setUserId(long userId) {
 		model.setUserId(userId);
-	}
-
-	/**
-	 * Sets the user name of this ct entry.
-	 *
-	 * @param userName the user name of this ct entry
-	 */
-	@Override
-	public void setUserName(String userName) {
-		model.setUserName(userName);
 	}
 
 	/**

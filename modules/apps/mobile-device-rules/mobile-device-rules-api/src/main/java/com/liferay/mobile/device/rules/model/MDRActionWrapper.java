@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link MDRAction}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MDRAction
  * @generated
  */
-@ProviderType
 public class MDRActionWrapper
 	extends BaseModelWrapper<MDRAction>
 	implements MDRAction, ModelWrapper<MDRAction> {
@@ -46,6 +43,7 @@ public class MDRActionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("actionId", getActionId());
 		attributes.put("groupId", getGroupId());
@@ -68,6 +66,12 @@ public class MDRActionWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -342,6 +346,16 @@ public class MDRActionWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this mdr action.
+	 *
+	 * @return the mvcc version of this mdr action
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this mdr action.
 	 *
 	 * @return the name of this mdr action
@@ -504,6 +518,11 @@ public class MDRActionWrapper
 		return model.getUuid();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a mdr action model instance should use the <code>MDRAction</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -674,6 +693,16 @@ public class MDRActionWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this mdr action.
+	 *
+	 * @param mvccVersion the mvcc version of this mdr action
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

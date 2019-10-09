@@ -34,6 +34,10 @@ public abstract class BaseDataLayoutBuilderTag extends com.liferay.taglib.util.I
 		return super.doStartTag();
 	}
 
+	public java.lang.String getComponentId() {
+		return _componentId;
+	}
+
 	public java.lang.String getDataDefinitionInputId() {
 		return _dataDefinitionInputId;
 	}
@@ -46,8 +50,16 @@ public abstract class BaseDataLayoutBuilderTag extends com.liferay.taglib.util.I
 		return _dataLayoutInputId;
 	}
 
+	public boolean getLocalizable() {
+		return _localizable;
+	}
+
 	public java.lang.String getNamespace() {
 		return _namespace;
+	}
+
+	public void setComponentId(java.lang.String componentId) {
+		_componentId = componentId;
 	}
 
 	public void setDataDefinitionInputId(java.lang.String dataDefinitionInputId) {
@@ -60,6 +72,10 @@ public abstract class BaseDataLayoutBuilderTag extends com.liferay.taglib.util.I
 
 	public void setDataLayoutInputId(java.lang.String dataLayoutInputId) {
 		_dataLayoutInputId = dataLayoutInputId;
+	}
+
+	public void setLocalizable(boolean localizable) {
+		_localizable = localizable;
 	}
 
 	public void setNamespace(java.lang.String namespace) {
@@ -77,9 +93,11 @@ public abstract class BaseDataLayoutBuilderTag extends com.liferay.taglib.util.I
 	protected void cleanUp() {
 		super.cleanUp();
 
+		_componentId = null;
 		_dataDefinitionInputId = null;
 		_dataLayoutId = null;
 		_dataLayoutInputId = null;
+		_localizable = false;
 		_namespace = null;
 	}
 
@@ -95,9 +113,11 @@ public abstract class BaseDataLayoutBuilderTag extends com.liferay.taglib.util.I
 
 	@Override
 	protected void setAttributes(HttpServletRequest request) {
+		setNamespacedAttribute(request, "componentId", _componentId);
 		setNamespacedAttribute(request, "dataDefinitionInputId", _dataDefinitionInputId);
 		setNamespacedAttribute(request, "dataLayoutId", _dataLayoutId);
 		setNamespacedAttribute(request, "dataLayoutInputId", _dataLayoutInputId);
+		setNamespacedAttribute(request, "localizable", _localizable);
 		setNamespacedAttribute(request, "namespace", _namespace);
 	}
 
@@ -109,9 +129,11 @@ public abstract class BaseDataLayoutBuilderTag extends com.liferay.taglib.util.I
 	private static final String _START_PAGE =
 		"/data_layout_builder/start.jsp";
 
+	private java.lang.String _componentId = null;
 	private java.lang.String _dataDefinitionInputId = null;
 	private java.lang.Long _dataLayoutId = null;
 	private java.lang.String _dataLayoutInputId = null;
+	private boolean _localizable = false;
 	private java.lang.String _namespace = null;
 
 }

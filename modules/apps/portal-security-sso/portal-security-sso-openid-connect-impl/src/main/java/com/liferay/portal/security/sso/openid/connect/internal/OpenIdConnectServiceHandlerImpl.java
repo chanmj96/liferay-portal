@@ -33,7 +33,6 @@ import com.liferay.portal.security.sso.openid.connect.constants.OpenIdConnectWeb
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.proc.BadJOSEException;
-import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
 import com.nimbusds.oauth2.sdk.ErrorObject;
@@ -172,10 +171,9 @@ public class OpenIdConnectServiceHandlerImpl
 		updateSessionTokens(
 			openIdConnectSessionImpl, tokens, System.currentTimeMillis());
 
-		long companyId = _portal.getCompanyId(httpServletRequest);
-
 		processUserInfo(
-			companyId, openIdConnectSessionImpl, oidcProviderMetadata);
+			_portal.getCompanyId(httpServletRequest), openIdConnectSessionImpl,
+			oidcProviderMetadata);
 
 		openIdConnectSessionImpl.setOpenIdConnectFlowState(
 			OpenIdConnectFlowState.AUTH_COMPLETE);
@@ -361,11 +359,9 @@ public class OpenIdConnectServiceHandlerImpl
 			OpenIdConnectSessionImpl openIdConnectSessionImpl =
 				(OpenIdConnectSessionImpl)openIdConnectSessionObject;
 
-			String openIdProviderName =
-				openIdConnectSessionImpl.getOpenIdProviderName();
-
 			if (Validator.isNull(expectedProviderName) ||
-				expectedProviderName.equals(openIdProviderName)) {
+				expectedProviderName.equals(
+					openIdConnectSessionImpl.getOpenIdProviderName())) {
 
 				return openIdConnectSessionImpl;
 			}
@@ -447,12 +443,9 @@ public class OpenIdConnectServiceHandlerImpl
 		OIDCProviderMetadata oidcProviderMetadata =
 			openIdConnectProvider.getOIDCProviderMetadata();
 
-		OIDCClientInformation oidcClientInformation = getOIDCClientInformation(
-			openIdConnectProvider);
-
 		Tokens tokens = requestRefreshToken(
-			refreshToken, oidcClientInformation, oidcProviderMetadata,
-			openIdConnectSessionImpl.getNonce());
+			refreshToken, getOIDCClientInformation(openIdConnectProvider),
+			oidcProviderMetadata, openIdConnectSessionImpl.getNonce());
 
 		updateSessionTokens(
 			openIdConnectSessionImpl, tokens, System.currentTimeMillis());
@@ -467,11 +460,8 @@ public class OpenIdConnectServiceHandlerImpl
 			Nonce nonce)
 		throws OpenIdConnectServiceException.TokenException {
 
-		AuthorizationCode authorizationCode =
-			authenticationSuccessResponse.getAuthorizationCode();
-
 		AuthorizationGrant authorizationCodeGrant = new AuthorizationCodeGrant(
-			authorizationCode, redirectURI);
+			authenticationSuccessResponse.getAuthorizationCode(), redirectURI);
 
 		return requestTokens(
 			oidcClientInformation, oidcProviderMetadata, nonce,
@@ -604,11 +594,12 @@ public class OpenIdConnectServiceHandlerImpl
 	}
 
 	protected void updateSessionTokens(
-		OpenIdConnectSessionImpl session, Tokens tokens, long loginTime) {
+		OpenIdConnectSessionImpl openIdConnectSessionImpl, Tokens tokens,
+		long loginTime) {
 
-		session.setAccessToken(tokens.getAccessToken());
-		session.setRefreshToken(tokens.getRefreshToken());
-		session.setLoginTime(loginTime);
+		openIdConnectSessionImpl.setAccessToken(tokens.getAccessToken());
+		openIdConnectSessionImpl.setRefreshToken(tokens.getRefreshToken());
+		openIdConnectSessionImpl.setLoginTime(loginTime);
 	}
 
 	protected void validateState(State requestedState, State state)

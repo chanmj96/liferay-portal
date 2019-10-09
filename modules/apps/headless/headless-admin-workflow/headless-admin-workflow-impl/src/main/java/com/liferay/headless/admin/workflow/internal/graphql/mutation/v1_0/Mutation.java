@@ -22,11 +22,17 @@ import com.liferay.headless.admin.workflow.resource.v1_0.WorkflowTaskResource;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 
 import javax.annotation.Generated;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import javax.ws.rs.core.UriInfo;
 
 import org.osgi.service.component.ComponentServiceObjects;
 
@@ -46,7 +52,7 @@ public class Mutation {
 	}
 
 	@GraphQLField
-	public WorkflowTask postWorkflowTaskAssignToMe(
+	public WorkflowTask createWorkflowTaskAssignToMe(
 			@GraphQLName("workflowTaskId") Long workflowTaskId,
 			@GraphQLName("workflowTaskAssignToMe") WorkflowTaskAssignToMe
 				workflowTaskAssignToMe)
@@ -61,7 +67,7 @@ public class Mutation {
 	}
 
 	@GraphQLField
-	public WorkflowTask postWorkflowTaskAssignToUser(
+	public WorkflowTask createWorkflowTaskAssignToUser(
 			@GraphQLName("workflowTaskId") Long workflowTaskId,
 			@GraphQLName("workflowTaskAssignToUser") WorkflowTaskAssignToUser
 				workflowTaskAssignToUser)
@@ -76,7 +82,7 @@ public class Mutation {
 	}
 
 	@GraphQLField
-	public WorkflowTask postWorkflowTaskChangeTransition(
+	public WorkflowTask createWorkflowTaskChangeTransition(
 			@GraphQLName("workflowTaskId") Long workflowTaskId,
 			@GraphQLName("changeTransition") ChangeTransition changeTransition)
 		throws Exception {
@@ -90,7 +96,7 @@ public class Mutation {
 	}
 
 	@GraphQLField
-	public WorkflowTask postWorkflowTaskUpdateDueDate(
+	public WorkflowTask createWorkflowTaskUpdateDueDate(
 			@GraphQLName("workflowTaskId") Long workflowTaskId,
 			@GraphQLName("workflowTaskAssignToMe") WorkflowTaskAssignToMe
 				workflowTaskAssignToMe)
@@ -148,6 +154,11 @@ public class Mutation {
 
 		workflowTaskResource.setContextAcceptLanguage(_acceptLanguage);
 		workflowTaskResource.setContextCompany(_company);
+		workflowTaskResource.setContextHttpServletRequest(_httpServletRequest);
+		workflowTaskResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		workflowTaskResource.setContextUriInfo(_uriInfo);
+		workflowTaskResource.setContextUser(_user);
 	}
 
 	private static ComponentServiceObjects<WorkflowTaskResource>
@@ -155,5 +166,9 @@ public class Mutation {
 
 	private AcceptLanguage _acceptLanguage;
 	private Company _company;
+	private HttpServletRequest _httpServletRequest;
+	private HttpServletResponse _httpServletResponse;
+	private UriInfo _uriInfo;
+	private User _user;
 
 }

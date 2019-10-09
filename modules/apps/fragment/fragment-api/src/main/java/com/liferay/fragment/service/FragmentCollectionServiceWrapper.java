@@ -16,8 +16,6 @@ package com.liferay.fragment.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link FragmentCollectionService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see FragmentCollectionService
  * @generated
  */
-@ProviderType
 public class FragmentCollectionServiceWrapper
 	implements FragmentCollectionService,
 			   ServiceWrapper<FragmentCollectionService> {
@@ -36,6 +33,11 @@ public class FragmentCollectionServiceWrapper
 		_fragmentCollectionService = fragmentCollectionService;
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this interface directly. Always use {@link FragmentCollectionServiceUtil} to access the fragment collection remote service. Add custom service methods to <code>com.liferay.fragment.service.impl.FragmentCollectionServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 */
 	@Override
 	public com.liferay.fragment.model.FragmentCollection addFragmentCollection(
 			long groupId, String name, String description,
@@ -123,6 +125,37 @@ public class FragmentCollectionServiceWrapper
 	}
 
 	@Override
+	public java.util.List<com.liferay.fragment.model.FragmentCollection>
+		getFragmentCollections(long[] groupIds) {
+
+		return _fragmentCollectionService.getFragmentCollections(groupIds);
+	}
+
+	@Override
+	public java.util.List<com.liferay.fragment.model.FragmentCollection>
+		getFragmentCollections(
+			long[] groupIds, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.fragment.model.FragmentCollection>
+					orderByComparator) {
+
+		return _fragmentCollectionService.getFragmentCollections(
+			groupIds, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<com.liferay.fragment.model.FragmentCollection>
+		getFragmentCollections(
+			long[] groupIds, String name, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.fragment.model.FragmentCollection>
+					orderByComparator) {
+
+		return _fragmentCollectionService.getFragmentCollections(
+			groupIds, name, start, end, orderByComparator);
+	}
+
+	@Override
 	public int getFragmentCollectionsCount(long groupId) {
 		return _fragmentCollectionService.getFragmentCollectionsCount(groupId);
 	}
@@ -131,6 +164,17 @@ public class FragmentCollectionServiceWrapper
 	public int getFragmentCollectionsCount(long groupId, String name) {
 		return _fragmentCollectionService.getFragmentCollectionsCount(
 			groupId, name);
+	}
+
+	@Override
+	public int getFragmentCollectionsCount(long[] groupIds) {
+		return _fragmentCollectionService.getFragmentCollectionsCount(groupIds);
+	}
+
+	@Override
+	public int getFragmentCollectionsCount(long[] groupIds, String name) {
+		return _fragmentCollectionService.getFragmentCollectionsCount(
+			groupIds, name);
 	}
 
 	/**

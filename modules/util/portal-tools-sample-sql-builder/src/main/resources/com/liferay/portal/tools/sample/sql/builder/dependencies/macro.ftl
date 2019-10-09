@@ -14,7 +14,7 @@
 		<#list assetCategoryIds as assetCategoryId>
 			<#local assetEntryAssetCategoryRelId = dataFactory.getCounterNext()>
 
-			insert into AssetEntryAssetCategoryRel values (${assetEntryAssetCategoryRelId}, ${assetEntryModel.entryId}, ${assetCategoryId}, 0);
+			insert into AssetEntryAssetCategoryRel values (0, ${assetEntryAssetCategoryRelId}, ${assetEntryModel.entryId}, ${assetCategoryId}, 0);
 		</#list>
 
 		<#local assetTagIds = dataFactory.getAssetTagIds(assetEntryModel)>
@@ -119,20 +119,13 @@
 
 <#macro insertGroup
 	_groupModel
-	_publicPageCount
 >
 	${dataFactory.toInsertSQL(_groupModel)}
 
-	<#local layoutSetModels = dataFactory.newLayoutSetModels(_groupModel.groupId, _publicPageCount)>
+	<#local layoutSetModels = dataFactory.newLayoutSetModels(_groupModel.groupId)>
 
 	<#list layoutSetModels as layoutSetModel>
 		${dataFactory.toInsertSQL(layoutSetModel)}
-	</#list>
-
-	<#local layoutSetVersionModels = dataFactory.newLayoutSetVersionModels(layoutSetModels)>
-
-	<#list layoutSetVersionModels as layoutSetVersionModel>
-		${dataFactory.toInsertSQL(layoutSetVersionModel)}
 	</#list>
 </#macro>
 
@@ -142,8 +135,6 @@
 	${dataFactory.toInsertSQL(_layoutModel)}
 
 	${dataFactory.toInsertSQL(dataFactory.newLayoutFriendlyURLModel(_layoutModel))}
-
-	${dataFactory.toInsertSQL(dataFactory.newLayoutVersionModel(_layoutModel))}
 </#macro>
 
 <#macro insertMBDiscussion

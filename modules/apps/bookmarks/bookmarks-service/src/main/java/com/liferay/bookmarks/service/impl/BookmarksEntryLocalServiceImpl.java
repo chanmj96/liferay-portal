@@ -44,7 +44,6 @@ import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
-import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexable;
@@ -127,7 +126,7 @@ public class BookmarksEntryLocalServiceImpl
 		entry.setDescription(description);
 		entry.setExpandoBridgeAttributes(serviceContext);
 
-		bookmarksEntryPersistence.update(entry);
+		entry = bookmarksEntryPersistence.update(entry);
 
 		// Resources
 
@@ -387,7 +386,7 @@ public class BookmarksEntryLocalServiceImpl
 				status = trashVersion.getStatus();
 			}
 
-			updateStatus(userId, entry, status);
+			entry = updateStatus(userId, entry, status);
 
 			// Trash
 
@@ -424,16 +423,14 @@ public class BookmarksEntryLocalServiceImpl
 	public BookmarksEntry moveEntryToTrash(long userId, long entryId)
 		throws PortalException {
 
-		BookmarksEntry entry = getEntry(entryId);
-
-		return moveEntryToTrash(userId, entry);
+		return moveEntryToTrash(userId, getEntry(entryId));
 	}
 
 	@Override
 	public BookmarksEntry openEntry(long userId, BookmarksEntry entry) {
 		entry.setVisits(entry.getVisits() + 1);
 
-		bookmarksEntryPersistence.update(entry);
+		entry = bookmarksEntryPersistence.update(entry);
 
 		assetEntryLocalService.incrementViewCounter(
 			userId, BookmarksEntry.class.getName(), entry.getEntryId(), 1);
@@ -554,9 +551,8 @@ public class BookmarksEntryLocalServiceImpl
 					return;
 				}
 
-				Document document = indexer.getDocument(entry);
-
-				indexableActionableDynamicQuery.addDocuments(document);
+				indexableActionableDynamicQuery.addDocuments(
+					indexer.getDocument(entry));
 			});
 
 		indexableActionableDynamicQuery.performActions();
@@ -626,7 +622,7 @@ public class BookmarksEntryLocalServiceImpl
 		entry.setDescription(description);
 		entry.setExpandoBridgeAttributes(serviceContext);
 
-		bookmarksEntryPersistence.update(entry);
+		entry = bookmarksEntryPersistence.update(entry);
 
 		// Asset
 
@@ -666,7 +662,7 @@ public class BookmarksEntryLocalServiceImpl
 		entry.setStatusByUserName(user.getScreenName());
 		entry.setStatusDate(new Date());
 
-		bookmarksEntryPersistence.update(entry);
+		entry = bookmarksEntryPersistence.update(entry);
 
 		JSONObject extraDataJSONObject = JSONUtil.put("title", entry.getName());
 

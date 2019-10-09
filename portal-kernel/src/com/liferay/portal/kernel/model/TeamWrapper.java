@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link Team}.
@@ -32,9 +30,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Team
  * @generated
  */
-@ProviderType
 public class TeamWrapper
-	extends BaseModelWrapper<Team> implements Team, ModelWrapper<Team> {
+	extends BaseModelWrapper<Team> implements ModelWrapper<Team>, Team {
 
 	public TeamWrapper(Team team) {
 		super(team);
@@ -282,6 +279,11 @@ public class TeamWrapper
 		return model.getUuid();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a team model instance should use the <code>Team</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();

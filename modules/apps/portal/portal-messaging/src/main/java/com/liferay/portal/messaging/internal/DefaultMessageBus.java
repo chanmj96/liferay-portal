@@ -18,7 +18,6 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.messaging.BaseAsyncDestination;
 import com.liferay.portal.kernel.messaging.BaseDestination;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.DestinationEventListener;
@@ -139,6 +138,10 @@ public class DefaultMessageBus implements ManagedServiceFactory, MessageBus {
 		_messageListenerServiceTracker.open();
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public synchronized void addDestination(Destination destination) {
 		doAddDestination(destination);
@@ -231,36 +234,24 @@ public class DefaultMessageBus implements ManagedServiceFactory, MessageBus {
 		return false;
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public Destination removeDestination(String destinationName) {
 		return removeDestination(destinationName, true);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public synchronized Destination removeDestination(
 		String destinationName, boolean closeOnRemove) {
 
-		Destination destination = _destinations.remove(destinationName);
-
-		if (destination == null) {
-			return null;
-		}
-
-		if (closeOnRemove) {
-			destination.close(true);
-		}
-
-		destination.removeDestinationEventListeners();
-
-		destination.unregisterMessageListeners();
-
-		for (MessageBusEventListener messageBusEventListener :
-				_messageBusEventListeners) {
-
-			messageBusEventListener.destinationRemoved(destination);
-		}
-
-		return destination;
+		return _removeDestination(destinationName, closeOnRemove);
 	}
 
 	@Override
@@ -270,11 +261,19 @@ public class DefaultMessageBus implements ManagedServiceFactory, MessageBus {
 		return _messageBusEventListeners.remove(messageBusEventListener);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public void replace(Destination destination) {
 		replace(destination, true);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public synchronized void replace(
 		Destination destination, boolean closeOnRemove) {
@@ -287,8 +286,6 @@ public class DefaultMessageBus implements ManagedServiceFactory, MessageBus {
 		removeDestination(oldDestination.getName(), closeOnRemove);
 
 		doAddDestination(destination);
-
-		destination.open();
 	}
 
 	@Override
@@ -378,6 +375,8 @@ public class DefaultMessageBus implements ManagedServiceFactory, MessageBus {
 	}
 
 	protected void doAddDestination(Destination destination) {
+		destination.open();
+
 		_destinations.put(destination.getName(), destination);
 
 		for (MessageBusEventListener messageBusEventListener :
@@ -480,7 +479,7 @@ public class DefaultMessageBus implements ManagedServiceFactory, MessageBus {
 	protected synchronized void unregisterDestination(
 		Destination destination, Map<String, Object> properties) {
 
-		removeDestination(destination.getName());
+		_removeDestination(destination.getName(), true);
 
 		destination.destroy();
 	}
@@ -532,6 +531,32 @@ public class DefaultMessageBus implements ManagedServiceFactory, MessageBus {
 			baseAsyncDestination.setWorkersMaxSize(
 				destinationWorkerConfiguration.workerMaxSize());
 		}
+	}
+
+	private Destination _removeDestination(
+		String destinationName, boolean closeOnRemove) {
+
+		Destination destination = _destinations.remove(destinationName);
+
+		if (destination == null) {
+			return null;
+		}
+
+		if (closeOnRemove) {
+			destination.close(true);
+		}
+
+		destination.removeDestinationEventListeners();
+
+		destination.unregisterMessageListeners();
+
+		for (MessageBusEventListener messageBusEventListener :
+				_messageBusEventListeners) {
+
+			messageBusEventListener.destinationRemoved(destination);
+		}
+
+		return destination;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

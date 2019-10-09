@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
@@ -44,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -155,6 +157,8 @@ public class FragmentEntryLinkLocalServiceImpl
 		throws PortalException {
 
 		User user = userLocalService.getUser(userId);
+
+		_classNameLocalService.getClassName(classNameId);
 
 		long fragmentEntryLinkId = counterLocalService.increment();
 
@@ -355,6 +359,14 @@ public class FragmentEntryLinkLocalServiceImpl
 	}
 
 	@Override
+	public List<FragmentEntryLink> getFragmentEntryLinksByFragmentEntryId(
+		long fragmentEntryId) {
+
+		return fragmentEntryLinkPersistence.findByFragmentEntryId(
+			fragmentEntryId);
+	}
+
+	@Override
 	public int getFragmentEntryLinksCount(long groupId, long fragmentEntryId) {
 		return fragmentEntryLinkFinder.countByG_F(groupId, fragmentEntryId);
 	}
@@ -374,6 +386,14 @@ public class FragmentEntryLinkLocalServiceImpl
 
 		return fragmentEntryLinkFinder.countByG_F_C_L(
 			groupId, fragmentEntryId, classNameId, layoutPageTemplateType);
+	}
+
+	@Override
+	public int getFragmentEntryLinksCountByFragmentEntryId(
+		long fragmentEntryId) {
+
+		return fragmentEntryLinkPersistence.countByFragmentEntryId(
+			fragmentEntryId);
 	}
 
 	@Override
@@ -472,6 +492,8 @@ public class FragmentEntryLinkLocalServiceImpl
 
 		User user = userLocalService.getUser(userId);
 
+		_classNameLocalService.getClassName(classNameId);
+
 		FragmentEntryLink fragmentEntryLink = fetchFragmentEntryLink(
 			fragmentEntryLinkId);
 
@@ -506,13 +528,26 @@ public class FragmentEntryLinkLocalServiceImpl
 			long fragmentEntryLinkId, String editableValues)
 		throws PortalException {
 
+		return updateFragmentEntryLink(
+			fragmentEntryLinkId, editableValues, true);
+	}
+
+	@Override
+	public FragmentEntryLink updateFragmentEntryLink(
+			long fragmentEntryLinkId, String editableValues,
+			boolean updateClassedModel)
+		throws PortalException {
+
 		FragmentEntryLink fragmentEntryLink = fetchFragmentEntryLink(
 			fragmentEntryLinkId);
 
 		fragmentEntryLink.setEditableValues(editableValues);
 
-		updateClassedModel(
-			fragmentEntryLink.getClassNameId(), fragmentEntryLink.getClassPK());
+		if (updateClassedModel) {
+			updateClassedModel(
+				fragmentEntryLink.getClassNameId(),
+				fragmentEntryLink.getClassPK());
+		}
 
 		fragmentEntryLinkPersistence.update(fragmentEntryLink);
 
@@ -548,6 +583,30 @@ public class FragmentEntryLinkLocalServiceImpl
 				fragmentEntry.getConfiguration(),
 				jsonObject.getString(String.valueOf(position)),
 				StringPool.BLANK, position++, null, serviceContext);
+		}
+	}
+
+	@Override
+	public void updateFragmentEntryLinks(
+			Map<Long, String> fragmentEntryLinksEditableValuesMap)
+		throws PortalException {
+
+		FragmentEntryLink fragmentEntryLink = null;
+
+		for (Map.Entry<Long, String> entry :
+				fragmentEntryLinksEditableValuesMap.entrySet()) {
+
+			fragmentEntryLink = fetchFragmentEntryLink(entry.getKey());
+
+			fragmentEntryLink.setEditableValues(entry.getValue());
+
+			fragmentEntryLinkPersistence.update(fragmentEntryLink);
+		}
+
+		if (fragmentEntryLink != null) {
+			updateClassedModel(
+				fragmentEntryLink.getClassNameId(),
+				fragmentEntryLink.getClassPK());
 		}
 	}
 
@@ -610,12 +669,12 @@ public class FragmentEntryLinkLocalServiceImpl
 			String fileEntryURL = StringPool.BLANK;
 
 			if (fileEntry != null) {
-				fileEntryURL = _dlURLHelper.getPreviewURL(
+				fileEntryURL = _dlURLHelper.getDownloadURL(
 					fileEntry, fileEntry.getFileVersion(), null,
 					StringPool.BLANK, false, false);
 			}
 
-			html = html.replace(matcher.group(), fileEntryURL);
+			html = StringUtil.replace(html, matcher.group(), fileEntryURL);
 		}
 
 		return html;
@@ -623,6 +682,9 @@ public class FragmentEntryLinkLocalServiceImpl
 
 	private static final Pattern _pattern = Pattern.compile(
 		"\\[resources:(.+?)\\]");
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
 
 	@Reference
 	private DLURLHelper _dlURLHelper;

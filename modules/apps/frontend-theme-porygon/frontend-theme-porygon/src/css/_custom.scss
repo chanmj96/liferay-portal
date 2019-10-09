@@ -1,3 +1,5 @@
+@import 'partials/variables';
+
 @import 'partials/fonts';
 @import 'partials/footer';
 @import 'partials/header';
@@ -9,8 +11,8 @@
 
 @import 'partials/portlet_asset_publisher';
 @import 'partials/portlet_blogs';
+@import 'partials/portlet_decorator';
 @import 'partials/portlet_search';
-@import 'portlet_decorator';
 
 body {
 	background-color: $main-bg-color;

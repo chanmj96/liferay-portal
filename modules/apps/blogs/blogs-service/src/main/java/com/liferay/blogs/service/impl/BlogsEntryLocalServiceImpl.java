@@ -249,10 +249,9 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 				(smallImageInputStream != null)) {
 
 				try {
-					byte[] bytes = FileUtil.getBytes(smallImageInputStream);
-
 					smallImageImageSelector = new ImageSelector(
-						bytes, smallImageFileName,
+						FileUtil.getBytes(smallImageInputStream),
+						smallImageFileName,
 						MimeTypesUtil.getContentType(smallImageFileName), null);
 				}
 				catch (IOException ioe) {
@@ -1184,10 +1183,9 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 				(smallImageInputStream != null)) {
 
 				try {
-					byte[] bytes = FileUtil.getBytes(smallImageInputStream);
-
 					smallImageImageSelector = new ImageSelector(
-						bytes, smallImageFileName,
+						FileUtil.getBytes(smallImageInputStream),
+						smallImageFileName,
 						MimeTypesUtil.getContentType(smallImageFileName), null);
 				}
 				catch (IOException ioe) {
@@ -1526,7 +1524,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			entry.setUrlTitle(friendlyURLEntry.getUrlTitle());
 		}
 
-		blogsEntryPersistence.update(entry);
+		entry = blogsEntryPersistence.update(entry);
 
 		// Statistics
 
@@ -1879,11 +1877,10 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			WorkflowConstants.CONTEXT_URL);
 
 		if (Validator.isNull(entryURL)) {
-			String layoutFullURL = serviceContext.getLayoutFullURL();
-
 			entryURL = StringBundler.concat(
-				layoutFullURL, Portal.FRIENDLY_URL_SEPARATOR, "blogs",
-				StringPool.SLASH, entry.getEntryId());
+				serviceContext.getLayoutFullURL(),
+				Portal.FRIENDLY_URL_SEPARATOR, "blogs", StringPool.SLASH,
+				entry.getEntryId());
 		}
 
 		BlogsGroupServiceSettings blogsGroupServiceSettings =

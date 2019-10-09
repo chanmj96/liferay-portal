@@ -194,6 +194,8 @@ renderResponse.setTitle(selLayout.getName(locale));
 					</c:if>
 				</liferay-ui:error>
 
+				<liferay-ui:error exception="<%= RequiredSegmentsExperienceException.MustNotDeleteSegmentsExperienceReferencedBySegmentsExperiments.class %>" message="this-page-cannot-be-deleted-because-it-has-ab-tests-in-progress" />
+
 				<c:if test="<%= layoutRevision != null %>">
 					<aui:input name="layoutSetBranchId" type="hidden" value="<%= layoutRevision.getLayoutSetBranchId() %>" />
 				</c:if>
@@ -212,12 +214,12 @@ renderResponse.setTitle(selLayout.getName(locale));
 					<c:choose>
 						<c:when test="<%= !SitesUtil.isLayoutUpdateable(selLayout) %>">
 							<div class="alert alert-warning">
-								<liferay-ui:message key="this-page-cannot-be-modified-because-it-is-associated-to-a-site-template-does-not-allow-modifications-to-it" />
+								<liferay-ui:message key="this-page-cannot-be-modified-because-it-is-associated-with-a-site-template-does-not-allow-modifications-to-it" />
 							</div>
 						</c:when>
 						<c:when test="<%= !SitesUtil.isLayoutDeleteable(selLayout) %>">
 							<div class="alert alert-warning">
-								<liferay-ui:message key="this-page-cannot-be-deleted-and-cannot-have-child-pages-because-it-is-associated-to-a-site-template" />
+								<liferay-ui:message key="this-page-cannot-be-deleted-and-cannot-have-child-pages-because-it-is-associated-with-a-site-template" />
 							</div>
 						</c:when>
 					</c:choose>

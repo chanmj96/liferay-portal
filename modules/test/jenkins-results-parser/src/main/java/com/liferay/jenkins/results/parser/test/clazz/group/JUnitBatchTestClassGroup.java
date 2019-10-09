@@ -142,7 +142,7 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 				return null;
 			}
 
-			String packagePath = fullClassName.replace(".", "/");
+			String packagePath = fullClassName.replace('.', '/');
 
 			packagePath = packagePath + ".class";
 
@@ -226,7 +226,8 @@ public class JUnitBatchTestClassGroup extends BatchTestClassGroup {
 		private String _getParentClassName() {
 			Pattern classHeaderPattern = Pattern.compile(
 				JenkinsResultsParserUtil.combine(
-					"public\\s+(abstract\\s+)?class\\s+", _className,
+					"public\\s+(abstract\\s+)?(class|interface)\\s+",
+					_className,
 					"(\\<[^\\<]+\\>)?(?<classHeaderEntities>[^\\{]+)\\{"));
 
 			Matcher classHeaderMatcher = classHeaderPattern.matcher(

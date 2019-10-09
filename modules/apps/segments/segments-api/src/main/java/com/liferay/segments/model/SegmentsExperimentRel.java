@@ -34,7 +34,7 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface SegmentsExperimentRel
 	extends PersistedModel, SegmentsExperimentRelModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this interface directly. Add methods to <code>com.liferay.segments.model.impl.SegmentsExperimentRelImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -59,5 +59,19 @@ public interface SegmentsExperimentRel
 				}
 
 			};
+
+	public String getName(java.util.Locale locale)
+		throws com.liferay.portal.kernel.exception.PortalException;
+
+	public String getSegmentsExperienceKey();
+
+	public String getSegmentsExperimentKey()
+		throws com.liferay.portal.kernel.exception.PortalException;
+
+	public boolean isActive()
+		throws com.liferay.portal.kernel.exception.PortalException;
+
+	public boolean isControl()
+		throws com.liferay.portal.kernel.exception.PortalException;
 
 }

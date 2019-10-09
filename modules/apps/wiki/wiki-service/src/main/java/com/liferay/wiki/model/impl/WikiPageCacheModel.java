@@ -17,6 +17,7 @@ package com.liferay.wiki.model.impl;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.wiki.model.WikiPage;
 
 import java.io.Externalizable;
@@ -26,17 +27,14 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing WikiPage in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class WikiPageCacheModel
-	implements CacheModel<WikiPage>, Externalizable {
+	implements CacheModel<WikiPage>, Externalizable, MVCCModel {
 
 	@Override
 	public boolean equals(Object obj) {
@@ -50,7 +48,9 @@ public class WikiPageCacheModel
 
 		WikiPageCacheModel wikiPageCacheModel = (WikiPageCacheModel)obj;
 
-		if (pageId == wikiPageCacheModel.pageId) {
+		if ((pageId == wikiPageCacheModel.pageId) &&
+			(mvccVersion == wikiPageCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +59,28 @@ public class WikiPageCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, pageId);
+		int hashCode = HashUtil.hash(0, pageId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(49);
+		StringBundler sb = new StringBundler(51);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", pageId=");
 		sb.append(pageId);
@@ -122,6 +136,8 @@ public class WikiPageCacheModel
 	@Override
 	public WikiPage toEntityModel() {
 		WikiPageImpl wikiPageImpl = new WikiPageImpl();
+
+		wikiPageImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			wikiPageImpl.setUuid("");
@@ -237,6 +253,7 @@ public class WikiPageCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		pageId = objectInput.readLong();
@@ -276,6 +293,8 @@ public class WikiPageCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -369,6 +388,7 @@ public class WikiPageCacheModel
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long pageId;
 	public long resourcePrimKey;

@@ -18,6 +18,7 @@ import com.liferay.asset.list.model.AssetListEntryUsage;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,17 +27,14 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing AssetListEntryUsage in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AssetListEntryUsageCacheModel
-	implements CacheModel<AssetListEntryUsage>, Externalizable {
+	implements CacheModel<AssetListEntryUsage>, Externalizable, MVCCModel {
 
 	@Override
 	public boolean equals(Object obj) {
@@ -51,8 +49,9 @@ public class AssetListEntryUsageCacheModel
 		AssetListEntryUsageCacheModel assetListEntryUsageCacheModel =
 			(AssetListEntryUsageCacheModel)obj;
 
-		if (assetListEntryUsageId ==
-				assetListEntryUsageCacheModel.assetListEntryUsageId) {
+		if ((assetListEntryUsageId ==
+				assetListEntryUsageCacheModel.assetListEntryUsageId) &&
+			(mvccVersion == assetListEntryUsageCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -62,14 +61,28 @@ public class AssetListEntryUsageCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, assetListEntryUsageId);
+		int hashCode = HashUtil.hash(0, assetListEntryUsageId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(27);
+		StringBundler sb = new StringBundler(29);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", assetListEntryUsageId=");
 		sb.append(assetListEntryUsageId);
@@ -104,6 +117,8 @@ public class AssetListEntryUsageCacheModel
 	public AssetListEntryUsage toEntityModel() {
 		AssetListEntryUsageImpl assetListEntryUsageImpl =
 			new AssetListEntryUsageImpl();
+
+		assetListEntryUsageImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			assetListEntryUsageImpl.setUuid("");
@@ -164,6 +179,7 @@ public class AssetListEntryUsageCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		assetListEntryUsageId = objectInput.readLong();
@@ -188,6 +204,8 @@ public class AssetListEntryUsageCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -229,6 +247,7 @@ public class AssetListEntryUsageCacheModel
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long assetListEntryUsageId;
 	public long groupId;

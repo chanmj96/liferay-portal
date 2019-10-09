@@ -59,8 +59,6 @@ import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the PollsQuestion service. Represents a row in the &quot;PollsQuestion&quot; database table, with each column mapped to a property of this class.
  *
@@ -73,11 +71,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class PollsQuestionModelImpl
 	extends BaseModelImpl<PollsQuestion> implements PollsQuestionModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a polls question model instance should use the <code>PollsQuestion</code> interface instead.
@@ -85,12 +82,12 @@ public class PollsQuestionModelImpl
 	public static final String TABLE_NAME = "PollsQuestion";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"questionId", Types.BIGINT},
-		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
-		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
-		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
-		{"title", Types.VARCHAR}, {"description", Types.VARCHAR},
-		{"expirationDate", Types.TIMESTAMP},
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"questionId", Types.BIGINT}, {"groupId", Types.BIGINT},
+		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
+		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
+		{"modifiedDate", Types.TIMESTAMP}, {"title", Types.VARCHAR},
+		{"description", Types.VARCHAR}, {"expirationDate", Types.TIMESTAMP},
 		{"lastPublishDate", Types.TIMESTAMP}, {"lastVoteDate", Types.TIMESTAMP}
 	};
 
@@ -98,6 +95,7 @@ public class PollsQuestionModelImpl
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("questionId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -114,7 +112,7 @@ public class PollsQuestionModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table PollsQuestion (uuid_ VARCHAR(75) null,questionId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,title STRING null,description STRING null,expirationDate DATE null,lastPublishDate DATE null,lastVoteDate DATE null)";
+		"create table PollsQuestion (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,questionId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,title STRING null,description STRING null,expirationDate DATE null,lastPublishDate DATE null,lastVoteDate DATE null)";
 
 	public static final String TABLE_SQL_DROP = "drop table PollsQuestion";
 
@@ -130,21 +128,6 @@ public class PollsQuestionModelImpl
 
 	public static final String TX_MANAGER = "liferayTransactionManager";
 
-	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.polls.service.util.ServiceProps.get(
-			"value.object.entity.cache.enabled.com.liferay.polls.model.PollsQuestion"),
-		true);
-
-	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.polls.service.util.ServiceProps.get(
-			"value.object.finder.cache.enabled.com.liferay.polls.model.PollsQuestion"),
-		true);
-
-	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(
-		com.liferay.polls.service.util.ServiceProps.get(
-			"value.object.column.bitmask.enabled.com.liferay.polls.model.PollsQuestion"),
-		true);
-
 	public static final long COMPANYID_COLUMN_BITMASK = 1L;
 
 	public static final long GROUPID_COLUMN_BITMASK = 2L;
@@ -152,6 +135,14 @@ public class PollsQuestionModelImpl
 	public static final long UUID_COLUMN_BITMASK = 4L;
 
 	public static final long CREATEDATE_COLUMN_BITMASK = 8L;
+
+	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
+		_entityCacheEnabled = entityCacheEnabled;
+	}
+
+	public static void setFinderCacheEnabled(boolean finderCacheEnabled) {
+		_finderCacheEnabled = finderCacheEnabled;
+	}
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -166,6 +157,7 @@ public class PollsQuestionModelImpl
 
 		PollsQuestion model = new PollsQuestionImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
 		model.setQuestionId(soapModel.getQuestionId());
 		model.setGroupId(soapModel.getGroupId());
@@ -203,10 +195,6 @@ public class PollsQuestionModelImpl
 
 		return models;
 	}
-
-	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
-		com.liferay.polls.service.util.ServiceProps.get(
-			"lock.expiration.time.com.liferay.polls.model.PollsQuestion"));
 
 	public PollsQuestionModelImpl() {
 	}
@@ -333,6 +321,11 @@ public class PollsQuestionModelImpl
 		Map<String, BiConsumer<PollsQuestion, ?>> attributeSetterBiConsumers =
 			new LinkedHashMap<String, BiConsumer<PollsQuestion, ?>>();
 
+		attributeGetterFunctions.put(
+			"mvccVersion", PollsQuestion::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<PollsQuestion, Long>)PollsQuestion::setMvccVersion);
 		attributeGetterFunctions.put("uuid", PollsQuestion::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid", (BiConsumer<PollsQuestion, String>)PollsQuestion::setUuid);
@@ -396,6 +389,17 @@ public class PollsQuestionModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -930,6 +934,7 @@ public class PollsQuestionModelImpl
 	public Object clone() {
 		PollsQuestionImpl pollsQuestionImpl = new PollsQuestionImpl();
 
+		pollsQuestionImpl.setMvccVersion(getMvccVersion());
 		pollsQuestionImpl.setUuid(getUuid());
 		pollsQuestionImpl.setQuestionId(getQuestionId());
 		pollsQuestionImpl.setGroupId(getGroupId());
@@ -994,12 +999,12 @@ public class PollsQuestionModelImpl
 
 	@Override
 	public boolean isEntityCacheEnabled() {
-		return ENTITY_CACHE_ENABLED;
+		return _entityCacheEnabled;
 	}
 
 	@Override
 	public boolean isFinderCacheEnabled() {
-		return FINDER_CACHE_ENABLED;
+		return _finderCacheEnabled;
 	}
 
 	@Override
@@ -1027,6 +1032,8 @@ public class PollsQuestionModelImpl
 	public CacheModel<PollsQuestion> toCacheModel() {
 		PollsQuestionCacheModel pollsQuestionCacheModel =
 			new PollsQuestionCacheModel();
+
+		pollsQuestionCacheModel.mvccVersion = getMvccVersion();
 
 		pollsQuestionCacheModel.uuid = getUuid();
 
@@ -1186,6 +1193,10 @@ public class PollsQuestionModelImpl
 
 	}
 
+	private static boolean _entityCacheEnabled;
+	private static boolean _finderCacheEnabled;
+
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _questionId;

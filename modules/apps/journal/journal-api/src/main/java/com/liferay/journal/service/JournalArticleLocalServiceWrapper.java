@@ -16,8 +16,6 @@ package com.liferay.journal.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link JournalArticleLocalService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see JournalArticleLocalService
  * @generated
  */
-@ProviderType
 public class JournalArticleLocalServiceWrapper
 	implements JournalArticleLocalService,
 			   ServiceWrapper<JournalArticleLocalService> {
@@ -655,6 +652,15 @@ public class JournalArticleLocalServiceWrapper
 
 		_journalArticleLocalService.deleteArticle(
 			groupId, articleId, serviceContext);
+	}
+
+	@Override
+	public void deleteArticleDefaultValues(
+			long groupId, String articleId, String ddmStructureKey)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_journalArticleLocalService.deleteArticleDefaultValues(
+			groupId, articleId, ddmStructureKey);
 	}
 
 	/**

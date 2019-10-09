@@ -1,7 +1,7 @@
 * [class*='ae-toolbar-'][role='toolbar'] {
 	z-index: 980;
 
-	@media (max-width: $screen-sm) {
+	@include media-breakpoint-down(sm) {
 		z-index: 1000;
 	}
 }
@@ -141,6 +141,22 @@
 			.lfr-source-editor {
 				display: block;
 			}
+		}
+	}
+}
+
+.ae-ui .ae-toolbars .ae-toolbar-add {
+	border-width: 1px;
+	margin-left: 4px;
+	z-index: 989;
+
+	.ae-button {
+		height: 28px;
+		width: 28px;
+
+		@include media-breakpoint-up(xl) {
+			height: 32px;
+			width: 32px;
 		}
 	}
 }

@@ -20,7 +20,6 @@ import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderer;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderingContext;
 import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
 import com.liferay.dynamic.data.mapping.form.web.internal.security.permission.resource.DDMFormInstancePermission;
-import com.liferay.dynamic.data.mapping.io.DDMFormFieldTypesSerializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
@@ -91,7 +90,6 @@ public class DDMFormDisplayContext {
 	public DDMFormDisplayContext(
 		RenderRequest renderRequest, RenderResponse renderResponse,
 		DDMFormFieldTypeServicesTracker ddmFormFieldTypeServicesTracker,
-		DDMFormFieldTypesSerializerTracker ddmFormFieldTypesSerializerTracker,
 		DDMFormInstanceLocalService ddmFormInstanceLocalService,
 		DDMFormInstanceRecordVersionLocalService
 			ddmFormInstanceRecordVersionLocalService,
@@ -107,8 +105,6 @@ public class DDMFormDisplayContext {
 		_renderRequest = renderRequest;
 		_renderResponse = renderResponse;
 		_ddmFormFieldTypeServicesTracker = ddmFormFieldTypeServicesTracker;
-		_ddmFormFieldTypesSerializerTracker =
-			ddmFormFieldTypesSerializerTracker;
 		_ddmFormInstanceLocalService = ddmFormInstanceLocalService;
 		_ddmFormInstanceRecordVersionLocalService =
 			ddmFormInstanceRecordVersionLocalService;
@@ -203,6 +199,7 @@ public class DDMFormDisplayContext {
 		}
 
 		ddmFormRenderingContext.setShowSubmitButton(isShowSubmitButton());
+		ddmFormRenderingContext.setSubmitLabel(getSubmitLabel());
 
 		return _ddmFormRenderer.render(
 			ddmForm, ddmFormLayout, ddmFormRenderingContext);
@@ -226,10 +223,8 @@ public class DDMFormDisplayContext {
 		Set<Locale> availableLocales = ddmForm.getAvailableLocales();
 
 		if (!availableLocales.contains(locale)) {
-			HttpServletRequest httpServletRequest =
-				PortalUtil.getHttpServletRequest(_renderRequest);
-
-			locale = getLocale(httpServletRequest, ddmForm);
+			locale = getLocale(
+				PortalUtil.getHttpServletRequest(_renderRequest), ddmForm);
 		}
 
 		return LanguageUtil.getLanguageId(locale);
@@ -649,9 +644,8 @@ public class DDMFormDisplayContext {
 
 		Set<Locale> availableLocales = ddmForm.getAvailableLocales();
 
-		String languageId = LanguageUtil.getLanguageId(httpServletRequest);
-
-		Locale locale = LocaleUtil.fromLanguageId(languageId);
+		Locale locale = LocaleUtil.fromLanguageId(
+			LanguageUtil.getLanguageId(httpServletRequest));
 
 		if (availableLocales.contains(locale)) {
 			return locale;
@@ -756,8 +750,6 @@ public class DDMFormDisplayContext {
 	private final String _containerId;
 	private final DDMFormFieldTypeServicesTracker
 		_ddmFormFieldTypeServicesTracker;
-	private final DDMFormFieldTypesSerializerTracker
-		_ddmFormFieldTypesSerializerTracker;
 	private DDMFormInstance _ddmFormInstance;
 	private long _ddmFormInstanceId;
 	private final DDMFormInstanceLocalService _ddmFormInstanceLocalService;

@@ -14,6 +14,7 @@
 
 package com.liferay.frontend.theme.fjord.site.initializer.internal;
 
+import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.constants.FragmentPortletKeys;
 import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.model.FragmentEntry;
@@ -261,10 +262,12 @@ public class FjordSiteInitializer implements SiteInitializer {
 				_fragmentEntryLocalService.addFragmentEntry(
 					serviceContext.getUserId(),
 					serviceContext.getScopeGroupId(), fragmentCollectionId,
+					null,
 					StringUtil.upperCaseFirstLetter(
 						FileUtil.stripExtension(shortFileName)),
 					StringUtil.read(cssURL.openStream()),
 					StringUtil.read(url.openStream()), StringPool.BLANK,
+					StringPool.BLANK, 0, FragmentConstants.TYPE_SECTION,
 					WorkflowConstants.STATUS_APPROVED, serviceContext);
 
 			long fragmentEntryPreviewFileEntryId = _getPreviewFileEntryId(
@@ -338,7 +341,7 @@ public class FjordSiteInitializer implements SiteInitializer {
 			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
 				serviceContext.getUserId(), serviceContext.getScopeGroupId(),
 				layoutPageTemplateCollectionId, name,
-				LayoutPageTemplateEntryTypeConstants.TYPE_BASIC, 0,
+				LayoutPageTemplateEntryTypeConstants.TYPE_BASIC,
 				WorkflowConstants.STATUS_APPROVED, serviceContext);
 
 		long previewFileEntryId = _getPreviewFileEntryId(

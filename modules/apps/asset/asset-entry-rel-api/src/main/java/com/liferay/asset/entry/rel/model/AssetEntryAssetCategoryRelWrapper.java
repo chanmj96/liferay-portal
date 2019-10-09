@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AssetEntryAssetCategoryRel}.
@@ -31,7 +29,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetEntryAssetCategoryRel
  * @generated
  */
-@ProviderType
 public class AssetEntryAssetCategoryRelWrapper
 	extends BaseModelWrapper<AssetEntryAssetCategoryRel>
 	implements AssetEntryAssetCategoryRel,
@@ -47,6 +44,7 @@ public class AssetEntryAssetCategoryRelWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put(
 			"assetEntryAssetCategoryRelId", getAssetEntryAssetCategoryRelId());
 		attributes.put("assetEntryId", getAssetEntryId());
@@ -58,6 +56,12 @@ public class AssetEntryAssetCategoryRelWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long assetEntryAssetCategoryRelId = (Long)attributes.get(
 			"assetEntryAssetCategoryRelId");
 
@@ -115,6 +119,16 @@ public class AssetEntryAssetCategoryRelWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this asset entry asset category rel.
+	 *
+	 * @return the mvcc version of this asset entry asset category rel
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this asset entry asset category rel.
 	 *
 	 * @return the primary key of this asset entry asset category rel
@@ -134,6 +148,11 @@ public class AssetEntryAssetCategoryRelWrapper
 		return model.getPriority();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a asset entry asset category rel model instance should use the <code>AssetEntryAssetCategoryRel</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -169,6 +188,16 @@ public class AssetEntryAssetCategoryRelWrapper
 	@Override
 	public void setAssetEntryId(long assetEntryId) {
 		model.setAssetEntryId(assetEntryId);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset entry asset category rel.
+	 *
+	 * @param mvccVersion the mvcc version of this asset entry asset category rel
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

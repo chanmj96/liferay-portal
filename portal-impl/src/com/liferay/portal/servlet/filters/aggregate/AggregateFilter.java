@@ -71,7 +71,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -645,11 +644,10 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		String content) {
 
 		try {
-			String requestURI = httpServletRequest.getRequestURI();
-
 			ServletContext cssServletContext =
 				ResourceUtil.getPathServletContext(
-					resourcePath, requestURI, _servletContext);
+					resourcePath, httpServletRequest.getRequestURI(),
+					_servletContext);
 
 			return getCssContent(
 				httpServletRequest, httpServletResponse, cssServletContext,
@@ -684,9 +682,9 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 
 	@Override
 	protected boolean isModuleRequest(HttpServletRequest httpServletRequest) {
-		String requestURI = httpServletRequest.getRequestURI();
+		if (PortalWebResourcesUtil.hasContextPath(
+				httpServletRequest.getRequestURI())) {
 
-		if (PortalWebResourcesUtil.hasContextPath(requestURI)) {
 			return false;
 		}
 
@@ -742,12 +740,10 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		URL url = _servletContext.getResource(resourcePath);
 
 		if (url == null) {
-			RequestDispatcher requestDispatcher =
-				httpServletRequest.getRequestDispatcher(resourcePath);
-
 			ObjectValuePair<String, Long> objectValuePair =
 				RequestDispatcherUtil.getContentAndLastModifiedTime(
-					requestDispatcher, httpServletRequest, httpServletResponse);
+					httpServletRequest.getRequestDispatcher(resourcePath),
+					httpServletRequest, httpServletResponse);
 
 			return objectValuePair.getKey();
 		}

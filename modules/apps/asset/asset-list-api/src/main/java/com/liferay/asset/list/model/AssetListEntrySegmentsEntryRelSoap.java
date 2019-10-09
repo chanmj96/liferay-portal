@@ -20,15 +20,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AssetListEntrySegmentsEntryRelSoap implements Serializable {
 
 	public static AssetListEntrySegmentsEntryRelSoap toSoapModel(
@@ -37,6 +34,7 @@ public class AssetListEntrySegmentsEntryRelSoap implements Serializable {
 		AssetListEntrySegmentsEntryRelSoap soapModel =
 			new AssetListEntrySegmentsEntryRelSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setAssetListEntrySegmentsEntryRelId(
 			model.getAssetListEntrySegmentsEntryRelId());
@@ -110,6 +108,14 @@ public class AssetListEntrySegmentsEntryRelSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setAssetListEntrySegmentsEntryRelId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -210,6 +216,7 @@ public class AssetListEntrySegmentsEntryRelSoap implements Serializable {
 		_lastPublishDate = lastPublishDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _assetListEntrySegmentsEntryRelId;
 	private long _groupId;

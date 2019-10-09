@@ -161,15 +161,19 @@ AUI.add(
 
 				var requestStr = JSON.stringify([_metaData]);
 
-				A.io(_getReceiveUrl(), {
-					data: {
-						pollerRequest: requestStr
-					},
-					method: A.config.io.method,
-					on: {
-						success: _processResponse
-					}
-				});
+				const body = new URLSearchParams();
+				body.append('pollerRequest', requestStr);
+
+				Liferay.Util.fetch(_getReceiveUrl(), {
+					body,
+					method: 'POST'
+				})
+					.then(response => {
+						return response.text();
+					})
+					.then(responseText => {
+						_processResponse(null, {responseText});
+					});
 			}
 		};
 
@@ -201,15 +205,17 @@ AUI.add(
 
 				var requestStr = JSON.stringify([_metaData].concat(data));
 
-				A.io(_getSendUrl(), {
-					data: {
-						pollerRequest: requestStr
-					},
-					method: A.config.io.method,
-					on: {
-						complete: _sendComplete
-					}
-				});
+				const body = new URLSearchParams();
+				body.append('pollerRequest', requestStr);
+
+				Liferay.Util.fetch(_getSendUrl(), {
+					body,
+					method: 'POST'
+				})
+					.then(response => {
+						return response.text();
+					})
+					.then(_sendComplete);
 			}
 		};
 
@@ -224,18 +230,11 @@ AUI.add(
 		};
 
 		var Poller = {
-			init: function(options) {
-				var instance = this;
-
-				instance.setEncryptedUserId(options.encryptedUserId);
-				instance.setSupportsComet(options.supportsComet);
-			},
-
-			addListener: function(key, listener, scope) {
+			addListener(key, listener, scope) {
 				_portlets[key] = {
 					initialRequest: true,
-					listener: listener,
-					scope: scope
+					listener,
+					scope
 				};
 
 				if (!_enabled) {
@@ -245,11 +244,11 @@ AUI.add(
 				}
 			},
 
-			cancelCustomDelay: function() {
+			cancelCustomDelay() {
 				_customDelay = null;
 			},
 
-			getDelay: function() {
+			getDelay() {
 				if (_customDelay !== null) {
 					_requestDelay = _customDelay;
 				} else if (_delayIndex <= _maxDelay) {
@@ -268,15 +267,20 @@ AUI.add(
 			getReceiveUrl: _getReceiveUrl,
 			getSendUrl: _getSendUrl,
 
-			isSupportsComet: function() {
+			init(options) {
+				var instance = this;
+
+				instance.setEncryptedUserId(options.encryptedUserId);
+				instance.setSupportsComet(options.supportsComet);
+			},
+
+			isSupportsComet() {
 				return _supportsComet;
 			},
 
 			processResponse: _processResponse,
 
-			removeListener: function(key) {
-				var instance = this;
-
+			removeListener(key) {
 				if (key in _portlets) {
 					delete _portlets[key];
 				}
@@ -288,13 +292,13 @@ AUI.add(
 				}
 			},
 
-			resume: function() {
+			resume() {
 				_suspended = false;
 
 				_createRequestTimer();
 			},
 
-			setCustomDelay: function(delay) {
+			setCustomDelay(delay) {
 				if (delay === null) {
 					_customDelay = delay;
 				} else {
@@ -302,26 +306,26 @@ AUI.add(
 				}
 			},
 
-			setDelay: function(delay) {
+			setDelay(delay) {
 				_requestDelay = delay / 1000;
 			},
 
-			setEncryptedUserId: function(encryptedUserId) {
+			setEncryptedUserId(encryptedUserId) {
 				_encryptedUserId = encryptedUserId;
 			},
 
-			setSupportsComet: function(supportsComet) {
+			setSupportsComet(supportsComet) {
 				_supportsComet = supportsComet;
 			},
 
-			setUrl: function(url) {
+			setUrl(url) {
 				_url = url;
 			},
 
-			submitRequest: function(key, data, chunkId) {
+			submitRequest(key, data, chunkId) {
 				if (!_frozen && key in _portlets) {
 					for (var i in data) {
-						if (data.hasOwnProperty(i)) {
+						if (Object.prototype.hasOwnProperty.call(data, i)) {
 							var content = data[i];
 
 							if (content.replace) {
@@ -340,7 +344,7 @@ AUI.add(
 					}
 
 					var requestData = {
-						data: data,
+						data,
 						portletId: key
 					};
 
@@ -354,7 +358,7 @@ AUI.add(
 				}
 			},
 
-			suspend: function() {
+			suspend() {
 				_cancelRequestTimer();
 
 				_suspended = true;
@@ -363,7 +367,7 @@ AUI.add(
 			url: _url
 		};
 
-		A.getWin().on('focus', function(event) {
+		A.getWin().on('focus', function() {
 			_metaData.startPolling = true;
 
 			_thawConnection();
@@ -373,6 +377,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-base', 'io', 'json']
+		requires: ['aui-base', 'json']
 	}
 );

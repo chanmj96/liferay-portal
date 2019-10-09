@@ -140,6 +140,10 @@ public class DLFileEntryInfoDisplayContributor
 
 		FileEntry fileEntry = localRepository.getFileEntry(classPK);
 
+		if (fileEntry.isInTrash()) {
+			return null;
+		}
+
 		return new DLFileEntryInfoDisplayObjectProvider(fileEntry);
 	}
 

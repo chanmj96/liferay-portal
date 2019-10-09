@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link BrowserTrackerLocalService}.
  *
@@ -23,7 +21,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see BrowserTrackerLocalService
  * @generated
  */
-@ProviderType
 public class BrowserTrackerLocalServiceWrapper
 	implements BrowserTrackerLocalService,
 			   ServiceWrapper<BrowserTrackerLocalService> {
@@ -276,7 +273,7 @@ public class BrowserTrackerLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _browserTrackerLocalService.getOSGiServiceIdentifier();
 	}
 

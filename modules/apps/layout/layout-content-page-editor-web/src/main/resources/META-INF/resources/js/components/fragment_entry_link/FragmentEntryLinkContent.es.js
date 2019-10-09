@@ -67,10 +67,12 @@ class FragmentEntryLinkContent extends Component {
 	/**
 	 * @inheritDoc
 	 */
-	rendered(firstRender) {
-		if (this.content) {
-			this._renderContent(this.content, {evaluateJs: firstRender});
-		}
+	rendered() {
+		requestAnimationFrame(() => {
+			if (this.content) {
+				this._renderContent(this.content, {evaluateJs: true});
+			}
+		});
 	}
 
 	/**
@@ -92,10 +94,13 @@ class FragmentEntryLinkContent extends Component {
 	 * Renders the content if it is changed.
 	 * @inheritDoc
 	 * @param {string} newContent The new content to render.
+	 * @param {string} prevContent
 	 */
-	syncContent(newContent) {
-		if (newContent && newContent !== this.content) {
-			this._renderContent(newContent);
+	syncContent(newContent, prevContent) {
+		if (newContent && newContent !== prevContent) {
+			requestAnimationFrame(() => {
+				this._renderContent(newContent, {evaluateJs: true});
+			});
 		}
 	}
 
@@ -298,9 +303,8 @@ class FragmentEntryLinkContent extends Component {
 		segmentsExperienceId,
 		updateFunctions
 	}) {
-		const editableValues = this.editableValues[
-			EDITABLE_FRAGMENT_ENTRY_PROCESSOR
-		];
+		const editableValues =
+			this.editableValues[EDITABLE_FRAGMENT_ENTRY_PROCESSOR] || {};
 
 		Object.keys(editableValues).forEach(editableId => {
 			const editableValue = editableValues[editableId];

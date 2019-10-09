@@ -50,7 +50,11 @@
 					},
 					'liferay-calendar-message-util': {
 						path: 'message_util.js',
-						requires: ['aui-alert', 'liferay-util-window']
+						requires: [
+							'aui-alert',
+							'liferay-alert',
+							'liferay-util-window'
+						]
 					},
 					'liferay-calendar-recurrence-converter': {
 						path: 'recurrence_converter.js',
@@ -76,10 +80,8 @@
 						requires: [
 							'aui-base',
 							'aui-component',
-							'aui-io',
 							'liferay-calendar-util',
-							'liferay-portlet-base',
-							'liferay-portlet-url'
+							'liferay-portlet-base'
 						]
 					},
 					'liferay-calendar-session-listener': {
@@ -113,8 +115,7 @@
 							'aui-scheduler',
 							'aui-toolbar',
 							'autocomplete',
-							'autocomplete-highlighters',
-							'liferay-portlet-url'
+							'autocomplete-highlighters'
 						]
 					},
 					'liferay-scheduler': {
@@ -130,7 +131,6 @@
 							'liferay-calendar-util',
 							'liferay-scheduler-event-recorder',
 							'liferay-scheduler-models',
-							'liferay-store',
 							'promise',
 							'resize-plugin'
 						]
@@ -148,8 +148,7 @@
 						requires: [
 							'aui-datatype',
 							'dd-plugin',
-							'liferay-calendar-util',
-							'liferay-store'
+							'liferay-calendar-util'
 						]
 					}
 				},

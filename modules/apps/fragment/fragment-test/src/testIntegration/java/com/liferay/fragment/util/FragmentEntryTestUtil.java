@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Date;
@@ -55,8 +56,8 @@ public class FragmentEntryTestUtil {
 		return FragmentEntryLocalServiceUtil.addFragmentEntry(
 			TestPropsValues.getUserId(), serviceContext.getScopeGroupId(),
 			fragmentCollectionId, StringPool.BLANK, name, StringPool.BLANK,
-			"<div></div>", StringPool.BLANK, WorkflowConstants.STATUS_APPROVED,
-			serviceContext);
+			"<div>TEST</div>", StringPool.BLANK,
+			WorkflowConstants.STATUS_APPROVED, serviceContext);
 	}
 
 	public static FragmentEntry addFragmentEntry(
@@ -75,7 +76,7 @@ public class FragmentEntryTestUtil {
 		serviceContext.setModifiedDate(createDate);
 
 		return FragmentEntryLocalServiceUtil.addFragmentEntry(
-			TestPropsValues.getUserId(), serviceContext.getScopeGroupId(),
+			TestPropsValues.getUserId(), fragmentCollection.getGroupId(),
 			fragmentCollectionId, StringPool.BLANK, name, StringPool.BLANK,
 			"<div></div>", StringPool.BLANK, WorkflowConstants.STATUS_APPROVED,
 			serviceContext);
@@ -150,7 +151,10 @@ public class FragmentEntryTestUtil {
 
 		return FragmentEntryLocalServiceUtil.addFragmentEntry(
 			TestPropsValues.getUserId(), serviceContext.getScopeGroupId(),
-			fragmentCollectionId, name, type, WorkflowConstants.STATUS_APPROVED,
+			fragmentCollection.getFragmentCollectionId(),
+			StringUtil.randomString(), name, RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			"{fieldSets: []}", 0, type, WorkflowConstants.STATUS_APPROVED,
 			serviceContext);
 	}
 
@@ -168,7 +172,10 @@ public class FragmentEntryTestUtil {
 
 		return FragmentEntryLocalServiceUtil.addFragmentEntry(
 			TestPropsValues.getUserId(), serviceContext.getScopeGroupId(),
-			fragmentCollectionId, name, type, WorkflowConstants.STATUS_APPROVED,
+			fragmentCollection.getFragmentCollectionId(),
+			StringUtil.randomString(), name, RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			"{fieldSets: []}", 0, type, WorkflowConstants.STATUS_APPROVED,
 			serviceContext);
 	}
 

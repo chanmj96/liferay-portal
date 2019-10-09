@@ -24,6 +24,7 @@ import com.liferay.document.library.kernel.service.DLFileEntryMetadataLocalServi
 import com.liferay.document.library.kernel.service.DLFileVersionLocalService;
 import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.document.library.kernel.util.DLUtil;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
@@ -52,8 +53,6 @@ import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-
-import org.springframework.context.ApplicationContext;
 
 /**
  * @author     Raymond Augé
@@ -243,14 +242,6 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 		updateFolderAssets();
 	}
 
-	@Reference(
-		target = "(org.springframework.context.service.name=com.liferay.dynamic.data.mapping.service)",
-		unbind = "-"
-	)
-	protected void setApplicationContext(
-		ApplicationContext applicationContext) {
-	}
-
 	@Reference(unbind = "-")
 	protected void setDLAppHelperLocalService(
 		DLAppHelperLocalService dlAppHelperLocalService) {
@@ -287,7 +278,7 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 	}
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.document.library.service)(&(release.schema.version>=1.0.0)(!(release.schema.version>=1.2.0))))",
+		target = "(&(release.bundle.symbolic.name=com.liferay.document.library.service)(&(release.schema.version>=1.1.0)(!(release.schema.version>=2.0.0))))",
 		unbind = "-"
 	)
 	protected void setRelease(Release release) {
@@ -385,6 +376,9 @@ public class DLServiceVerifyProcess extends VerifyProcess {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLServiceVerifyProcess.class);
+
+	@Reference
+	private DDMStructureLocalService _ddmStructureLocalService;
 
 	private DLAppHelperLocalService _dlAppHelperLocalService;
 	private DLFileEntryLocalService _dlFileEntryLocalService;

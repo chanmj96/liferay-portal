@@ -180,9 +180,7 @@ public class GitWorkingDirectory {
 			timeout++;
 
 			if (timeout >= 59) {
-				String currentBranchName = getCurrentBranchName();
-
-				if (Objects.equals(branchName, currentBranchName)) {
+				if (Objects.equals(branchName, getCurrentBranchName())) {
 					return;
 				}
 
@@ -193,11 +191,7 @@ public class GitWorkingDirectory {
 	}
 
 	public void checkoutUpstreamLocalGitBranch() {
-		String currentBranchName = getCurrentBranchName();
-
-		String upstreamBranchName = getUpstreamBranchName();
-
-		if (!Objects.equals(currentBranchName, upstreamBranchName)) {
+		if (!Objects.equals(getCurrentBranchName(), getUpstreamBranchName())) {
 			checkoutLocalGitBranch(getUpstreamLocalGitBranch());
 		}
 	}
@@ -323,7 +317,7 @@ public class GitWorkingDirectory {
 	public void configure(
 		String configName, String configValue, String options) {
 
-		Map<String, String> configMap = new HashMap<>(1);
+		Map<String, String> configMap = new HashMap<>();
 
 		configMap.put(configName, configValue);
 
@@ -409,7 +403,7 @@ public class GitWorkingDirectory {
 
 	public String createPullRequest(
 			String body, String pullRequestBranchName, String receiverUserName,
-			String title)
+			String senderUserName, String title)
 		throws IOException {
 
 		JSONObject requestJSONObject = new JSONObject();
@@ -417,7 +411,7 @@ public class GitWorkingDirectory {
 		requestJSONObject.put("base", _upstreamBranchName);
 		requestJSONObject.put("body", body);
 		requestJSONObject.put(
-			"head", receiverUserName + ":" + pullRequestBranchName);
+			"head", senderUserName + ":" + pullRequestBranchName);
 		requestJSONObject.put("title", title);
 
 		String url = JenkinsResultsParserUtil.getGitHubApiUrl(
@@ -1527,8 +1521,7 @@ public class GitWorkingDirectory {
 			"git ls-remote -h ", remoteURL, " ", remoteGitBranchName);
 
 		GitUtil.ExecutionResult executionResult = executeBashCommands(
-			GitUtil.RETRIES_SIZE_MAX, GitUtil.MILLIS_RETRY_DELAY,
-			1000 * 60 * 10, command);
+			3, GitUtil.MILLIS_RETRY_DELAY, 1000 * 60 * 10, command);
 
 		if (executionResult.getExitValue() != 0) {
 			throw new RuntimeException(
@@ -1978,8 +1971,7 @@ public class GitWorkingDirectory {
 
 		String[] inputLines = input.split("\n");
 
-		Map<String, String> localGitBranchesShaMap = new HashMap<>(
-			inputLines.length);
+		Map<String, String> localGitBranchesShaMap = new HashMap<>();
 
 		for (String line : inputLines) {
 			Matcher matcher = GitRemote.gitLsRemotePattern.matcher(line);

@@ -18,17 +18,8 @@
 	min-width: 100%;
 }
 
-.ddm-field-actions-container {
-	display: flex;
-	justify-content: space-between;
-	opacity: 0;
-	position: absolute;
-	right: 15px;
-	top: calc(-32px / 2);
-	transition: all ease 0.3s;
-	visibility: hidden;
-	width: 78px;
-	z-index: 11;
+.dropdown-menu.show {
+	z-index: 1200;
 }
 
 .liferay-ddm-form-builder-calculator {
@@ -47,17 +38,12 @@
 	position: relative;
 }
 
-.ddm-field-container:hover .ddm-field-actions-container {
-	opacity: 1;
-	visibility: visible;
-}
-
 .ddm-target {
 	height: 100%;
 	width: 100%;
 }
 
-textarea[class^='form-builder-page-header'] {
+input[class^='form-builder-page-header'] {
 	background: transparent;
 	border: none;
 	height: 36px;

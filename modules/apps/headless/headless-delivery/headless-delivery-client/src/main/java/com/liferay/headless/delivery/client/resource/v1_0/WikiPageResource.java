@@ -20,7 +20,9 @@ import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
 import com.liferay.headless.delivery.client.serdes.v1_0.WikiPageSerDes;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,6 +54,21 @@ public interface WikiPageResource {
 
 	public HttpInvoker.HttpResponse postWikiNodeWikiPageHttpResponse(
 			Long wikiNodeId, WikiPage wikiPage)
+		throws Exception;
+
+	public Page<WikiPage> getWikiPageWikiPagesPage(Long parentWikiPageId)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse getWikiPageWikiPagesPageHttpResponse(
+			Long parentWikiPageId)
+		throws Exception;
+
+	public WikiPage postWikiPageWikiPage(
+			Long parentWikiPageId, WikiPage wikiPage)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse postWikiPageWikiPageHttpResponse(
+			Long parentWikiPageId, WikiPage wikiPage)
 		throws Exception;
 
 	public void deleteWikiPage(Long wikiPageId) throws Exception;
@@ -92,8 +109,20 @@ public interface WikiPageResource {
 			return this;
 		}
 
+		public Builder header(String key, String value) {
+			_headers.put(key, value);
+
+			return this;
+		}
+
 		public Builder locale(Locale locale) {
 			_locale = locale;
+
+			return this;
+		}
+
+		public Builder parameter(String key, String value) {
+			_parameters.put(key, value);
 
 			return this;
 		}
@@ -101,10 +130,12 @@ public interface WikiPageResource {
 		private Builder() {
 		}
 
+		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
 		private String _login = "test@liferay.com";
 		private String _password = "test";
+		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
 
@@ -142,6 +173,18 @@ public interface WikiPageResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
@@ -216,6 +259,18 @@ public interface WikiPageResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
 
 			httpInvoker.path(
@@ -223,6 +278,126 @@ public interface WikiPageResource {
 					_builder._port +
 						"/o/headless-delivery/v1.0/wiki-nodes/{wikiNodeId}/wiki-pages/",
 				wikiNodeId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public Page<WikiPage> getWikiPageWikiPagesPage(Long parentWikiPageId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getWikiPageWikiPagesPageHttpResponse(parentWikiPageId);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			return Page.of(content, WikiPageSerDes::toDTO);
+		}
+
+		public HttpInvoker.HttpResponse getWikiPageWikiPagesPageHttpResponse(
+				Long parentWikiPageId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/wiki-pages/{parentWikiPageId}/wiki-pages",
+				parentWikiPageId);
+
+			httpInvoker.userNameAndPassword(
+				_builder._login + ":" + _builder._password);
+
+			return httpInvoker.invoke();
+		}
+
+		public WikiPage postWikiPageWikiPage(
+				Long parentWikiPageId, WikiPage wikiPage)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postWikiPageWikiPageHttpResponse(parentWikiPageId, wikiPage);
+
+			String content = httpResponse.getContent();
+
+			_logger.fine("HTTP response content: " + content);
+
+			_logger.fine("HTTP response message: " + httpResponse.getMessage());
+			_logger.fine(
+				"HTTP response status code: " + httpResponse.getStatusCode());
+
+			try {
+				return WikiPageSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw e;
+			}
+		}
+
+		public HttpInvoker.HttpResponse postWikiPageWikiPageHttpResponse(
+				Long parentWikiPageId, WikiPage wikiPage)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(wikiPage.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port +
+						"/o/headless-delivery/v1.0/wiki-pages/{parentWikiPageId}/wiki-pages",
+				parentWikiPageId);
 
 			httpInvoker.userNameAndPassword(
 				_builder._login + ":" + _builder._password);
@@ -252,6 +427,18 @@ public interface WikiPageResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.DELETE);
@@ -300,6 +487,18 @@ public interface WikiPageResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
@@ -353,6 +552,18 @@ public interface WikiPageResource {
 			if (_builder._locale != null) {
 				httpInvoker.header(
 					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
 			}
 
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PUT);

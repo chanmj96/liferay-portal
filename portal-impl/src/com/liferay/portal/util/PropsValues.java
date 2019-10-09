@@ -63,12 +63,24 @@ public class PropsValues {
 	public static final String ADMIN_EMAIL_PASSWORD_RESET_SUBJECT =
 		PropsUtil.get(PropsKeys.ADMIN_EMAIL_PASSWORD_RESET_SUBJECT);
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String ADMIN_EMAIL_PASSWORD_SENT_BODY = PropsUtil.get(
 		PropsKeys.ADMIN_EMAIL_PASSWORD_SENT_BODY);
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String ADMIN_EMAIL_PASSWORD_SENT_SUBJECT =
 		PropsUtil.get(PropsKeys.ADMIN_EMAIL_PASSWORD_SENT_SUBJECT);
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String ADMIN_EMAIL_USER_ADDED_BODY = PropsUtil.get(
 		PropsKeys.ADMIN_EMAIL_USER_ADDED_BODY);
 
@@ -664,6 +676,10 @@ public class PropsValues {
 					PropsKeys.
 						COMPANY_SECURITY_PASSWORD_REMINDER_QUERY_FORM_AUTOCOMPLETE));
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final boolean COMPANY_SECURITY_SEND_PASSWORD =
 		GetterUtil.getBoolean(
 			PropsUtil.get(PropsKeys.COMPANY_SECURITY_SEND_PASSWORD));
@@ -1123,7 +1139,8 @@ public class PropsValues {
 	public static final String DL_STORE_FILE_IMPL_SAFE_FILE_NAME_2_SEMICOLON =
 		PropsUtil.get(PropsKeys.DL_STORE_FILE_IMPL_SAFE_FILE_NAME_2_SEMICOLON);
 
-	public static String DL_STORE_IMPL = PropsUtil.get(PropsKeys.DL_STORE_IMPL);
+	public static volatile String DL_STORE_IMPL = PropsUtil.get(
+		PropsKeys.DL_STORE_IMPL);
 
 	public static String DL_WEBDAV_SUBSTITUTION_CHAR = PropsUtil.get(
 		PropsKeys.DL_WEBDAV_SUBSTITUTION_CHAR);
@@ -1716,6 +1733,9 @@ public class PropsValues {
 	public static final boolean MAIL_MX_UPDATE = GetterUtil.getBoolean(
 		PropsUtil.get(PropsKeys.MAIL_MX_UPDATE));
 
+	public static final String[] MAIL_SEND_BLACKLIST = PropsUtil.getArray(
+		PropsKeys.MAIL_SEND_BLACKLIST);
+
 	public static final boolean MAIL_SESSION_MAIL = GetterUtil.getBoolean(
 		PropsUtil.get(PropsKeys.MAIL_SESSION_MAIL));
 
@@ -1879,6 +1899,11 @@ public class PropsValues {
 	public static final String MODULE_FRAMEWORK_CONFIGS_DIR = PropsUtil.get(
 		PropsKeys.MODULE_FRAMEWORK_CONFIGS_DIR);
 
+	public static String[]
+		MODULE_FRAMEWORK_CONFIGURATION_BUNDLE_SYMBOLIC_NAMES =
+			PropsUtil.getArray(
+				PropsKeys.MODULE_FRAMEWORK_CONFIGURATION_BUNDLE_SYMBOLIC_NAMES);
+
 	public static final int MODULE_FRAMEWORK_DYNAMIC_INSTALL_START_LEVEL =
 		GetterUtil.getInteger(
 			PropsUtil.get(
@@ -1967,6 +1992,12 @@ public class PropsValues {
 			PropsUtil.getArray(
 				PropsKeys.
 					MODULE_FRAMEWORK_WEB_SERVLET_ANNOTATION_SCANNING_BLACKLIST);
+
+	public static final String[]
+		MODULE_FRAMEWORK_WEB_SERVLET_ANNOTATION_SCANNING_WHITELIST =
+			PropsUtil.getArray(
+				PropsKeys.
+					MODULE_FRAMEWORK_WEB_SERVLET_ANNOTATION_SCANNING_WHITELIST);
 
 	public static final String[] MY_SITES_DIRECTORY_SITE_EXCLUDES =
 		PropsUtil.getArray(PropsKeys.MY_SITES_DIRECTORY_SITE_EXCLUDES);
@@ -2463,7 +2494,7 @@ public class PropsValues {
 	public static final String PORTAL_JAAS_AUTH_TYPE = GetterUtil.getString(
 		PropsUtil.get(PropsKeys.PORTAL_JAAS_AUTH_TYPE));
 
-	public static final boolean PORTAL_JAAS_ENABLE = GetterUtil.getBoolean(
+	public static boolean PORTAL_JAAS_ENABLE = GetterUtil.getBoolean(
 		PropsUtil.get(PropsKeys.PORTAL_JAAS_ENABLE));
 
 	public static final String PORTAL_JAAS_IMPL = PropsUtil.get(
@@ -3392,6 +3423,10 @@ public class PropsValues {
 
 	public static final String WIDGET_SERVLET_MAPPING = PropsUtil.get(
 		PropsKeys.WIDGET_SERVLET_MAPPING);
+
+	public static final boolean WORK_DIR_OVERRIDE_ENABLED =
+		GetterUtil.getBoolean(
+			PropsUtil.get(PropsKeys.WORK_DIR_OVERRIDE_ENABLED));
 
 	public static final boolean XML_SECURITY_ENABLED = GetterUtil.getBoolean(
 		PropsUtil.get(PropsKeys.XML_SECURITY_ENABLED));

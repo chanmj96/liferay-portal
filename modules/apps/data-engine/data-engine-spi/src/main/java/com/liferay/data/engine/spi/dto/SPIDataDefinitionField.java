@@ -15,7 +15,9 @@
 package com.liferay.data.engine.spi.dto;
 
 import com.liferay.petra.lang.HashUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -44,11 +46,19 @@ public class SPIDataDefinitionField {
 			Objects.equals(_fieldType, spiDataDefinitionField._fieldType) &&
 			Objects.equals(_id, spiDataDefinitionField._id) &&
 			Objects.equals(_indexable, spiDataDefinitionField._indexable) &&
+			Objects.equals(_indexType, spiDataDefinitionField._indexType) &&
 			Objects.equals(_label, spiDataDefinitionField._label) &&
 			Objects.equals(_localizable, spiDataDefinitionField._localizable) &&
 			Objects.equals(_name, spiDataDefinitionField._name) &&
+			Objects.equals(
+				_nestedSPIDataDefinitionFields,
+				spiDataDefinitionField._nestedSPIDataDefinitionFields) &&
+			Objects.equals(_readOnly, spiDataDefinitionField._readOnly) &&
 			Objects.equals(_repeatable, spiDataDefinitionField._repeatable) &&
-			Objects.equals(_tip, spiDataDefinitionField._tip)) {
+			Objects.equals(_required, spiDataDefinitionField._required) &&
+			Objects.equals(_showlabel, spiDataDefinitionField._showlabel) &&
+			Objects.equals(_tip, spiDataDefinitionField._tip) &&
+			Objects.equals(_visible, spiDataDefinitionField._visible)) {
 
 			return true;
 		}
@@ -76,6 +86,10 @@ public class SPIDataDefinitionField {
 		return _indexable;
 	}
 
+	public String getIndexType() {
+		return _indexType;
+	}
+
 	public Map<String, Object> getLabel() {
 		return _label;
 	}
@@ -88,12 +102,32 @@ public class SPIDataDefinitionField {
 		return _name;
 	}
 
+	public SPIDataDefinitionField[] getNestedSPIDataDefinitionFields() {
+		return _nestedSPIDataDefinitionFields;
+	}
+
+	public boolean getReadOnly() {
+		return _readOnly;
+	}
+
 	public boolean getRepeatable() {
 		return _repeatable;
 	}
 
+	public boolean getRequired() {
+		return _required;
+	}
+
+	public boolean getShowLabel() {
+		return _showlabel;
+	}
+
 	public Map<String, Object> getTip() {
 		return _tip;
+	}
+
+	public boolean getVisible() {
+		return _visible;
 	}
 
 	@Override
@@ -104,20 +138,30 @@ public class SPIDataDefinitionField {
 		hash = HashUtil.hash(hash, _fieldType);
 		hash = HashUtil.hash(hash, _id);
 		hash = HashUtil.hash(hash, _indexable);
+		hash = HashUtil.hash(hash, _indexType);
 		hash = HashUtil.hash(hash, _label);
 		hash = HashUtil.hash(hash, _localizable);
 		hash = HashUtil.hash(hash, _name);
+		hash = HashUtil.hash(hash, _nestedSPIDataDefinitionFields);
+		hash = HashUtil.hash(hash, _readOnly);
 		hash = HashUtil.hash(hash, _repeatable);
+		hash = HashUtil.hash(hash, _required);
+		hash = HashUtil.hash(hash, _showlabel);
+		hash = HashUtil.hash(hash, _tip);
 
-		return HashUtil.hash(hash, _tip);
+		return HashUtil.hash(hash, _visible);
 	}
 
 	public void setCustomProperties(Map<String, Object> customProperties) {
-		_customProperties = customProperties;
+		if (customProperties != null) {
+			_customProperties.putAll(customProperties);
+		}
 	}
 
 	public void setDefaultValue(Map<String, Object> defaultValue) {
-		_defaultValue = defaultValue;
+		if (defaultValue != null) {
+			_defaultValue.putAll(defaultValue);
+		}
 	}
 
 	public void setFieldType(String fieldType) {
@@ -132,8 +176,14 @@ public class SPIDataDefinitionField {
 		_indexable = indexable;
 	}
 
+	public void setIndexType(String indexType) {
+		_indexType = indexType;
+	}
+
 	public void setLabel(Map<String, Object> label) {
-		_label = label;
+		if (label != null) {
+			_label.putAll(label);
+		}
 	}
 
 	public void setLocalizable(boolean localizable) {
@@ -144,23 +194,56 @@ public class SPIDataDefinitionField {
 		_name = name;
 	}
 
+	public void setNestedSPIDataDefinitionFields(
+		SPIDataDefinitionField[] nestedSPIDataDefinitionFields) {
+
+		if (!ArrayUtil.isEmpty(nestedSPIDataDefinitionFields)) {
+			_nestedSPIDataDefinitionFields = nestedSPIDataDefinitionFields;
+		}
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		_readOnly = readOnly;
+	}
+
 	public void setRepeatable(boolean repeatable) {
 		_repeatable = repeatable;
 	}
 
-	public void setTip(Map<String, Object> tip) {
-		_tip = tip;
+	public void setRequired(boolean required) {
+		_required = required;
 	}
 
-	private Map<String, Object> _customProperties;
-	private Map<String, Object> _defaultValue;
+	public void setShowlabel(boolean showlabel) {
+		_showlabel = showlabel;
+	}
+
+	public void setTip(Map<String, Object> tip) {
+		if (tip != null) {
+			_tip.putAll(tip);
+		}
+	}
+
+	public void setVisible(boolean visible) {
+		_visible = visible;
+	}
+
+	private final Map<String, Object> _customProperties = new HashMap<>();
+	private final Map<String, Object> _defaultValue = new HashMap<>();
 	private String _fieldType;
 	private long _id;
 	private boolean _indexable;
-	private Map<String, Object> _label;
+	private String _indexType;
+	private final Map<String, Object> _label = new HashMap<>();
 	private boolean _localizable;
 	private String _name;
+	private SPIDataDefinitionField[] _nestedSPIDataDefinitionFields =
+		new SPIDataDefinitionField[0];
+	private boolean _readOnly;
 	private boolean _repeatable;
-	private Map<String, Object> _tip;
+	private boolean _required;
+	private boolean _showlabel;
+	private final Map<String, Object> _tip = new HashMap<>();
+	private boolean _visible;
 
 }

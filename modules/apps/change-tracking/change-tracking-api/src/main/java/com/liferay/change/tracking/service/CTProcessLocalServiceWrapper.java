@@ -16,8 +16,6 @@ package com.liferay.change.tracking.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link CTProcessLocalService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CTProcessLocalService
  * @generated
  */
-@ProviderType
 public class CTProcessLocalServiceWrapper
 	implements CTProcessLocalService, ServiceWrapper<CTProcessLocalService> {
 
@@ -76,12 +73,10 @@ public class CTProcessLocalServiceWrapper
 	 *
 	 * @param ctProcess the ct process
 	 * @return the ct process that was removed
-	 * @throws PortalException
 	 */
 	@Override
 	public com.liferay.change.tracking.model.CTProcess deleteCTProcess(
-			com.liferay.change.tracking.model.CTProcess ctProcess)
-		throws com.liferay.portal.kernel.exception.PortalException {
+		com.liferay.change.tracking.model.CTProcess ctProcess) {
 
 		return _ctProcessLocalService.deleteCTProcess(ctProcess);
 	}
@@ -261,6 +256,19 @@ public class CTProcessLocalServiceWrapper
 		getCTProcesses(long ctCollectionId) {
 
 		return _ctProcessLocalService.getCTProcesses(ctCollectionId);
+	}
+
+	@Override
+	public java.util.List<com.liferay.change.tracking.model.CTProcess>
+		getCTProcesses(
+			long companyId, long userId, String keywords, int status, int start,
+			int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.change.tracking.model.CTProcess>
+					orderByComparator) {
+
+		return _ctProcessLocalService.getCTProcesses(
+			companyId, userId, keywords, status, start, end, orderByComparator);
 	}
 
 	@Override

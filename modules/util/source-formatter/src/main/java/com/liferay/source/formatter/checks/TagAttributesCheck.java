@@ -106,7 +106,7 @@ public abstract class TagAttributesCheck extends BaseFileCheck {
 
 			String tag = matcher.group(1);
 
-			if (getLevel(tag, "<", ">") != 0) {
+			if (getLevel(_getStrippedTag(tag, "\"", "'"), "<", ">") != 0) {
 				continue;
 			}
 
@@ -176,18 +176,34 @@ public abstract class TagAttributesCheck extends BaseFileCheck {
 		for (Map.Entry<String, String> entry : attributesMap.entrySet()) {
 			String attributeValue = entry.getValue();
 
-			if (!attributeValue.matches("([-a-z0-9]+ )+[-a-z0-9]+")) {
-				continue;
+			if (attributeValue.matches("([-a-z0-9]+ )+[-a-z0-9]+")) {
+				List<String> htmlAttributes = ListUtil.fromArray(
+					StringUtil.split(attributeValue, StringPool.SPACE));
+
+				Collections.sort(htmlAttributes);
+
+				tag.putAttribute(
+					entry.getKey(),
+					StringUtil.merge(htmlAttributes, StringPool.SPACE));
 			}
+			else if (attributeValue.matches("([-a-z0-9]+,)+[-a-z0-9]+")) {
+				String attributeName = entry.getKey();
 
-			List<String> htmlAttributes = ListUtil.fromArray(
-				StringUtil.split(attributeValue, StringPool.SPACE));
+				if (!tagName.equals("aui:script") ||
+					!attributeName.equals("use")) {
 
-			Collections.sort(htmlAttributes);
+					continue;
+				}
 
-			tag.putAttribute(
-				entry.getKey(),
-				StringUtil.merge(htmlAttributes, StringPool.SPACE));
+				List<String> htmlAttributes = ListUtil.fromArray(
+					StringUtil.split(attributeValue, StringPool.COMMA));
+
+				Collections.sort(htmlAttributes);
+
+				tag.putAttribute(
+					entry.getKey(),
+					StringUtil.merge(htmlAttributes, StringPool.COMMA));
+			}
 		}
 
 		return tag;
@@ -296,6 +312,28 @@ public abstract class TagAttributesCheck extends BaseFileCheck {
 		private boolean _multiLine;
 		private final String _name;
 
+	}
+
+	private String _getStrippedTag(String tag, String... quotes) {
+		for (String quote : quotes) {
+			while (true) {
+				int x = tag.indexOf(quote + "<%=");
+
+				if (x == -1) {
+					break;
+				}
+
+				int y = tag.indexOf("%>" + quote, x);
+
+				if (y == -1) {
+					return tag;
+				}
+
+				tag = tag.substring(0, x) + tag.substring(y + 3);
+			}
+		}
+
+		return tag;
 	}
 
 	private boolean _isValidAttributName(String attributeName) {

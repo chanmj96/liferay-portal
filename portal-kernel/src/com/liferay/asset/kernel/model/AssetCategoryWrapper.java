@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AssetCategory}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetCategory
  * @generated
  */
-@ProviderType
 public class AssetCategoryWrapper
 	extends BaseModelWrapper<AssetCategory>
 	implements AssetCategory, ModelWrapper<AssetCategory> {
@@ -46,6 +43,7 @@ public class AssetCategoryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("categoryId", getCategoryId());
@@ -69,6 +67,12 @@ public class AssetCategoryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -347,6 +351,16 @@ public class AssetCategoryWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this asset category.
+	 *
+	 * @return the mvcc version of this asset category
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this asset category.
 	 *
 	 * @return the name of this asset category
@@ -536,6 +550,11 @@ public class AssetCategoryWrapper
 		return model.isRootCategory();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a asset category model instance should use the <code>AssetCategory</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -701,6 +720,16 @@ public class AssetCategoryWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset category.
+	 *
+	 * @param mvccVersion the mvcc version of this asset category
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

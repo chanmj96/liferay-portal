@@ -26,4 +26,15 @@ try {
 	);
 }
 
+config = {
+	...config,
+	globals: {
+		...config.globals,
+		MODULE_PATH: true
+	},
+	rules: {
+		'no-empty': ['error', {allowEmptyCatch: true}]
+	}
+};
+
 module.exports = config;

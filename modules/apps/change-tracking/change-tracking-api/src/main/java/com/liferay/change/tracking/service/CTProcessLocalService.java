@@ -57,7 +57,7 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface CTProcessLocalService
 	extends BaseLocalService, PersistedModelLocalService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link CTProcessLocalServiceUtil} to access the ct process local service. Add custom service methods to <code>com.liferay.change.tracking.service.impl.CTProcessLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -91,11 +91,9 @@ public interface CTProcessLocalService
 	 *
 	 * @param ctProcess the ct process
 	 * @return the ct process that was removed
-	 * @throws PortalException
 	 */
 	@Indexable(type = IndexableType.DELETE)
-	public CTProcess deleteCTProcess(CTProcess ctProcess)
-		throws PortalException;
+	public CTProcess deleteCTProcess(CTProcess ctProcess);
 
 	/**
 	 * Deletes the ct process with the primary key from the database. Also notifies the appropriate model listeners.
@@ -215,6 +213,11 @@ public interface CTProcessLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<CTProcess> getCTProcesses(long ctCollectionId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<CTProcess> getCTProcesses(
+		long companyId, long userId, String keywords, int status, int start,
+		int end, OrderByComparator<CTProcess> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<CTProcess> getCTProcesses(

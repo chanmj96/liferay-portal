@@ -20,20 +20,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.fragment.service.http.FragmentEntryLinkServiceSoap}.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class FragmentEntryLinkSoap implements Serializable {
 
 	public static FragmentEntryLinkSoap toSoapModel(FragmentEntryLink model) {
 		FragmentEntryLinkSoap soapModel = new FragmentEntryLinkSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setFragmentEntryLinkId(model.getFragmentEntryLinkId());
 		soapModel.setGroupId(model.getGroupId());
@@ -116,6 +114,14 @@ public class FragmentEntryLinkSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setFragmentEntryLinkId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -296,6 +302,7 @@ public class FragmentEntryLinkSoap implements Serializable {
 		_lastPublishDate = lastPublishDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _fragmentEntryLinkId;
 	private long _groupId;

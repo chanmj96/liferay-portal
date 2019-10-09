@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link Portlet}.
@@ -30,10 +28,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Portlet
  * @generated
  */
-@ProviderType
 public class PortletWrapper
 	extends BaseModelWrapper<Portlet>
-	implements Portlet, ModelWrapper<Portlet> {
+	implements ModelWrapper<Portlet>, Portlet {
 
 	public PortletWrapper(Portlet portlet) {
 		super(portlet);
@@ -2396,6 +2393,11 @@ public class PortletWrapper
 		model.linkRoles();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a portlet model instance should use the <code>Portlet</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();

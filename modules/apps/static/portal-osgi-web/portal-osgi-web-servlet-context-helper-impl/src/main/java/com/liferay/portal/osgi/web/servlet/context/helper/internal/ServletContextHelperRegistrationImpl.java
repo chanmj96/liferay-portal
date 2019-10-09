@@ -203,9 +203,7 @@ public class ServletContextHelperRegistrationImpl
 
 		BundleWiring bundleWiring = _bundle.adapt(BundleWiring.class);
 
-		ClassLoader classLoader = bundleWiring.getClassLoader();
-
-		clearResidualMBeans(classLoader);
+		clearResidualMBeans(bundleWiring.getClassLoader());
 	}
 
 	@Override
@@ -250,12 +248,11 @@ public class ServletContextHelperRegistrationImpl
 
 		for (Map.Entry<String, String> entry : contextParameters.entrySet()) {
 			String key = entry.getKey();
-			String value = entry.getValue();
 
 			properties.put(
 				HttpWhiteboardConstants.
 					HTTP_WHITEBOARD_CONTEXT_INIT_PARAM_PREFIX + key,
-				value);
+				entry.getValue());
 		}
 
 		_servletContextHelperServiceRegistration.setProperties(properties);
@@ -464,6 +461,20 @@ public class ServletContextHelperRegistrationImpl
 			ServletContext.class, servletContext, properties);
 	}
 
+	private boolean _contains(String[] array, String classResource) {
+		int index = Arrays.binarySearch(array, classResource);
+
+		if (index >= -1) {
+			return false;
+		}
+
+		if (classResource.startsWith(array[-index - 2])) {
+			return true;
+		}
+
+		return false;
+	}
+
 	private Set<Class<?>> _loadClasses(Bundle bundle) {
 		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
 
@@ -517,13 +528,11 @@ public class ServletContextHelperRegistrationImpl
 		while (iterator.hasNext()) {
 			String classResource = iterator.next();
 
-			int index = Arrays.binarySearch(_BLACKLIST, classResource);
-
-			if (index >= -1) {
+			if (_contains(_WHITELIST, classResource)) {
 				continue;
 			}
 
-			if (classResource.startsWith(_BLACKLIST[-index - 2])) {
+			if (_contains(_BLACKLIST, classResource)) {
 				iterator.remove();
 			}
 		}
@@ -541,8 +550,8 @@ public class ServletContextHelperRegistrationImpl
 						String className = classResource.substring(
 							0, classResource.length() - 6);
 
-						className = className.replace(
-							CharPool.SLASH, CharPool.PERIOD);
+						className = StringUtil.replace(
+							className, CharPool.SLASH, CharPool.PERIOD);
 
 						return classLoader.loadClass(className);
 					}));
@@ -567,6 +576,8 @@ public class ServletContextHelperRegistrationImpl
 	private static final String _SERVLET_INIT_PARAM_PREFIX =
 		HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_INIT_PARAM_PREFIX;
 
+	private static final String[] _WHITELIST;
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		ServletContextHelperRegistrationImpl.class);
 
@@ -580,6 +591,16 @@ public class ServletContextHelperRegistrationImpl
 		Arrays.sort(blacklist);
 
 		_BLACKLIST = blacklist;
+
+		String[] whitelist =
+			PropsValues.
+				MODULE_FRAMEWORK_WEB_SERVLET_ANNOTATION_SCANNING_WHITELIST;
+
+		whitelist = Arrays.copyOf(whitelist, whitelist.length);
+
+		Arrays.sort(whitelist);
+
+		_WHITELIST = whitelist;
 	}
 
 	private final Set<Class<?>> _annotatedClasses;

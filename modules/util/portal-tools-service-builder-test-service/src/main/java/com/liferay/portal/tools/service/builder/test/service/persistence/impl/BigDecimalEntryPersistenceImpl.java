@@ -14,8 +14,6 @@
 
 package com.liferay.portal.tools.service.builder.test.service.persistence.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
@@ -69,12 +67,11 @@ import java.util.Set;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class BigDecimalEntryPersistenceImpl
 	extends BasePersistenceImpl<BigDecimalEntry>
 	implements BigDecimalEntryPersistence {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Always use <code>BigDecimalEntryUtil</code> to access the big decimal entry persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
@@ -161,14 +158,14 @@ public class BigDecimalEntryPersistenceImpl
 	 * @param start the lower bound of the range of big decimal entries
 	 * @param end the upper bound of the range of big decimal entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching big decimal entries
 	 */
 	@Override
 	public List<BigDecimalEntry> findByBigDecimalValue(
 		BigDecimal bigDecimalValue, int start, int end,
 		OrderByComparator<BigDecimalEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -178,10 +175,13 @@ public class BigDecimalEntryPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByBigDecimalValue;
-			finderArgs = new Object[] {bigDecimalValue};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByBigDecimalValue;
+				finderArgs = new Object[] {bigDecimalValue};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByBigDecimalValue;
 			finderArgs = new Object[] {
 				bigDecimalValue, start, end, orderByComparator
@@ -190,7 +190,7 @@ public class BigDecimalEntryPersistenceImpl
 
 		List<BigDecimalEntry> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BigDecimalEntry>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
@@ -270,10 +270,14 @@ public class BigDecimalEntryPersistenceImpl
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					finderCache.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -722,14 +726,14 @@ public class BigDecimalEntryPersistenceImpl
 	 * @param start the lower bound of the range of big decimal entries
 	 * @param end the upper bound of the range of big decimal entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching big decimal entries
 	 */
 	@Override
 	public List<BigDecimalEntry> findByGtBigDecimalValue(
 		BigDecimal bigDecimalValue, int start, int end,
 		OrderByComparator<BigDecimalEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -742,14 +746,14 @@ public class BigDecimalEntryPersistenceImpl
 
 		List<BigDecimalEntry> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BigDecimalEntry>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BigDecimalEntry bigDecimalEntry : list) {
-					if ((bigDecimalValue.compareTo(
-							bigDecimalEntry.getBigDecimalValue()) >= 0)) {
+					if (bigDecimalValue.compareTo(
+							bigDecimalEntry.getBigDecimalValue()) >= 0) {
 
 						list = null;
 
@@ -823,10 +827,14 @@ public class BigDecimalEntryPersistenceImpl
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					finderCache.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -863,7 +871,7 @@ public class BigDecimalEntryPersistenceImpl
 
 		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("bigDecimalValue=");
+		msg.append("bigDecimalValue>");
 		msg.append(bigDecimalValue);
 
 		msg.append("}");
@@ -918,7 +926,7 @@ public class BigDecimalEntryPersistenceImpl
 
 		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("bigDecimalValue=");
+		msg.append("bigDecimalValue>");
 		msg.append(bigDecimalValue);
 
 		msg.append("}");
@@ -1278,14 +1286,14 @@ public class BigDecimalEntryPersistenceImpl
 	 * @param start the lower bound of the range of big decimal entries
 	 * @param end the upper bound of the range of big decimal entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching big decimal entries
 	 */
 	@Override
 	public List<BigDecimalEntry> findByLtBigDecimalValue(
 		BigDecimal bigDecimalValue, int start, int end,
 		OrderByComparator<BigDecimalEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -1298,14 +1306,14 @@ public class BigDecimalEntryPersistenceImpl
 
 		List<BigDecimalEntry> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BigDecimalEntry>)finderCache.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (BigDecimalEntry bigDecimalEntry : list) {
-					if ((bigDecimalValue.compareTo(
-							bigDecimalEntry.getBigDecimalValue()) <= 0)) {
+					if (bigDecimalValue.compareTo(
+							bigDecimalEntry.getBigDecimalValue()) <= 0) {
 
 						list = null;
 
@@ -1379,10 +1387,14 @@ public class BigDecimalEntryPersistenceImpl
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					finderCache.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -1419,7 +1431,7 @@ public class BigDecimalEntryPersistenceImpl
 
 		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("bigDecimalValue=");
+		msg.append("bigDecimalValue<");
 		msg.append(bigDecimalValue);
 
 		msg.append("}");
@@ -1474,7 +1486,7 @@ public class BigDecimalEntryPersistenceImpl
 
 		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("bigDecimalValue=");
+		msg.append("bigDecimalValue<");
 		msg.append(bigDecimalValue);
 
 		msg.append("}");
@@ -2313,14 +2325,14 @@ public class BigDecimalEntryPersistenceImpl
 	 * @param start the lower bound of the range of big decimal entries
 	 * @param end the upper bound of the range of big decimal entries (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of big decimal entries
 	 */
 	@Override
 	public List<BigDecimalEntry> findAll(
 		int start, int end,
 		OrderByComparator<BigDecimalEntry> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -2330,17 +2342,20 @@ public class BigDecimalEntryPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<BigDecimalEntry> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<BigDecimalEntry>)finderCache.getResult(
 				finderPath, finderArgs, this);
 		}
@@ -2390,10 +2405,14 @@ public class BigDecimalEntryPersistenceImpl
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					finderCache.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					finderCache.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}

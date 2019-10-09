@@ -47,8 +47,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The persistence implementation for the expando value service.
  *
@@ -59,12 +57,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class ExpandoValuePersistenceImpl
 	extends BasePersistenceImpl<ExpandoValue>
 	implements ExpandoValuePersistence {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Always use <code>ExpandoValueUtil</code> to access the expando value persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
@@ -146,14 +143,14 @@ public class ExpandoValuePersistenceImpl
 	 * @param start the lower bound of the range of expando values
 	 * @param end the upper bound of the range of expando values (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching expando values
 	 */
 	@Override
 	public List<ExpandoValue> findByTableId(
 		long tableId, int start, int end,
 		OrderByComparator<ExpandoValue> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -163,23 +160,26 @@ public class ExpandoValuePersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByTableId;
-			finderArgs = new Object[] {tableId};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByTableId;
+				finderArgs = new Object[] {tableId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByTableId;
 			finderArgs = new Object[] {tableId, start, end, orderByComparator};
 		}
 
 		List<ExpandoValue> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<ExpandoValue>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ExpandoValue expandoValue : list) {
-					if ((tableId != expandoValue.getTableId())) {
+					if (tableId != expandoValue.getTableId()) {
 						list = null;
 
 						break;
@@ -239,10 +239,14 @@ public class ExpandoValuePersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -653,14 +657,14 @@ public class ExpandoValuePersistenceImpl
 	 * @param start the lower bound of the range of expando values
 	 * @param end the upper bound of the range of expando values (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching expando values
 	 */
 	@Override
 	public List<ExpandoValue> findByColumnId(
 		long columnId, int start, int end,
 		OrderByComparator<ExpandoValue> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -670,23 +674,26 @@ public class ExpandoValuePersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByColumnId;
-			finderArgs = new Object[] {columnId};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByColumnId;
+				finderArgs = new Object[] {columnId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByColumnId;
 			finderArgs = new Object[] {columnId, start, end, orderByComparator};
 		}
 
 		List<ExpandoValue> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<ExpandoValue>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ExpandoValue expandoValue : list) {
-					if ((columnId != expandoValue.getColumnId())) {
+					if (columnId != expandoValue.getColumnId()) {
 						list = null;
 
 						break;
@@ -746,10 +753,14 @@ public class ExpandoValuePersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -1157,14 +1168,14 @@ public class ExpandoValuePersistenceImpl
 	 * @param start the lower bound of the range of expando values
 	 * @param end the upper bound of the range of expando values (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching expando values
 	 */
 	@Override
 	public List<ExpandoValue> findByRowId(
 		long rowId, int start, int end,
 		OrderByComparator<ExpandoValue> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -1174,23 +1185,26 @@ public class ExpandoValuePersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByRowId;
-			finderArgs = new Object[] {rowId};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByRowId;
+				finderArgs = new Object[] {rowId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByRowId;
 			finderArgs = new Object[] {rowId, start, end, orderByComparator};
 		}
 
 		List<ExpandoValue> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<ExpandoValue>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (ExpandoValue expandoValue : list) {
-					if ((rowId != expandoValue.getRowId())) {
+					if (rowId != expandoValue.getRowId()) {
 						list = null;
 
 						break;
@@ -1250,10 +1264,14 @@ public class ExpandoValuePersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -1667,14 +1685,14 @@ public class ExpandoValuePersistenceImpl
 	 * @param start the lower bound of the range of expando values
 	 * @param end the upper bound of the range of expando values (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching expando values
 	 */
 	@Override
 	public List<ExpandoValue> findByT_C(
 		long tableId, long columnId, int start, int end,
 		OrderByComparator<ExpandoValue> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -1684,10 +1702,13 @@ public class ExpandoValuePersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByT_C;
-			finderArgs = new Object[] {tableId, columnId};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByT_C;
+				finderArgs = new Object[] {tableId, columnId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByT_C;
 			finderArgs = new Object[] {
 				tableId, columnId, start, end, orderByComparator
@@ -1696,7 +1717,7 @@ public class ExpandoValuePersistenceImpl
 
 		List<ExpandoValue> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<ExpandoValue>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -1768,10 +1789,14 @@ public class ExpandoValuePersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -2217,14 +2242,14 @@ public class ExpandoValuePersistenceImpl
 	 * @param start the lower bound of the range of expando values
 	 * @param end the upper bound of the range of expando values (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching expando values
 	 */
 	@Override
 	public List<ExpandoValue> findByT_R(
 		long tableId, long rowId, int start, int end,
 		OrderByComparator<ExpandoValue> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -2234,10 +2259,13 @@ public class ExpandoValuePersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByT_R;
-			finderArgs = new Object[] {tableId, rowId};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByT_R;
+				finderArgs = new Object[] {tableId, rowId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByT_R;
 			finderArgs = new Object[] {
 				tableId, rowId, start, end, orderByComparator
@@ -2246,7 +2274,7 @@ public class ExpandoValuePersistenceImpl
 
 		List<ExpandoValue> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<ExpandoValue>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -2318,10 +2346,14 @@ public class ExpandoValuePersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -2767,14 +2799,14 @@ public class ExpandoValuePersistenceImpl
 	 * @param start the lower bound of the range of expando values
 	 * @param end the upper bound of the range of expando values (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching expando values
 	 */
 	@Override
 	public List<ExpandoValue> findByT_CPK(
 		long tableId, long classPK, int start, int end,
 		OrderByComparator<ExpandoValue> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -2784,10 +2816,13 @@ public class ExpandoValuePersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByT_CPK;
-			finderArgs = new Object[] {tableId, classPK};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByT_CPK;
+				finderArgs = new Object[] {tableId, classPK};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByT_CPK;
 			finderArgs = new Object[] {
 				tableId, classPK, start, end, orderByComparator
@@ -2796,7 +2831,7 @@ public class ExpandoValuePersistenceImpl
 
 		List<ExpandoValue> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<ExpandoValue>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -2868,10 +2903,14 @@ public class ExpandoValuePersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -3303,18 +3342,22 @@ public class ExpandoValuePersistenceImpl
 	 *
 	 * @param columnId the column ID
 	 * @param rowId the row ID
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching expando value, or <code>null</code> if a matching expando value could not be found
 	 */
 	@Override
 	public ExpandoValue fetchByC_R(
-		long columnId, long rowId, boolean retrieveFromCache) {
+		long columnId, long rowId, boolean useFinderCache) {
 
-		Object[] finderArgs = new Object[] {columnId, rowId};
+		Object[] finderArgs = null;
+
+		if (useFinderCache) {
+			finderArgs = new Object[] {columnId, rowId};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
 				_finderPathFetchByC_R, finderArgs, this);
 		}
@@ -3356,8 +3399,10 @@ public class ExpandoValuePersistenceImpl
 				List<ExpandoValue> list = q.list();
 
 				if (list.isEmpty()) {
-					FinderCacheUtil.putResult(
-						_finderPathFetchByC_R, finderArgs, list);
+					if (useFinderCache) {
+						FinderCacheUtil.putResult(
+							_finderPathFetchByC_R, finderArgs, list);
+					}
 				}
 				else {
 					ExpandoValue expandoValue = list.get(0);
@@ -3368,7 +3413,10 @@ public class ExpandoValuePersistenceImpl
 				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(_finderPathFetchByC_R, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(
+						_finderPathFetchByC_R, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -3536,14 +3584,14 @@ public class ExpandoValuePersistenceImpl
 	 * @param start the lower bound of the range of expando values
 	 * @param end the upper bound of the range of expando values (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching expando values
 	 */
 	@Override
 	public List<ExpandoValue> findByC_C(
 		long classNameId, long classPK, int start, int end,
 		OrderByComparator<ExpandoValue> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -3553,10 +3601,13 @@ public class ExpandoValuePersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByC_C;
-			finderArgs = new Object[] {classNameId, classPK};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByC_C;
+				finderArgs = new Object[] {classNameId, classPK};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByC_C;
 			finderArgs = new Object[] {
 				classNameId, classPK, start, end, orderByComparator
@@ -3565,7 +3616,7 @@ public class ExpandoValuePersistenceImpl
 
 		List<ExpandoValue> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<ExpandoValue>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -3637,10 +3688,14 @@ public class ExpandoValuePersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -4081,18 +4136,22 @@ public class ExpandoValuePersistenceImpl
 	 * @param tableId the table ID
 	 * @param columnId the column ID
 	 * @param classPK the class pk
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching expando value, or <code>null</code> if a matching expando value could not be found
 	 */
 	@Override
 	public ExpandoValue fetchByT_C_C(
-		long tableId, long columnId, long classPK, boolean retrieveFromCache) {
+		long tableId, long columnId, long classPK, boolean useFinderCache) {
 
-		Object[] finderArgs = new Object[] {tableId, columnId, classPK};
+		Object[] finderArgs = null;
+
+		if (useFinderCache) {
+			finderArgs = new Object[] {tableId, columnId, classPK};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
 				_finderPathFetchByT_C_C, finderArgs, this);
 		}
@@ -4139,8 +4198,10 @@ public class ExpandoValuePersistenceImpl
 				List<ExpandoValue> list = q.list();
 
 				if (list.isEmpty()) {
-					FinderCacheUtil.putResult(
-						_finderPathFetchByT_C_C, finderArgs, list);
+					if (useFinderCache) {
+						FinderCacheUtil.putResult(
+							_finderPathFetchByT_C_C, finderArgs, list);
+					}
 				}
 				else {
 					ExpandoValue expandoValue = list.get(0);
@@ -4151,8 +4212,10 @@ public class ExpandoValuePersistenceImpl
 				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(
-					_finderPathFetchByT_C_C, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(
+						_finderPathFetchByT_C_C, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -4336,14 +4399,14 @@ public class ExpandoValuePersistenceImpl
 	 * @param start the lower bound of the range of expando values
 	 * @param end the upper bound of the range of expando values (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching expando values
 	 */
 	@Override
 	public List<ExpandoValue> findByT_C_D(
 		long tableId, long columnId, String data, int start, int end,
 		OrderByComparator<ExpandoValue> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		data = Objects.toString(data, "");
 
@@ -4355,10 +4418,13 @@ public class ExpandoValuePersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByT_C_D;
-			finderArgs = new Object[] {tableId, columnId, data};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByT_C_D;
+				finderArgs = new Object[] {tableId, columnId, data};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByT_C_D;
 			finderArgs = new Object[] {
 				tableId, columnId, data, start, end, orderByComparator
@@ -4367,7 +4433,7 @@ public class ExpandoValuePersistenceImpl
 
 		List<ExpandoValue> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<ExpandoValue>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -4455,10 +4521,14 @@ public class ExpandoValuePersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -5589,13 +5659,13 @@ public class ExpandoValuePersistenceImpl
 	 * @param start the lower bound of the range of expando values
 	 * @param end the upper bound of the range of expando values (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of expando values
 	 */
 	@Override
 	public List<ExpandoValue> findAll(
 		int start, int end, OrderByComparator<ExpandoValue> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -5605,17 +5675,20 @@ public class ExpandoValuePersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<ExpandoValue> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<ExpandoValue>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 		}
@@ -5665,10 +5738,14 @@ public class ExpandoValuePersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}

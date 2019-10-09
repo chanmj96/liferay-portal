@@ -60,11 +60,32 @@ public class JavaPackagePathCheck extends BaseJavaTermCheck {
 		}
 
 		_checkPackageName(
-			fileName, absolutePath, packageName, javaClass.getName(),
-			javaClass.getImplementedClassNames());
+			fileName, absolutePath, packageName, javaClass.getName());
 
 		if (isModulesFile(absolutePath) && !isModulesApp(absolutePath, true)) {
 			_checkModulePackageName(fileName, packageName);
+		}
+
+		String className = javaClass.getName();
+
+		if (className.startsWith("Base")) {
+			return javaTerm.getContent();
+		}
+
+		List<String> expectedInternalImplementsDataEntries = getAttributeValues(
+			_EXPECTED_INTERNAL_IMPLEMENTS_DATA_KEY, absolutePath);
+
+		for (String expectedInternalImplementsDataEntry :
+				expectedInternalImplementsDataEntries) {
+
+			String[] array = StringUtil.split(
+				expectedInternalImplementsDataEntry, CharPool.COLON);
+
+			if (array.length == 2) {
+				_checkPackageName(
+					fileName, javaClass.getImplementedClassNames(), array[0],
+					packageName, array[1], true);
+			}
 		}
 
 		return javaTerm.getContent();
@@ -115,8 +136,77 @@ public class JavaPackagePathCheck extends BaseJavaTermCheck {
 	}
 
 	private void _checkPackageName(
+			String fileName, List<String> implementedClassNames,
+			String implementedClassName, String packageName,
+			String expectedPackageName, boolean internal)
+		throws IOException {
+
+		if (!implementedClassNames.contains(implementedClassName)) {
+			return;
+		}
+
+		if (internal && !packageName.contains(".internal.") &&
+			!packageName.endsWith(".internal")) {
+
+			addMessage(
+				fileName,
+				StringBundler.concat(
+					"Class implementing '", implementedClassName,
+					"' should be in 'internal' package"));
+		}
+
+		if (packageName.endsWith(expectedPackageName)) {
+			return;
+		}
+
+		BNDSettings bndSettings = getBNDSettings(fileName);
+
+		if (bndSettings == null) {
+			return;
+		}
+
+		String bundleSymbolicName = BNDSourceUtil.getDefinitionValue(
+			bndSettings.getContent(), "Bundle-SymbolicName");
+
+		Matcher matcher = _apiOrServiceBundleSymbolicNamePattern.matcher(
+			bundleSymbolicName);
+
+		bundleSymbolicName = matcher.replaceAll(StringPool.BLANK);
+
+		if (bundleSymbolicName.endsWith(expectedPackageName)) {
+			return;
+		}
+
+		int x = -1;
+
+		while (true) {
+			x = expectedPackageName.indexOf(".", x + 1);
+
+			if (x == -1) {
+				break;
+			}
+
+			if (bundleSymbolicName.endsWith(
+					expectedPackageName.substring(0, x))) {
+
+				expectedPackageName = expectedPackageName.substring(x + 1);
+
+				break;
+			}
+		}
+
+		if (!packageName.endsWith(expectedPackageName)) {
+			addMessage(
+				fileName,
+				StringBundler.concat(
+					"Package for class implementing '", implementedClassName,
+					"' should end with '", expectedPackageName, "'"));
+		}
+	}
+
+	private void _checkPackageName(
 		String fileName, String absolutePath, String packageName,
-		String className, List<String> implementedClassNames) {
+		String className) {
 
 		int pos = fileName.lastIndexOf(CharPool.SLASH);
 
@@ -163,38 +253,13 @@ public class JavaPackagePathCheck extends BaseJavaTermCheck {
 						"' package in API module",
 					"package.markdown");
 			}
-		}
 
-		if ((className.endsWith("PermissionRegistrar") ||
-			 implementedClassNames.contains("ModelResourcePermissionLogic") ||
-			 implementedClassNames.contains(
-				 "PortletResourcePermissionLogic")) &&
-			!packageName.contains("internal.security.permission.resource") &&
-			!packageName.contains("kernel.security.permission.resource")) {
-
-			addMessage(
-				fileName,
-				StringBundler.concat(
-					"Class '", className, "' should be in a package ",
-					"'internal.security.permission.resource' or ",
-					"'kernel.security.permission.resource'"));
-		}
-
-		if ((implementedClassNames.contains(
-				"ModelResourcePermissionDefinition") ||
-			 implementedClassNames.contains(
-				 "PortletResourcePermissionDefinition")) &&
-			!packageName.contains(
-				"internal.security.permission.resource.definition") &&
-			!packageName.contains(
-				"kernel.security.permission.resource.definition")) {
-
-			addMessage(
-				fileName,
-				StringBundler.concat(
-					"Class '", className, "' should be in package ",
-					"'internal.security.permission.resource.definition' or ",
-					"'kernel.security.permission.resource.definition'"));
+			if (packageName.contains(".api.") || packageName.endsWith(".api")) {
+				addMessage(
+					fileName,
+					"Do not use 'api' in the package for classes in the API " +
+						"module");
+			}
 		}
 
 		if (className.endsWith("OSGiCommands") &&
@@ -228,6 +293,11 @@ public class JavaPackagePathCheck extends BaseJavaTermCheck {
 	private static final String _ALLOWED_INTERNAL_PACKAGE_DIR_NAMES_KEY =
 		"allowedInternalPackageDirNames";
 
+	private static final String _EXPECTED_INTERNAL_IMPLEMENTS_DATA_KEY =
+		"expectedInternalImplementsData";
+
+	private static final Pattern _apiOrServiceBundleSymbolicNamePattern =
+		Pattern.compile("\\.(api|service)$");
 	private static final Pattern _internalPackagePattern = Pattern.compile(
 		"\\.(impl|internal)(\\.|\\Z)");
 

@@ -23,12 +23,14 @@ import com.liferay.asset.kernel.model.BaseAssetRenderer;
 import com.liferay.asset.kernel.model.BaseAssetRendererFactory;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceRegistration;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Locale;
 
 import javax.portlet.PortletRequest;
@@ -81,10 +83,11 @@ public class OpenNLPDocumentAssetAutoTaggerTest
 					TestPropsValues.getUserId(), group.getGroupId(), className,
 					RandomTestUtil.randomLong(), new long[0], new String[0]);
 
-				Collection<String> tagNames = Arrays.asList(
+				Collection<String> assetTagNames = Arrays.asList(
 					assetEntry.getTagNames());
 
-				Assert.assertEquals(tagNames.toString(), 0, tagNames.size());
+				Assert.assertEquals(
+					assetTagNames.toString(), 0, assetTagNames.size());
 			});
 	}
 
@@ -110,9 +113,19 @@ public class OpenNLPDocumentAssetAutoTaggerTest
 
 			});
 
-		return assetEntryLocalService.updateEntry(
+		long classPK = RandomTestUtil.randomLong();
+		long[] assetCategoryIds = new long[0];
+		String[] assetTagNames = new String[0];
+
+		assetEntryLocalService.updateEntry(
 			TestPropsValues.getUserId(), group.getGroupId(), getClassName(),
-			RandomTestUtil.randomLong(), new long[0], new String[0]);
+			classPK, assetCategoryIds, assetTagNames);
+
+		return assetEntryLocalService.updateEntry(
+			TestPropsValues.getUserId(), group.getGroupId(), null, null,
+			getClassName(), classPK, null, 0, assetCategoryIds, assetTagNames,
+			true, true, null, null, new Date(), null, ContentTypes.TEXT_PLAIN,
+			null, null, null, null, null, 0, 0, (Double)null);
 	}
 
 	@Override

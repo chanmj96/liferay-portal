@@ -14,7 +14,6 @@
 
 package com.liferay.fragment.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,10 +30,9 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see FragmentEntryLinkService
  * @generated
  */
-@ProviderType
 public class FragmentEntryLinkServiceUtil {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.fragment.service.impl.FragmentEntryLinkServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
@@ -103,6 +101,16 @@ public class FragmentEntryLinkServiceUtil {
 			fragmentEntryLinkId, editableValues);
 	}
 
+	public static com.liferay.fragment.model.FragmentEntryLink
+			updateFragmentEntryLink(
+				long fragmentEntryLinkId, String editableValues,
+				boolean updateClassedModel)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateFragmentEntryLink(
+			fragmentEntryLinkId, editableValues, updateClassedModel);
+	}
+
 	public static void updateFragmentEntryLinks(
 			long groupId, long classNameId, long classPK,
 			long[] fragmentEntryIds, String editableValues,
@@ -112,6 +120,14 @@ public class FragmentEntryLinkServiceUtil {
 		getService().updateFragmentEntryLinks(
 			groupId, classNameId, classPK, fragmentEntryIds, editableValues,
 			serviceContext);
+	}
+
+	public static void updateFragmentEntryLinks(
+			java.util.Map<Long, String> fragmentEntryLinksEditableValuesMap)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		getService().updateFragmentEntryLinks(
+			fragmentEntryLinksEditableValuesMap);
 	}
 
 	public static FragmentEntryLinkService getService() {

@@ -42,8 +42,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the AssetAutoTaggerEntry service. Represents a row in the &quot;AssetAutoTaggerEntry&quot; database table, with each column mapped to a property of this class.
  *
@@ -55,12 +53,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetAutoTaggerEntryImpl
  * @generated
  */
-@ProviderType
 public class AssetAutoTaggerEntryModelImpl
 	extends BaseModelImpl<AssetAutoTaggerEntry>
 	implements AssetAutoTaggerEntryModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a asset auto tagger entry model instance should use the <code>AssetAutoTaggerEntry</code> interface instead.
@@ -68,16 +65,17 @@ public class AssetAutoTaggerEntryModelImpl
 	public static final String TABLE_NAME = "AssetAutoTaggerEntry";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"assetAutoTaggerEntryId", Types.BIGINT}, {"groupId", Types.BIGINT},
-		{"companyId", Types.BIGINT}, {"createDate", Types.TIMESTAMP},
-		{"modifiedDate", Types.TIMESTAMP}, {"assetEntryId", Types.BIGINT},
-		{"assetTagId", Types.BIGINT}
+		{"mvccVersion", Types.BIGINT}, {"assetAutoTaggerEntryId", Types.BIGINT},
+		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
+		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
+		{"assetEntryId", Types.BIGINT}, {"assetTagId", Types.BIGINT}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("assetAutoTaggerEntryId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("companyId", Types.BIGINT);
@@ -88,7 +86,7 @@ public class AssetAutoTaggerEntryModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table AssetAutoTaggerEntry (assetAutoTaggerEntryId LONG not null primary key,groupId LONG,companyId LONG,createDate DATE null,modifiedDate DATE null,assetEntryId LONG,assetTagId LONG)";
+		"create table AssetAutoTaggerEntry (mvccVersion LONG default 0 not null,assetAutoTaggerEntryId LONG not null primary key,groupId LONG,companyId LONG,createDate DATE null,modifiedDate DATE null,assetEntryId LONG,assetTagId LONG)";
 
 	public static final String TABLE_SQL_DROP =
 		"drop table AssetAutoTaggerEntry";
@@ -249,6 +247,12 @@ public class AssetAutoTaggerEntryModelImpl
 					<String, BiConsumer<AssetAutoTaggerEntry, ?>>();
 
 		attributeGetterFunctions.put(
+			"mvccVersion", AssetAutoTaggerEntry::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<AssetAutoTaggerEntry, Long>)
+				AssetAutoTaggerEntry::setMvccVersion);
+		attributeGetterFunctions.put(
 			"assetAutoTaggerEntryId",
 			AssetAutoTaggerEntry::getAssetAutoTaggerEntryId);
 		attributeSetterBiConsumers.put(
@@ -296,6 +300,16 @@ public class AssetAutoTaggerEntryModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@Override
@@ -438,6 +452,7 @@ public class AssetAutoTaggerEntryModelImpl
 		AssetAutoTaggerEntryImpl assetAutoTaggerEntryImpl =
 			new AssetAutoTaggerEntryImpl();
 
+		assetAutoTaggerEntryImpl.setMvccVersion(getMvccVersion());
 		assetAutoTaggerEntryImpl.setAssetAutoTaggerEntryId(
 			getAssetAutoTaggerEntryId());
 		assetAutoTaggerEntryImpl.setGroupId(getGroupId());
@@ -528,6 +543,8 @@ public class AssetAutoTaggerEntryModelImpl
 	public CacheModel<AssetAutoTaggerEntry> toCacheModel() {
 		AssetAutoTaggerEntryCacheModel assetAutoTaggerEntryCacheModel =
 			new AssetAutoTaggerEntryCacheModel();
+
+		assetAutoTaggerEntryCacheModel.mvccVersion = getMvccVersion();
 
 		assetAutoTaggerEntryCacheModel.assetAutoTaggerEntryId =
 			getAssetAutoTaggerEntryId();
@@ -637,6 +654,7 @@ public class AssetAutoTaggerEntryModelImpl
 	private static boolean _entityCacheEnabled;
 	private static boolean _finderCacheEnabled;
 
+	private long _mvccVersion;
 	private long _assetAutoTaggerEntryId;
 	private long _groupId;
 	private long _companyId;

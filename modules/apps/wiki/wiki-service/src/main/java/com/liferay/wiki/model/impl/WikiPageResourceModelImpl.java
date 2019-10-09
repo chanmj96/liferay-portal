@@ -41,8 +41,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the WikiPageResource service. Represents a row in the &quot;WikiPageResource&quot; database table, with each column mapped to a property of this class.
  *
@@ -54,11 +52,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see WikiPageResourceImpl
  * @generated
  */
-@ProviderType
 public class WikiPageResourceModelImpl
 	extends BaseModelImpl<WikiPageResource> implements WikiPageResourceModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a wiki page resource model instance should use the <code>WikiPageResource</code> interface instead.
@@ -66,15 +63,17 @@ public class WikiPageResourceModelImpl
 	public static final String TABLE_NAME = "WikiPageResource";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"resourcePrimKey", Types.BIGINT},
-		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
-		{"nodeId", Types.BIGINT}, {"title", Types.VARCHAR}
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"resourcePrimKey", Types.BIGINT}, {"groupId", Types.BIGINT},
+		{"companyId", Types.BIGINT}, {"nodeId", Types.BIGINT},
+		{"title", Types.VARCHAR}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("resourcePrimKey", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -84,7 +83,7 @@ public class WikiPageResourceModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table WikiPageResource (uuid_ VARCHAR(75) null,resourcePrimKey LONG not null primary key,groupId LONG,companyId LONG,nodeId LONG,title VARCHAR(255) null)";
+		"create table WikiPageResource (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,resourcePrimKey LONG not null primary key,groupId LONG,companyId LONG,nodeId LONG,title VARCHAR(255) null)";
 
 	public static final String TABLE_SQL_DROP = "drop table WikiPageResource";
 
@@ -100,21 +99,6 @@ public class WikiPageResourceModelImpl
 
 	public static final String TX_MANAGER = "liferayTransactionManager";
 
-	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.wiki.service.util.ServiceProps.get(
-			"value.object.entity.cache.enabled.com.liferay.wiki.model.WikiPageResource"),
-		true);
-
-	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.wiki.service.util.ServiceProps.get(
-			"value.object.finder.cache.enabled.com.liferay.wiki.model.WikiPageResource"),
-		true);
-
-	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(
-		com.liferay.wiki.service.util.ServiceProps.get(
-			"value.object.column.bitmask.enabled.com.liferay.wiki.model.WikiPageResource"),
-		true);
-
 	public static final long COMPANYID_COLUMN_BITMASK = 1L;
 
 	public static final long GROUPID_COLUMN_BITMASK = 2L;
@@ -127,9 +111,13 @@ public class WikiPageResourceModelImpl
 
 	public static final long RESOURCEPRIMKEY_COLUMN_BITMASK = 32L;
 
-	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
-		com.liferay.wiki.service.util.ServiceProps.get(
-			"lock.expiration.time.com.liferay.wiki.model.WikiPageResource"));
+	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
+		_entityCacheEnabled = entityCacheEnabled;
+	}
+
+	public static void setFinderCacheEnabled(boolean finderCacheEnabled) {
+		_finderCacheEnabled = finderCacheEnabled;
+	}
 
 	public WikiPageResourceModelImpl() {
 	}
@@ -258,6 +246,12 @@ public class WikiPageResourceModelImpl
 			attributeSetterBiConsumers =
 				new LinkedHashMap<String, BiConsumer<WikiPageResource, ?>>();
 
+		attributeGetterFunctions.put(
+			"mvccVersion", WikiPageResource::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<WikiPageResource, Long>)
+				WikiPageResource::setMvccVersion);
 		attributeGetterFunctions.put("uuid", WikiPageResource::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid",
@@ -290,6 +284,16 @@ public class WikiPageResourceModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@Override
@@ -454,6 +458,7 @@ public class WikiPageResourceModelImpl
 	public Object clone() {
 		WikiPageResourceImpl wikiPageResourceImpl = new WikiPageResourceImpl();
 
+		wikiPageResourceImpl.setMvccVersion(getMvccVersion());
 		wikiPageResourceImpl.setUuid(getUuid());
 		wikiPageResourceImpl.setResourcePrimKey(getResourcePrimKey());
 		wikiPageResourceImpl.setGroupId(getGroupId());
@@ -510,12 +515,12 @@ public class WikiPageResourceModelImpl
 
 	@Override
 	public boolean isEntityCacheEnabled() {
-		return ENTITY_CACHE_ENABLED;
+		return _entityCacheEnabled;
 	}
 
 	@Override
 	public boolean isFinderCacheEnabled() {
-		return FINDER_CACHE_ENABLED;
+		return _finderCacheEnabled;
 	}
 
 	@Override
@@ -550,6 +555,8 @@ public class WikiPageResourceModelImpl
 	public CacheModel<WikiPageResource> toCacheModel() {
 		WikiPageResourceCacheModel wikiPageResourceCacheModel =
 			new WikiPageResourceCacheModel();
+
+		wikiPageResourceCacheModel.mvccVersion = getMvccVersion();
 
 		wikiPageResourceCacheModel.uuid = getUuid();
 
@@ -648,6 +655,10 @@ public class WikiPageResourceModelImpl
 
 	}
 
+	private static boolean _entityCacheEnabled;
+	private static boolean _finderCacheEnabled;
+
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _resourcePrimKey;

@@ -17,12 +17,12 @@ package com.liferay.journal.trash;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.journal.exception.InvalidDDMStructureException;
+import com.liferay.journal.internal.security.permission.JournalFolderPermission;
 import com.liferay.journal.internal.util.JournalHelperUtil;
+import com.liferay.journal.internal.util.JournalUtil;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.service.JournalFolderLocalService;
-import com.liferay.journal.service.permission.JournalFolderPermission;
-import com.liferay.journal.util.impl.JournalUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ContainerModel;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -330,10 +330,9 @@ public class JournalFolderTrashHandler extends JournalBaseTrashHandler {
 			PermissionChecker permissionChecker, long classPK, String actionId)
 		throws PortalException {
 
-		JournalFolder folder = _journalFolderLocalService.getFolder(classPK);
-
 		return JournalFolderPermission.contains(
-			permissionChecker, folder, actionId);
+			permissionChecker, _journalFolderLocalService.getFolder(classPK),
+			actionId);
 	}
 
 	@Reference(unbind = "-")

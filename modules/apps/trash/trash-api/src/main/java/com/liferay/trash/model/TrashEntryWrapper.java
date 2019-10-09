@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link TrashEntry}.
@@ -32,10 +30,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see TrashEntry
  * @generated
  */
-@ProviderType
 public class TrashEntryWrapper
 	extends BaseModelWrapper<TrashEntry>
-	implements TrashEntry, ModelWrapper<TrashEntry> {
+	implements ModelWrapper<TrashEntry>, TrashEntry {
 
 	public TrashEntryWrapper(TrashEntry trashEntry) {
 		super(trashEntry);
@@ -45,6 +42,7 @@ public class TrashEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("entryId", getEntryId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -62,6 +60,12 @@ public class TrashEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long entryId = (Long)attributes.get("entryId");
 
 		if (entryId != null) {
@@ -200,6 +204,16 @@ public class TrashEntryWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this trash entry.
+	 *
+	 * @return the mvcc version of this trash entry
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this trash entry.
 	 *
 	 * @return the primary key of this trash entry
@@ -301,6 +315,11 @@ public class TrashEntryWrapper
 		return model.isTrashEntry(className, classPK);
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a trash entry model instance should use the <code>TrashEntry</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -369,6 +388,16 @@ public class TrashEntryWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the mvcc version of this trash entry.
+	 *
+	 * @param mvccVersion the mvcc version of this trash entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

@@ -1,5 +1,4 @@
-@import 'bourbon';
-@import 'mixins';
+@import 'atlas-variables';
 
 .color-cell-editor-hidden {
 	display: none;
@@ -35,7 +34,7 @@
 		.tab-pane {
 			min-height: 500px;
 
-			@include respond-to(phone) {
+			@include media-breakpoint-down(sm) {
 				min-height: 100px;
 
 				.form-builder-field .btn {
@@ -149,7 +148,7 @@
 		}
 	}
 
-	@include respond-to(phone) {
+	@include media-breakpoint-down(sm) {
 		.lfr-template-editor-container {
 			.lfr-template-palette-container {
 				width: 100%;

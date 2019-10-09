@@ -16,6 +16,7 @@ package com.liferay.site.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 
@@ -36,9 +37,10 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface SiteFriendlyURLModel
-	extends BaseModel<SiteFriendlyURL>, ShardedModel, StagedGroupedModel {
+	extends BaseModel<SiteFriendlyURL>, MVCCModel, ShardedModel,
+			StagedGroupedModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. All methods that expect a site friendly url model instance should use the {@link SiteFriendlyURL} interface instead.
@@ -57,6 +59,22 @@ public interface SiteFriendlyURLModel
 	 * @param primaryKey the primary key of this site friendly url
 	 */
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this site friendly url.
+	 *
+	 * @return the mvcc version of this site friendly url
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this site friendly url.
+	 *
+	 * @param mvccVersion the mvcc version of this site friendly url
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
 
 	/**
 	 * Returns the uuid of this site friendly url.

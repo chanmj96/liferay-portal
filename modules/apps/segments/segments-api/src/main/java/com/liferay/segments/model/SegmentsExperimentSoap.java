@@ -20,20 +20,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.segments.service.http.SegmentsExperimentServiceSoap}.
  *
  * @author Eduardo Garcia
  * @generated
  */
-@ProviderType
 public class SegmentsExperimentSoap implements Serializable {
 
 	public static SegmentsExperimentSoap toSoapModel(SegmentsExperiment model) {
 		SegmentsExperimentSoap soapModel = new SegmentsExperimentSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setSegmentsExperimentId(model.getSegmentsExperimentId());
 		soapModel.setGroupId(model.getGroupId());
@@ -49,8 +47,8 @@ public class SegmentsExperimentSoap implements Serializable {
 		soapModel.setClassPK(model.getClassPK());
 		soapModel.setName(model.getName());
 		soapModel.setDescription(model.getDescription());
-		soapModel.setStatus(model.getStatus());
 		soapModel.setTypeSettings(model.getTypeSettings());
+		soapModel.setStatus(model.getStatus());
 
 		return soapModel;
 	}
@@ -111,6 +109,14 @@ public class SegmentsExperimentSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setSegmentsExperimentId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -233,14 +239,6 @@ public class SegmentsExperimentSoap implements Serializable {
 		_description = description;
 	}
 
-	public int getStatus() {
-		return _status;
-	}
-
-	public void setStatus(int status) {
-		_status = status;
-	}
-
 	public String getTypeSettings() {
 		return _typeSettings;
 	}
@@ -249,6 +247,15 @@ public class SegmentsExperimentSoap implements Serializable {
 		_typeSettings = typeSettings;
 	}
 
+	public int getStatus() {
+		return _status;
+	}
+
+	public void setStatus(int status) {
+		_status = status;
+	}
+
+	private long _mvccVersion;
 	private String _uuid;
 	private long _segmentsExperimentId;
 	private long _groupId;
@@ -264,7 +271,7 @@ public class SegmentsExperimentSoap implements Serializable {
 	private long _classPK;
 	private String _name;
 	private String _description;
-	private int _status;
 	private String _typeSettings;
+	private int _status;
 
 }

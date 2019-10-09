@@ -14,6 +14,8 @@
 
 package com.liferay.gradle.plugins.baseline;
 
+import aQute.bnd.version.Version;
+
 import com.liferay.gradle.plugins.baseline.internal.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
 
@@ -40,7 +42,6 @@ import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.JavaBasePlugin;
 import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.plugins.ReportingBasePlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskContainer;
@@ -126,7 +127,6 @@ public class BaselinePlugin implements Plugin<Project> {
 		return configuration;
 	}
 
-	@SuppressWarnings("rawtypes")
 	private BaselineTask _addTaskBaseline(
 		final AbstractArchiveTask newJarTask) {
 
@@ -137,21 +137,6 @@ public class BaselinePlugin implements Plugin<Project> {
 			"Compares the public API of this project with the public API of " +
 				"the previous released version, if found.");
 		baselineTask.setGroup(JavaBasePlugin.VERIFICATION_GROUP);
-
-		Project project = baselineTask.getProject();
-
-		PluginContainer pluginContainer = project.getPlugins();
-
-		pluginContainer.withId(
-			"biz.aQute.bnd.builder",
-			new Action<Plugin>() {
-
-				@Override
-				public void execute(Plugin plugin) {
-					_configureTaskBaselineForBndBuilderPlugin(baselineTask);
-				}
-
-			});
 
 		return baselineTask;
 	}
@@ -384,12 +369,6 @@ public class BaselinePlugin implements Plugin<Project> {
 		baselineTask.setReportOnlyDirtyPackages(reportOnlyDirtyPackages);
 	}
 
-	private void _configureTaskBaselineForBndBuilderPlugin(
-		BaselineTask baselineTask) {
-
-		GradleUtil.setProperty(baselineTask, "bundleTask", null);
-	}
-
 	private void _configureTasksBaseline(
 		Project project,
 		final BaselineConfigurationExtension baselineConfigurationExtension) {
@@ -436,6 +415,34 @@ public class BaselinePlugin implements Plugin<Project> {
 		}
 		else {
 			version = "(," + newJarTask.getVersion() + ")";
+
+			if (newJarTask.getVersion() != null) {
+				Version newVersion = new Version(newJarTask.getVersion());
+
+				if (newVersion.getQualifier() == null) {
+					if (newVersion.getMicro() > 0) {
+						StringBuilder sb = new StringBuilder();
+
+						sb.append(newVersion.getMajor());
+						sb.append('.');
+						sb.append(newVersion.getMinor());
+						sb.append('.');
+						sb.append(newVersion.getMicro() - 1);
+
+						version = sb.toString();
+					}
+					else if (newVersion.getMinor() > 0) {
+						StringBuilder sb = new StringBuilder();
+
+						sb.append(newVersion.getMajor());
+						sb.append('.');
+						sb.append(newVersion.getMinor() - 1);
+						sb.append(".0");
+
+						version = sb.toString();
+					}
+				}
+			}
 		}
 
 		args.put("version", version);

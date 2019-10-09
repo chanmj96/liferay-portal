@@ -47,10 +47,6 @@ else {
 }
 %>
 
-<c:if test="<%= scopeGroup.equals(themeDisplay.getControlPanelGroup()) %>">
-	<div class="upper-tbar-container-fixed">
-</c:if>
-
 <div class="tbar upper-tbar">
 	<div class="container-fluid container-fluid-max-xl">
 		<ul class="tbar-nav">
@@ -66,7 +62,7 @@ else {
 
 			<li class="tbar-item tbar-item-expand">
 				<div class="tbar-section text-left">
-					<h2 class="text-truncate-inline upper-tbar-title" title="<%= HtmlUtil.escapeAttribute(assetRenderer.getTitle(locale)) %>">
+					<h2 class="my-4 text-truncate-inline upper-tbar-title" title="<%= HtmlUtil.escapeAttribute(assetRenderer.getTitle(locale)) %>">
 						<span class="text-truncate"><%= HtmlUtil.escape(assetRenderer.getTitle(locale)) %></span>
 					</h2>
 				</div>
@@ -80,20 +76,14 @@ else {
 	</div>
 </div>
 
-<c:if test="<%= scopeGroup.equals(themeDisplay.getControlPanelGroup()) %>">
-	</div>
-</c:if>
+<liferay-util:buffer
+	var="assetContent"
+>
+	<liferay-asset:asset-display
+		renderer="<%= assetRenderer %>"
+	/>
 
-<liferay-asset:asset-display
-	assetEntry="<%= assetEntry %>"
-	assetRenderer="<%= assetRenderer %>"
-	assetRendererFactory="<%= assetRendererFactory %>"
-	showExtraInfo="<%= true %>"
-	template="<%= AssetRenderer.TEMPLATE_FULL_CONTENT %>"
-/>
-
-<c:if test="<%= assetRenderer.isCommentable() %>">
-	<div class="container-fluid-1280">
+	<c:if test="<%= assetRenderer.isCommentable() %>">
 		<liferay-comment:discussion
 			className="<%= assetEntry.getClassName() %>"
 			classPK="<%= assetEntry.getClassPK() %>"
@@ -102,5 +92,20 @@ else {
 			redirect="<%= currentURL %>"
 			userId="<%= assetRenderer.getUserId() %>"
 		/>
-	</div>
-</c:if>
+	</c:if>
+</liferay-util:buffer>
+
+<div class="container-fluid-1280">
+	<c:choose>
+		<c:when test="<%= scopeGroup.equals(themeDisplay.getControlPanelGroup()) %>">
+			<aui:fieldset-group markupView="lexicon">
+				<aui:fieldset>
+					<%= assetContent %>
+				</aui:fieldset>
+			</aui:fieldset-group>
+		</c:when>
+		<c:otherwise>
+			<%= assetContent %>
+		</c:otherwise>
+	</c:choose>
+</div>

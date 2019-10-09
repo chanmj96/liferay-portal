@@ -1,7 +1,5 @@
 package ${packagePath}.service.base;
 
-import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
-
 import ${apiPackagePath}.service.${entity.name}${sessionTypeName}Service;
 
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
@@ -11,6 +9,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
@@ -47,6 +46,8 @@ import com.liferay.portal.kernel.service.Base${sessionTypeName}ServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistryUtil;
+import com.liferay.portal.kernel.service.change.tracking.CTService;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.InfrastructureUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -138,8 +139,6 @@ import org.osgi.service.component.annotations.Reference;
 <#if classDeprecated>
 	@Deprecated
 </#if>
-
-	@ProviderType
 	public abstract class ${entity.name}LocalServiceBaseImpl extends BaseLocalServiceImpl implements ${entity.name}LocalService,
 	<#if dependencyInjectorDS>
 		AopService,
@@ -154,7 +153,7 @@ import org.osgi.service.component.annotations.Reference;
 
 	{
 
-		/*
+		/**
 		 * NOTE FOR DEVELOPERS:
 		 *
 		 * Never modify or reference this class directly. Use <code>${apiPackagePath}.service.${entity.name}LocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>${apiPackagePath}.service.${entity.name}LocalServiceUtil</code>.
@@ -186,7 +185,7 @@ import org.osgi.service.component.annotations.Reference;
 
 		IdentifiableOSGiService {
 
-		/*
+		/**
 		 * NOTE FOR DEVELOPERS:
 		 *
 		 * Never modify or reference this class directly. Use <code>${apiPackagePath}.service.${entity.name}Service</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>${apiPackagePath}.service.${entity.name}ServiceUtil</code>.
@@ -1429,6 +1428,10 @@ import org.osgi.service.component.annotations.Reference;
 				${entity.name}${sessionTypeName}Service.class, IdentifiableOSGiService.class
 
 				<#if stringUtil.equals(sessionTypeName, "Local") && entity.hasEntityColumns() && entity.hasPersistence()>
+					<#if entity.isChangeTrackingEnabled()>
+						, CTService.class
+					</#if>
+
 					, PersistedModelLocalService.class
 				</#if>
 			};
@@ -1791,9 +1794,26 @@ import org.osgi.service.component.annotations.Reference;
 	}
 
 	<#if entity.hasEntityColumns()>
-		protected Class<?> getModelClass() {
-			return ${entity.name}.class;
-		}
+		<#if entity.isChangeTrackingEnabled() && stringUtil.equals(sessionTypeName, "Local")>
+			@Override
+			public CTPersistence<${entity.name}> getCTPersistence() {
+				return ${entity.varName}Persistence;
+			}
+
+			@Override
+			public Class<${entity.name}> getModelClass() {
+				return ${entity.name}.class;
+			}
+
+			@Override
+			public <R, E extends Throwable> R updateWithUnsafeFunction(UnsafeFunction<CTPersistence<${entity.name}>, R, E> updateUnsafeFunction) throws E {
+				return updateUnsafeFunction.apply(${entity.varName}Persistence);
+			}
+		<#else>
+			protected Class<?> getModelClass() {
+				return ${entity.name}.class;
+			}
+		</#if>
 
 		protected String getModelClassName() {
 			return ${entity.name}.class.getName();

@@ -24,6 +24,8 @@ import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.service.WikiNodeLocalServiceUtil;
 
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -45,6 +47,25 @@ public class WikiPageResourceTest extends BaseWikiPageResourceTestCase {
 			UserLocalServiceUtil.getDefaultUserId(testGroup.getCompanyId()),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			serviceContext);
+
+		WikiNode parentWikiNode = WikiNodeLocalServiceUtil.addNode(
+			UserLocalServiceUtil.getDefaultUserId(testGroup.getCompanyId()),
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			serviceContext);
+
+		_wikiPage = _addWikiPage(parentWikiNode.getNodeId());
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLDeleteWikiPage() {
+	}
+
+	@Ignore
+	@Override
+	@Test
+	public void testGraphQLGetWikiPage() {
 	}
 
 	@Override
@@ -58,7 +79,7 @@ public class WikiPageResourceTest extends BaseWikiPageResourceTestCase {
 
 	@Override
 	protected WikiPage testDeleteWikiPage_addWikiPage() throws Exception {
-		return _addWikiPage();
+		return _addWikiPage(testGetWikiNodeWikiPagesPage_getWikiNodeId());
 	}
 
 	@Override
@@ -68,20 +89,38 @@ public class WikiPageResourceTest extends BaseWikiPageResourceTestCase {
 
 	@Override
 	protected WikiPage testGetWikiPage_addWikiPage() throws Exception {
-		return _addWikiPage();
+		return _addWikiPage(testGetWikiNodeWikiPagesPage_getWikiNodeId());
+	}
+
+	@Override
+	protected WikiPage testGetWikiPageWikiPagesPage_addWikiPage(
+			Long parentWikiPageId, WikiPage wikiPage)
+		throws Exception {
+
+		return wikiPageResource.postWikiPageWikiPage(
+			parentWikiPageId, randomWikiPage());
+	}
+
+	@Override
+	protected Long testGetWikiPageWikiPagesPage_getParentWikiPageId()
+		throws Exception {
+
+		return _wikiPage.getId();
 	}
 
 	@Override
 	protected WikiPage testPutWikiPage_addWikiPage() throws Exception {
-		return _addWikiPage();
+		return _addWikiPage(testGetWikiNodeWikiPagesPage_getWikiNodeId());
 	}
 
-	private WikiPage _addWikiPage() throws Exception {
+	private WikiPage _addWikiPage(Long wikiNodeId) throws Exception {
 		return wikiPageResource.postWikiNodeWikiPage(
-			testGetWikiNodeWikiPagesPage_getWikiNodeId(), randomWikiPage());
+			wikiNodeId, randomWikiPage());
 	}
 
 	@DeleteAfterTestRun
 	private WikiNode _wikiNode;
+
+	private WikiPage _wikiPage;
 
 }

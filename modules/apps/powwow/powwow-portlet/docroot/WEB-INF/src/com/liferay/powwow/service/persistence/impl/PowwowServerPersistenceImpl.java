@@ -50,8 +50,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The persistence implementation for the powwow server service.
  *
@@ -62,12 +60,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Shinn Lok
  * @generated
  */
-@ProviderType
 public class PowwowServerPersistenceImpl
 	extends BasePersistenceImpl<PowwowServer>
 	implements PowwowServerPersistence {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Always use <code>PowwowServerUtil</code> to access the powwow server persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
@@ -156,14 +153,14 @@ public class PowwowServerPersistenceImpl
 	 * @param start the lower bound of the range of powwow servers
 	 * @param end the upper bound of the range of powwow servers (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching powwow servers
 	 */
 	@Override
 	public List<PowwowServer> findByPT_A(
 		String providerType, boolean active, int start, int end,
 		OrderByComparator<PowwowServer> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		providerType = Objects.toString(providerType, "");
 
@@ -175,10 +172,13 @@ public class PowwowServerPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByPT_A;
-			finderArgs = new Object[] {providerType, active};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByPT_A;
+				finderArgs = new Object[] {providerType, active};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByPT_A;
 			finderArgs = new Object[] {
 				providerType, active, start, end, orderByComparator
@@ -187,7 +187,7 @@ public class PowwowServerPersistenceImpl
 
 		List<PowwowServer> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<PowwowServer>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -270,10 +270,14 @@ public class PowwowServerPersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -1104,13 +1108,13 @@ public class PowwowServerPersistenceImpl
 	 * @param start the lower bound of the range of powwow servers
 	 * @param end the upper bound of the range of powwow servers (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of powwow servers
 	 */
 	@Override
 	public List<PowwowServer> findAll(
 		int start, int end, OrderByComparator<PowwowServer> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -1120,17 +1124,20 @@ public class PowwowServerPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<PowwowServer> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<PowwowServer>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 		}
@@ -1180,10 +1187,14 @@ public class PowwowServerPersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}

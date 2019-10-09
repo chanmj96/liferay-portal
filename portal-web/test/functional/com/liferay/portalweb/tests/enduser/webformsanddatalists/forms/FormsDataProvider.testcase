@@ -10,6 +10,8 @@ definition {
 		TestCase.setUpPortalInstance();
 
 		User.firstLoginPG();
+
+		FormsAdminNavigator.enableLocalNetworkDataProvider();
 	}
 
 	tearDown {
@@ -69,7 +71,7 @@ definition {
 
 		Form.editFieldLabelMetal(fieldValue = "Text Field With Autocomplete");
 
-		Form.gotoAdvancedTab();
+		Form.gotoAutocompleteTab();
 
 		Form.enableAutocompleteConfiguration();
 
@@ -94,7 +96,7 @@ definition {
 
 		FormsAdminNavigator.gotoEditField(fieldName = "Text Field With Autocomplete");
 
-		Form.gotoAdvancedTab();
+		Form.gotoAutocompleteTab();
 
 		Form.editFieldDataProvider(
 			dataProvider = "Country Names",

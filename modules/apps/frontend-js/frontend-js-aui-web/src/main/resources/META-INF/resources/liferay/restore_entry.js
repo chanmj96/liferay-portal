@@ -26,8 +26,6 @@ AUI.add(
 
 		var isString = Lang.isString;
 
-		var RESPONSE_DATA = 'responseData';
-
 		var STR_CHECK_ENTRY_URL = 'checkEntryURL';
 
 		var RestoreEntry = A.Component.create({
@@ -52,49 +50,23 @@ AUI.add(
 			NAME: 'restoreentry',
 
 			prototype: {
-				initializer: function(config) {
-					var instance = this;
-
-					instance._eventCheckEntry = instance.ns('checkEntry');
-
-					instance._hrefFm = A.one('#hrefFm');
-
-					var eventHandles = [
-						Liferay.on(
-							instance._eventCheckEntry,
-							instance._checkEntry,
-							instance
-						)
-					];
-
-					instance._eventHandles = eventHandles;
-				},
-
-				destructor: function() {
-					var instance = this;
-
-					A.Array.invoke(instance._eventHandles, 'detach');
-				},
-
-				_afterCheckEntryFailure: function(event, uri) {
+				_afterCheckEntryFailure(uri) {
 					var instance = this;
 
 					submitForm(instance._hrefFm, uri);
 				},
 
-				_afterCheckEntrySuccess: function(event, id, xhr, uri) {
+				_afterCheckEntrySuccess(response, uri) {
 					var instance = this;
 
-					var responseData = event.currentTarget.get(RESPONSE_DATA);
-
-					if (responseData.success) {
+					if (response.success) {
 						submitForm(instance._hrefFm, uri);
 					} else {
 						var data = instance.ns({
-							duplicateEntryId: responseData.duplicateEntryId,
-							oldName: responseData.oldName,
-							overridable: responseData.overridable,
-							trashEntryId: responseData.trashEntryId
+							duplicateEntryId: response.duplicateEntryId,
+							oldName: response.oldName,
+							overridable: response.overridable,
+							trashEntryId: response.trashEntryId
 						});
 
 						instance._showPopup(
@@ -104,21 +76,17 @@ AUI.add(
 					}
 				},
 
-				_afterPopupCheckEntryFailure: function(event, id, xhr, form) {
-					var instance = this;
-
+				_afterPopupCheckEntryFailure(form) {
 					submitForm(form);
 				},
 
-				_afterPopupCheckEntrySuccess: function(event, id, xhr, form) {
+				_afterPopupCheckEntrySuccess(response, form) {
 					var instance = this;
 
-					var responseData = event.currentTarget.get(RESPONSE_DATA);
-
-					if (responseData.success) {
+					if (response.success) {
 						submitForm(form);
 					} else {
-						var errorMessage = responseData.errorMessage;
+						var errorMessage = response.errorMessage;
 
 						var errorMessageContainer = instance.byId(
 							'errorMessageContainer'
@@ -126,7 +94,7 @@ AUI.add(
 
 						if (errorMessage) {
 							errorMessageContainer.html(
-								Liferay.Language.get(responseData.errorMessage)
+								Liferay.Language.get(response.errorMessage)
 							);
 
 							errorMessageContainer.show();
@@ -150,31 +118,29 @@ AUI.add(
 					}
 				},
 
-				_checkEntry: function(event) {
+				_checkEntry(event) {
 					var instance = this;
 
 					var uri = event.uri;
 
-					A.io.request(instance.get(STR_CHECK_ENTRY_URL), {
-						after: {
-							failure: A.rbind(
-								'_afterCheckEntryFailure',
-								instance
-							),
-							success: A.rbind(
-								'_afterCheckEntrySuccess',
-								instance
-							)
-						},
-						arguments: uri,
-						data: instance.ns({
-							trashEntryId: event.trashEntryId
-						}),
-						dataType: 'JSON'
-					});
+					var data = {
+						trashEntryId: event.trashEntryId
+					};
+
+					Liferay.Util.fetch(instance.get(STR_CHECK_ENTRY_URL), {
+						body: Liferay.Util.objectToFormData(instance.ns(data)),
+						method: 'POST'
+					})
+						.then(response => response.json())
+						.then(response => {
+							instance._afterCheckEntrySuccess(response, uri);
+						})
+						.catch(() => {
+							instance._afterCheckEntryFailure(uri);
+						});
 				},
 
-				_getPopup: function() {
+				_getPopup() {
 					var instance = this;
 
 					var popup = instance._popup;
@@ -203,7 +169,7 @@ AUI.add(
 					return popup;
 				},
 
-				_initializeRestorePopup: function() {
+				_initializeRestorePopup() {
 					var instance = this;
 
 					var restoreTrashEntryFm = instance.byId(
@@ -235,12 +201,12 @@ AUI.add(
 						A.fn('focusFormField', Liferay.Util, newName)
 					);
 
-					newName.on('focus', function(event) {
+					newName.on('focus', function() {
 						rename.attr('checked', true);
 					});
 				},
 
-				_onRestoreTrashEntryFmSubmit: function(event, form) {
+				_onRestoreTrashEntryFmSubmit(_event, form) {
 					var instance = this;
 
 					var newName = instance.byId('newName');
@@ -253,28 +219,31 @@ AUI.add(
 					) {
 						submitForm(form);
 					} else {
-						A.io.request(instance.get(STR_CHECK_ENTRY_URL), {
-							after: {
-								failure: A.rbind(
-									'_afterPopupCheckEntryFailure',
-									instance
-								),
-								success: A.rbind(
-									'_afterPopupCheckEntrySuccess',
-									instance
-								)
-							},
-							arguments: form,
-							data: instance.ns({
-								newName: newName.val(),
-								trashEntryId: trashEntryId.val()
-							}),
-							dataType: 'JSON'
-						});
+						var data = {
+							newName: newName.val(),
+							trashEntryId: trashEntryId.val()
+						};
+
+						Liferay.Util.fetch(instance.get(STR_CHECK_ENTRY_URL), {
+							body: Liferay.Util.objectToFormData(
+								instance.ns(data)
+							),
+							method: 'POST'
+						})
+							.then(response => response.json())
+							.then(response => {
+								instance._afterPopupCheckEntrySuccess(
+									response,
+									form
+								);
+							})
+							.catch(() => {
+								instance._afterPopupCheckEntryFailure(form);
+							});
 					}
 				},
 
-				_showPopup: function(data, uri) {
+				_showPopup(data, uri) {
 					var instance = this;
 
 					var popup = instance._getPopup();
@@ -287,6 +256,30 @@ AUI.add(
 					popupIO.set('uri', uri);
 
 					popupIO.start();
+				},
+
+				destructor() {
+					var instance = this;
+
+					A.Array.invoke(instance._eventHandles, 'detach');
+				},
+
+				initializer() {
+					var instance = this;
+
+					instance._eventCheckEntry = instance.ns('checkEntry');
+
+					instance._hrefFm = A.one('#hrefFm');
+
+					var eventHandles = [
+						Liferay.on(
+							instance._eventCheckEntry,
+							instance._checkEntry,
+							instance
+						)
+					];
+
+					instance._eventHandles = eventHandles;
 				}
 			}
 		});
@@ -297,7 +290,6 @@ AUI.add(
 	{
 		requires: [
 			'aui-io-plugin-deprecated',
-			'aui-io-request',
 			'liferay-portlet-base',
 			'liferay-util-window'
 		]

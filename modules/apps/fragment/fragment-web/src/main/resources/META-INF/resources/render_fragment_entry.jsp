@@ -17,26 +17,9 @@
 <%@ include file="/init.jsp" %>
 
 <%
-long fragmentEntryId = ParamUtil.getLong(request, "fragmentEntryId");
+FragmentRendererController fragmentRendererController = (FragmentRendererController)request.getAttribute(FragmentActionKeys.FRAGMENT_RENDERER_CONTROLLER);
 
-FragmentEntry fragmentEntry = FragmentEntryLocalServiceUtil.fetchFragmentEntry(fragmentEntryId);
-
-String css = BeanParamUtil.getString(fragmentEntry, request, "css");
-String html = BeanParamUtil.getString(fragmentEntry, request, "html");
-String js = BeanParamUtil.getString(fragmentEntry, request, "js");
-String configuration = BeanParamUtil.getString(fragmentEntry, request, "configuration");
-
-FragmentEntryLink fragmentEntryLink = FragmentEntryLinkLocalServiceUtil.createFragmentEntryLink(0);
-
-fragmentEntryLink.setFragmentEntryId(fragmentEntryId);
-fragmentEntryLink.setCss(css);
-fragmentEntryLink.setHtml(html);
-fragmentEntryLink.setJs(js);
-fragmentEntryLink.setConfiguration(configuration);
-
-DefaultFragmentRendererContext defaultFragmentRendererContext = new DefaultFragmentRendererContext(fragmentEntryLink);
-
-defaultFragmentRendererContext.setMode(FragmentEntryLinkConstants.VIEW);
+RenderFragmentEntryDisplayContext renderFragmentEntryDisplayContext = new RenderFragmentEntryDisplayContext(request);
 %>
 
-<%= fragmentRendererController.render(defaultFragmentRendererContext, request, response) %>
+<%= fragmentRendererController.render(renderFragmentEntryDisplayContext.getDefaultFragmentRendererContext(), request, response) %>

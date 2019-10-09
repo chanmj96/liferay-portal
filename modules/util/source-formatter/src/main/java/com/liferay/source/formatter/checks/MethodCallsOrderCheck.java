@@ -45,6 +45,10 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 		}
 
 		for (String variableTypeRegex : variableTypeRegexStrings) {
+			if (variableName.matches(variableTypeRegex)) {
+				return true;
+			}
+
 			StringBundler sb = new StringBundler(5);
 
 			sb.append("\\W");
@@ -81,7 +85,8 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 	}
 
 	private String _sortChainedMethodCall(
-		String content, String methodName, String... variableTypeRegexStrings) {
+		String content, String methodName, int expectedParameterCount,
+		String... variableTypeRegexStrings) {
 
 		if (!content.contains("." + methodName + "(")) {
 			return content;
@@ -127,6 +132,10 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 
 				List<String> parametersList = JavaSourceUtil.splitParameters(
 					parameters);
+
+				if (parametersList.size() != expectedParameterCount) {
+					break;
+				}
 
 				String putOrSetParameterName = parametersList.get(0);
 
@@ -233,7 +242,8 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 	}
 
 	private String _sortMethodCalls(String content) {
-		content = _sortChainedMethodCall(content, "put", "JSONObject");
+		content = _sortChainedMethodCall(
+			content, "put", 2, "JSONObject", "JSONUtil");
 
 		content = _sortMethodCall(
 			content, "add", "ConcurrentSkipListSet(<.*>|\\(\\))",

@@ -14,7 +14,6 @@
 
 package com.liferay.segments.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,14 +30,28 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see SegmentsExperimentRelLocalService
  * @generated
  */
-@ProviderType
 public class SegmentsExperimentRelLocalServiceUtil {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.segments.service.impl.SegmentsExperimentRelLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this interface directly. Always use {@link SegmentsExperimentRelLocalServiceUtil} to access the segments experiment rel local service. Add custom service methods to <code>com.liferay.segments.service.impl.SegmentsExperimentRelLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 */
+	public static com.liferay.segments.model.SegmentsExperimentRel
+			addSegmentsExperimentRel(
+				long segmentsExperimentId, long segmentsExperienceId,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addSegmentsExperimentRel(
+			segmentsExperimentId, segmentsExperienceId, serviceContext);
+	}
 
 	/**
 	 * Adds the segments experiment rel to the database. Also notifies the appropriate model listeners.
@@ -98,13 +111,32 @@ public class SegmentsExperimentRelLocalServiceUtil {
 	 *
 	 * @param segmentsExperimentRel the segments experiment rel
 	 * @return the segments experiment rel that was removed
+	 * @throws PortalException
 	 */
 	public static com.liferay.segments.model.SegmentsExperimentRel
-		deleteSegmentsExperimentRel(
-			com.liferay.segments.model.SegmentsExperimentRel
-				segmentsExperimentRel) {
+			deleteSegmentsExperimentRel(
+				com.liferay.segments.model.SegmentsExperimentRel
+					segmentsExperimentRel)
+		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().deleteSegmentsExperimentRel(segmentsExperimentRel);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentRel
+			deleteSegmentsExperimentRel(
+				com.liferay.segments.model.SegmentsExperimentRel
+					segmentsExperimentRel,
+				boolean force)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().deleteSegmentsExperimentRel(
+			segmentsExperimentRel, force);
+	}
+
+	public static void deleteSegmentsExperimentRels(long segmentsExperimentId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		getService().deleteSegmentsExperimentRels(segmentsExperimentId);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.DynamicQuery
@@ -198,6 +230,15 @@ public class SegmentsExperimentRelLocalServiceUtil {
 		return getService().fetchSegmentsExperimentRel(segmentsExperimentRelId);
 	}
 
+	public static com.liferay.segments.model.SegmentsExperimentRel
+			fetchSegmentsExperimentRel(
+				long segmentsExperimentId, long segmentsExperienceId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().fetchSegmentsExperimentRel(
+			segmentsExperimentId, segmentsExperienceId);
+	}
+
 	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery
 		getActionableDynamicQuery() {
 
@@ -241,6 +282,15 @@ public class SegmentsExperimentRelLocalServiceUtil {
 		return getService().getSegmentsExperimentRel(segmentsExperimentRelId);
 	}
 
+	public static com.liferay.segments.model.SegmentsExperimentRel
+			getSegmentsExperimentRel(
+				long segmentsExperimentId, long segmentsExperienceId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().getSegmentsExperimentRel(
+			segmentsExperimentId, segmentsExperienceId);
+	}
+
 	/**
 	 * Returns a range of all the segments experiment rels.
 	 *
@@ -259,6 +309,13 @@ public class SegmentsExperimentRelLocalServiceUtil {
 		return getService().getSegmentsExperimentRels(start, end);
 	}
 
+	public static java.util.List
+		<com.liferay.segments.model.SegmentsExperimentRel>
+			getSegmentsExperimentRels(long segmentsExperimentId) {
+
+		return getService().getSegmentsExperimentRels(segmentsExperimentId);
+	}
+
 	/**
 	 * Returns the number of segments experiment rels.
 	 *
@@ -266,6 +323,35 @@ public class SegmentsExperimentRelLocalServiceUtil {
 	 */
 	public static int getSegmentsExperimentRelsCount() {
 		return getService().getSegmentsExperimentRelsCount();
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentRel
+			updateSegmentsExperimentRel(
+				long segmentsExperimentRelId, double split)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateSegmentsExperimentRel(
+			segmentsExperimentRelId, split);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentRel
+			updateSegmentsExperimentRel(
+				long segmentsExperimentId, long segmentsExperienceId,
+				double split)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateSegmentsExperimentRel(
+			segmentsExperimentId, segmentsExperienceId, split);
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentRel
+			updateSegmentsExperimentRel(
+				long segmentsExperimentRelId, String name,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().updateSegmentsExperimentRel(
+			segmentsExperimentRelId, name, serviceContext);
 	}
 
 	/**

@@ -14,6 +14,8 @@
 
 package com.liferay.data.engine.rest.internal.resource.v1_0;
 
+import com.liferay.data.engine.field.type.FieldType;
+import com.liferay.data.engine.field.type.FieldTypeTracker;
 import com.liferay.data.engine.field.type.util.LocalizedValueUtil;
 import com.liferay.data.engine.rest.dto.v1_0.DataDefinition;
 import com.liferay.data.engine.rest.dto.v1_0.DataDefinitionPermission;
@@ -23,18 +25,28 @@ import com.liferay.data.engine.rest.internal.constants.DataDefinitionConstants;
 import com.liferay.data.engine.rest.internal.dto.v1_0.util.DataDefinitionUtil;
 import com.liferay.data.engine.rest.internal.dto.v1_0.util.DataRecordCollectionUtil;
 import com.liferay.data.engine.rest.internal.model.InternalDataDefinition;
+import com.liferay.data.engine.rest.internal.model.InternalDataLayout;
 import com.liferay.data.engine.rest.internal.model.InternalDataRecordCollection;
 import com.liferay.data.engine.rest.internal.odata.entity.v1_0.DataDefinitionEntityModel;
 import com.liferay.data.engine.rest.internal.resource.common.CommonDataRecordCollectionResource;
 import com.liferay.data.engine.rest.internal.resource.v1_0.util.DataEnginePermissionUtil;
 import com.liferay.data.engine.rest.resource.v1_0.DataDefinitionResource;
 import com.liferay.dynamic.data.lists.service.DDLRecordSetLocalService;
+import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
+import com.liferay.dynamic.data.mapping.form.renderer.DDMFormTemplateContextFactory;
+import com.liferay.dynamic.data.mapping.form.values.factory.DDMFormValuesFactory;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
-import com.liferay.dynamic.data.mapping.service.DDMStructureService;
 import com.liferay.dynamic.data.mapping.service.DDMStructureVersionLocalService;
+import com.liferay.dynamic.data.mapping.util.comparator.StructureCreateDateComparator;
+import com.liferay.dynamic.data.mapping.util.comparator.StructureModifiedDateComparator;
+import com.liferay.dynamic.data.mapping.util.comparator.StructureNameComparator;
+import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
@@ -47,9 +59,14 @@ import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.AggregateResourceBundle;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
@@ -57,14 +74,17 @@ import com.liferay.portal.vulcan.resource.EntityModelResource;
 import com.liferay.portal.vulcan.util.SearchUtil;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.stream.Stream;
 
-import javax.ws.rs.BadRequestException;
+import javax.validation.ValidationException;
+
 import javax.ws.rs.core.MultivaluedMap;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
@@ -92,6 +112,10 @@ public class DataDefinitionResourceImpl
 				dataDefinitionId);
 
 		for (DDMStructureVersion ddmStructureVersion : ddmStructureVersions) {
+			_ddmStructureLayoutLocalService.deleteDDMStructureLayouts(
+				_portal.getClassNameId(InternalDataLayout.class),
+				ddmStructureVersion);
+
 			_ddmStructureVersionLocalService.deleteDDMStructureVersion(
 				ddmStructureVersion);
 		}
@@ -108,7 +132,34 @@ public class DataDefinitionResourceImpl
 			ActionKeys.VIEW);
 
 		return DataDefinitionUtil.toDataDefinition(
-			_ddmStructureLocalService.getStructure(dataDefinitionId));
+			_ddmStructureLocalService.getStructure(dataDefinitionId),
+			_fieldTypeTracker);
+	}
+
+	@Override
+	public String getDataDefinitionDataDefinitionFieldFieldType()
+		throws Exception {
+
+		JSONArray jsonArray = _jsonFactory.createJSONArray();
+
+		Collection<FieldType> fieldTypes = _fieldTypeTracker.getFieldTypes();
+
+		Stream<FieldType> stream = fieldTypes.stream();
+
+		stream.map(
+			fieldType -> DataDefinitionUtil.getFieldTypeMetadataJSONObject(
+				contextAcceptLanguage, _ddmFormFieldTypeServicesTracker,
+				_ddmFormTemplateContextFactory, _ddmFormValuesFactory,
+				fieldType, _fieldTypeTracker, contextHttpServletRequest,
+				_npmResolver,
+				_getResourceBundle(contextAcceptLanguage.getPreferredLocale()))
+		).filter(
+			jsonObject -> !jsonObject.getBoolean("system")
+		).forEach(
+			jsonArray::put
+		);
+
+		return jsonArray.toJSONString();
 	}
 
 	@Override
@@ -125,7 +176,8 @@ public class DataDefinitionResourceImpl
 
 		return DataDefinitionUtil.toDataDefinition(
 			_ddmStructureLocalService.getStructure(
-				siteId, _getClassNameId(), dataDefinitionKey));
+				siteId, _getClassNameId(), dataDefinitionKey),
+			_fieldTypeTracker);
 	}
 
 	@Override
@@ -134,7 +186,7 @@ public class DataDefinitionResourceImpl
 		throws Exception {
 
 		if (pagination.getPageSize() > 250) {
-			throw new BadRequestException(
+			throw new ValidationException(
 				LanguageUtil.format(
 					contextAcceptLanguage.getPreferredLocale(),
 					"page-size-is-greater-than-x", 250));
@@ -146,6 +198,23 @@ public class DataDefinitionResourceImpl
 					Field.getSortableFieldName(Field.MODIFIED_DATE),
 					Sort.STRING_TYPE, true)
 			};
+		}
+
+		if (Validator.isNull(keywords)) {
+			return Page.of(
+				transform(
+					_ddmStructureLocalService.getStructures(
+						siteId,
+						_portal.getClassNameId(InternalDataDefinition.class),
+						pagination.getStartPosition(),
+						pagination.getEndPosition(),
+						_toOrderByComparator(
+							(Sort)ArrayUtil.getValue(sorts, 0))),
+					this::_toDataDefinition),
+				pagination,
+				_ddmStructureLocalService.getStructuresCount(
+					siteId,
+					_portal.getClassNameId(InternalDataDefinition.class)));
 		}
 
 		return SearchUtil.search(
@@ -165,7 +234,8 @@ public class DataDefinitionResourceImpl
 			},
 			document -> DataDefinitionUtil.toDataDefinition(
 				_ddmStructureLocalService.getStructure(
-					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)))),
+					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK))),
+				_fieldTypeTracker),
 			sorts);
 	}
 
@@ -224,8 +294,10 @@ public class DataDefinitionResourceImpl
 				LocalizedValueUtil.toLocaleStringMap(dataDefinition.getName()),
 				LocalizedValueUtil.toLocaleStringMap(
 					dataDefinition.getDescription()),
-				DataDefinitionUtil.toJSON(dataDefinition),
-				dataDefinition.getStorageType(), serviceContext));
+				DataDefinitionUtil.toJSON(dataDefinition, _fieldTypeTracker),
+				GetterUtil.getString(dataDefinition.getStorageType(), "json"),
+				serviceContext),
+			_fieldTypeTracker);
 
 		_resourceLocalService.addModelResources(
 			contextCompany.getCompanyId(), siteId,
@@ -233,7 +305,17 @@ public class DataDefinitionResourceImpl
 			InternalDataDefinition.class.getName(), dataDefinition.getId(),
 			serviceContext.getModelPermissions());
 
-		_commonDataRecordCollectionResource.
+		CommonDataRecordCollectionResource<DataRecordCollection>
+			commonDataRecordCollectionResource =
+				new CommonDataRecordCollectionResource<>(
+					_ddlRecordSetLocalService, _ddmStructureLocalService,
+					_groupLocalService,
+					_dataRecordCollectionModelResourcePermission,
+					_resourceLocalService, _resourcePermissionLocalService,
+					_roleLocalService,
+					DataRecordCollectionUtil::toDataRecordCollection);
+
+		commonDataRecordCollectionResource.
 			postDataDefinitionDataRecordCollection(
 				contextCompany, dataDefinition.getId(),
 				dataDefinition.getDataDefinitionKey(),
@@ -291,25 +373,9 @@ public class DataDefinitionResourceImpl
 				LocalizedValueUtil.toLocaleStringMap(dataDefinition.getName()),
 				LocalizedValueUtil.toLocaleStringMap(
 					dataDefinition.getDescription()),
-				DataDefinitionUtil.toJSON(dataDefinition),
-				new ServiceContext()));
-	}
-
-	@Activate
-	protected void activate() {
-		_commonDataRecordCollectionResource =
-			new CommonDataRecordCollectionResource<>(
-				_ddlRecordSetLocalService, _ddmStructureLocalService,
-				_groupLocalService,
-				_dataRecordCollectionModelResourcePermission,
-				_resourceLocalService, _resourcePermissionLocalService,
-				_roleLocalService,
-				DataRecordCollectionUtil::toDataRecordCollection);
-	}
-
-	@Deactivate
-	protected void deactivate() {
-		_commonDataRecordCollectionResource = null;
+				DataDefinitionUtil.toJSON(dataDefinition, _fieldTypeTracker),
+				new ServiceContext()),
+			_fieldTypeTracker);
 	}
 
 	@Reference(
@@ -327,11 +393,37 @@ public class DataDefinitionResourceImpl
 		return _portal.getClassNameId(InternalDataDefinition.class);
 	}
 
+	private ResourceBundle _getResourceBundle(Locale locale) {
+		return new AggregateResourceBundle(
+			ResourceBundleUtil.getBundle(
+				"content.Language", locale, getClass()),
+			_portal.getResourceBundle(locale));
+	}
+
+	private DataDefinition _toDataDefinition(DDMStructure ddmStructure)
+		throws Exception {
+
+		return DataDefinitionUtil.toDataDefinition(
+			ddmStructure, _fieldTypeTracker);
+	}
+
+	private OrderByComparator<DDMStructure> _toOrderByComparator(Sort sort) {
+		boolean ascending = !sort.isReverse();
+
+		String sortFieldName = sort.getFieldName();
+
+		if (StringUtil.startsWith(sortFieldName, "createDate")) {
+			return new StructureCreateDateComparator(ascending);
+		}
+		else if (StringUtil.startsWith(sortFieldName, "localized_name")) {
+			return new StructureNameComparator(ascending);
+		}
+
+		return new StructureModifiedDateComparator(ascending);
+	}
+
 	private static final EntityModel _entityModel =
 		new DataDefinitionEntityModel();
-
-	private CommonDataRecordCollectionResource<DataRecordCollection>
-		_commonDataRecordCollectionResource;
 
 	@Reference(
 		target = "(model.class.name=com.liferay.data.engine.rest.internal.model.InternalDataRecordCollection)"
@@ -343,19 +435,37 @@ public class DataDefinitionResourceImpl
 	private DDLRecordSetLocalService _ddlRecordSetLocalService;
 
 	@Reference
-	private DDMStructureLocalService _ddmStructureLocalService;
+	private DDMFormFieldTypeServicesTracker _ddmFormFieldTypeServicesTracker;
 
 	@Reference
-	private DDMStructureService _ddmStructureService;
+	private DDMFormTemplateContextFactory _ddmFormTemplateContextFactory;
+
+	@Reference
+	private DDMFormValuesFactory _ddmFormValuesFactory;
+
+	@Reference
+	private DDMStructureLayoutLocalService _ddmStructureLayoutLocalService;
+
+	@Reference
+	private DDMStructureLocalService _ddmStructureLocalService;
 
 	@Reference
 	private DDMStructureVersionLocalService _ddmStructureVersionLocalService;
 
 	@Reference
+	private FieldTypeTracker _fieldTypeTracker;
+
+	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	private ModelResourcePermission<InternalDataDefinition>
 		_modelResourcePermission;
+
+	@Reference
+	private NPMResolver _npmResolver;
 
 	@Reference
 	private Portal _portal;

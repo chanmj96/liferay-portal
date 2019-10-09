@@ -35,8 +35,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author Jürgen Kappler
+ * @author     Jürgen Kappler
+ * @deprecated As of Mueller (7.2.x), in favour of {@link
+ *             com.liferay.info.display.contributor.InfoDisplayContributor}
  */
+@Deprecated
 public abstract class BaseAssetInfoDisplayContributor<T>
 	implements AssetInfoDisplayContributor {
 
@@ -82,9 +85,8 @@ public abstract class BaseAssetInfoDisplayContributor<T>
 				assetEntry.getClassPK());
 		}
 
-		T assetObject = assetRenderer.getAssetObject();
-
-		return _getParameterMap(assetEntry, assetObject, locale);
+		return _getParameterMap(
+			assetEntry, assetRenderer.getAssetObject(), locale);
 	}
 
 	@Override

@@ -1,5 +1,4 @@
-@import 'bourbon';
-@import 'mixins';
+@import 'atlas-variables';
 
 @mixin file-icon($colorIndex, $color) {
 	[data-file-icon-color='#{$colorIndex}'] .lexicon-icon {
@@ -51,6 +50,10 @@
 		}
 	}
 
+	.file-entry-actions > a {
+		margin-bottom: 1rem;
+	}
+
 	.file-entry-list-description {
 		font-style: italic;
 		margin-left: 10px;
@@ -87,6 +90,10 @@
 			height: 0;
 		}
 
+		.card-type-directory .sticker {
+			font-size: 1rem;
+		}
+
 		.list-group .list-group-item {
 			h2.h5 {
 				font-weight: 600;
@@ -115,6 +122,10 @@
 			}
 		}
 
+		.table .sticker-document .lexicon-icon {
+			height: 1rem;
+		}
+
 		span.h5 {
 			margin-right: 12px;
 		}
@@ -128,21 +139,6 @@
 		.icon-hdd {
 			color: #c00;
 		}
-	}
-
-	.manage-collaborators {
-		.manage-collaborators-owner {
-			margin-right: 1.5rem;
-		}
-
-		.manage-collaborators-collaborator {
-			margin-right: 0.25rem;
-		}
-	}
-
-	.manage-collaborators-btn {
-		margin-top: -1em;
-		padding-left: 0;
 	}
 
 	.metadata-panel-container {
@@ -409,7 +405,7 @@
 		}
 
 		.entry-title {
-			@include ellipsis;
+			@include text-truncate();
 
 			display: block;
 			position: relative;
@@ -489,10 +485,9 @@
 
 		.document-description {
 			display: block;
-
 			margin: 8px 0;
 
-			@include hyphens;
+			@include hyphens();
 		}
 
 		.document-thumbnail {
@@ -538,7 +533,7 @@
 		}
 
 		.lfr-asset-description {
-			@include hyphens;
+			@include hyphens();
 		}
 	}
 
@@ -546,7 +541,7 @@
 		margin: 0 auto;
 		width: 90%;
 
-		@include respond-to(phone) {
+		@include media-breakpoint-down(sm) {
 			width: auto;
 		}
 	}

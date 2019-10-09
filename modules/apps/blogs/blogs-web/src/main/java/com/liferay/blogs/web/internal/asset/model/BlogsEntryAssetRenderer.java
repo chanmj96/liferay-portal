@@ -215,10 +215,8 @@ public class BlogsEntryAssetRenderer
 			LiferayPortletResponse liferayPortletResponse)
 		throws Exception {
 
-		HttpServletRequest httpServletRequest =
-			PortalUtil.getHttpServletRequest(liferayPortletRequest);
-
-		return getURLEdit(httpServletRequest);
+		return getURLEdit(
+			PortalUtil.getHttpServletRequest(liferayPortletRequest));
 	}
 
 	@Override
@@ -270,9 +268,7 @@ public class BlogsEntryAssetRenderer
 			(ThemeDisplay)liferayPortletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		long groupId = _entry.getGroupId();
-
-		if (!_hasViewInContextGroupLayout(groupId, themeDisplay)) {
+		if (!_hasViewInContextGroupLayout(_entry.getGroupId(), themeDisplay)) {
 			return null;
 		}
 

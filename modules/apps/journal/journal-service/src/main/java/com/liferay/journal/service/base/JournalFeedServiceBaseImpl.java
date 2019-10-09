@@ -45,9 +45,9 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class JournalFeedServiceBaseImpl
 	extends BaseServiceImpl
-	implements JournalFeedService, AopService, IdentifiableOSGiService {
+	implements AopService, IdentifiableOSGiService, JournalFeedService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>JournalFeedService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.journal.service.JournalFeedServiceUtil</code>.

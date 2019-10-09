@@ -19,9 +19,13 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NestableRuntimeException;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.segments.asah.connector.internal.client.data.binding.IndividualJSONObjectMapper;
 import com.liferay.segments.asah.connector.internal.client.data.binding.IndividualSegmentJSONObjectMapper;
 import com.liferay.segments.asah.connector.internal.client.data.binding.InterestTermsJSONObjectMapper;
+import com.liferay.segments.asah.connector.internal.client.model.DXPVariants;
+import com.liferay.segments.asah.connector.internal.client.model.Experiment;
+import com.liferay.segments.asah.connector.internal.client.model.ExperimentSettings;
 import com.liferay.segments.asah.connector.internal.client.model.Individual;
 import com.liferay.segments.asah.connector.internal.client.model.IndividualSegment;
 import com.liferay.segments.asah.connector.internal.client.model.Results;
@@ -59,6 +63,40 @@ public class AsahFaroBackendClientImpl implements AsahFaroBackendClient {
 			asahFaroBackendSecuritySignature);
 
 		_jsonWebServiceClient.setBaseURI(asahFaroBackendURL);
+	}
+
+	@Override
+	public Experiment addExperiment(Experiment experiment) {
+		if (experiment == null) {
+			return null;
+		}
+
+		return _jsonWebServiceClient.doPost(
+			Experiment.class, _PATH_EXPERIMENTS, experiment, _headers);
+	}
+
+	@Override
+	public Long calculateExperimentEstimatedDaysDuration(
+		String experimentId, ExperimentSettings experimentSettings) {
+
+		return _jsonWebServiceClient.doPost(
+			Long.class,
+			StringUtil.replace(
+				_PATH_EXPERIMENTS_ESTIMATED_DAYS_DURATION, "{experimentId}",
+				experimentId),
+			experimentSettings, _headers);
+	}
+
+	@Override
+	public void deleteExperiment(String experimentId) {
+		if (experimentId == null) {
+			return;
+		}
+
+		_jsonWebServiceClient.doDelete(
+			StringUtil.replace(
+				_PATH_EXPERIMENTS_EXPERIMENT, "{experimentId}", experimentId),
+			new HashMap<>(), _headers);
 	}
 
 	@Override
@@ -177,6 +215,37 @@ public class AsahFaroBackendClientImpl implements AsahFaroBackendClient {
 		}
 	}
 
+	@Override
+	public void updateExperiment(Experiment experiment) {
+		if (Validator.isNull(experiment.getId())) {
+			throw new IllegalArgumentException("Experiment ID is null");
+		}
+
+		_jsonWebServiceClient.doPatch(
+			StringUtil.replace(
+				_PATH_EXPERIMENTS_EXPERIMENT, "{experimentId}",
+				experiment.getId()),
+			experiment, _headers);
+	}
+
+	@Override
+	public void updateExperimentDXPVariants(
+		String experimentId, DXPVariants dxpVariants) {
+
+		if (Validator.isNull(experimentId)) {
+			throw new IllegalArgumentException("Experiment ID is null");
+		}
+
+		if (dxpVariants == null) {
+			throw new IllegalArgumentException("DXPVariants is null");
+		}
+
+		_jsonWebServiceClient.doPut(
+			StringUtil.replace(
+				_PATH_EXPERIMENTS_DXP_VARIANTS, "{experimentId}", experimentId),
+			dxpVariants, _headers);
+	}
+
 	private MultivaluedMap<String, Object> _getParameters(
 		FilterBuilder filterBuilder, String fieldNameContext, int cur,
 		int delta, List<OrderByField> orderByFields) {
@@ -241,6 +310,17 @@ public class AsahFaroBackendClientImpl implements AsahFaroBackendClient {
 	}
 
 	private static final String _ERROR_MSG = "Unable to handle JSON response: ";
+
+	private static final String _PATH_EXPERIMENTS = "api/1.0/experiments";
+
+	private static final String _PATH_EXPERIMENTS_DXP_VARIANTS =
+		_PATH_EXPERIMENTS + "/{experimentId}/dxp-variants";
+
+	private static final String _PATH_EXPERIMENTS_ESTIMATED_DAYS_DURATION =
+		_PATH_EXPERIMENTS + "/{experimentId}/estimated-days-duration";
+
+	private static final String _PATH_EXPERIMENTS_EXPERIMENT =
+		_PATH_EXPERIMENTS + "/{experimentId}";
 
 	private static final String _PATH_INDIVIDUAL_SEGMENTS =
 		"api/1.0/individual-segments";

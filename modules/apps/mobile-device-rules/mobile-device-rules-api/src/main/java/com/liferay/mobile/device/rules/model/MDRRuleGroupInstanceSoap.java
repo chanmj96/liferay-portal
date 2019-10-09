@@ -20,15 +20,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.mobile.device.rules.service.http.MDRRuleGroupInstanceServiceSoap}.
  *
  * @author Edward C. Han
  * @generated
  */
-@ProviderType
 public class MDRRuleGroupInstanceSoap implements Serializable {
 
 	public static MDRRuleGroupInstanceSoap toSoapModel(
@@ -36,6 +33,7 @@ public class MDRRuleGroupInstanceSoap implements Serializable {
 
 		MDRRuleGroupInstanceSoap soapModel = new MDRRuleGroupInstanceSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setRuleGroupInstanceId(model.getRuleGroupInstanceId());
 		soapModel.setGroupId(model.getGroupId());
@@ -109,6 +107,14 @@ public class MDRRuleGroupInstanceSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setRuleGroupInstanceId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -215,6 +221,7 @@ public class MDRRuleGroupInstanceSoap implements Serializable {
 		_lastPublishDate = lastPublishDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _ruleGroupInstanceId;
 	private long _groupId;

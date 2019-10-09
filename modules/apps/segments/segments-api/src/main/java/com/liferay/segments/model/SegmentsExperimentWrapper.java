@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link SegmentsExperiment}.
@@ -33,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsExperiment
  * @generated
  */
-@ProviderType
 public class SegmentsExperimentWrapper
 	extends BaseModelWrapper<SegmentsExperiment>
-	implements SegmentsExperiment, ModelWrapper<SegmentsExperiment> {
+	implements ModelWrapper<SegmentsExperiment>, SegmentsExperiment {
 
 	public SegmentsExperimentWrapper(SegmentsExperiment segmentsExperiment) {
 		super(segmentsExperiment);
@@ -46,6 +43,7 @@ public class SegmentsExperimentWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("segmentsExperimentId", getSegmentsExperimentId());
 		attributes.put("groupId", getGroupId());
@@ -61,14 +59,20 @@ public class SegmentsExperimentWrapper
 		attributes.put("classPK", getClassPK());
 		attributes.put("name", getName());
 		attributes.put("description", getDescription());
-		attributes.put("status", getStatus());
 		attributes.put("typeSettings", getTypeSettings());
+		attributes.put("status", getStatus());
 
 		return attributes;
 	}
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -162,16 +166,16 @@ public class SegmentsExperimentWrapper
 			setDescription(description);
 		}
 
-		Integer status = (Integer)attributes.get("status");
-
-		if (status != null) {
-			setStatus(status);
-		}
-
 		String typeSettings = (String)attributes.get("typeSettings");
 
 		if (typeSettings != null) {
 			setTypeSettings(typeSettings);
+		}
+
+		Integer status = (Integer)attributes.get("status");
+
+		if (status != null) {
+			setStatus(status);
 		}
 	}
 
@@ -215,6 +219,11 @@ public class SegmentsExperimentWrapper
 		return model.getCompanyId();
 	}
 
+	@Override
+	public double getConfidenceLevel() {
+		return model.getConfidenceLevel();
+	}
+
 	/**
 	 * Returns the create date of this segments experiment.
 	 *
@@ -235,6 +244,16 @@ public class SegmentsExperimentWrapper
 		return model.getDescription();
 	}
 
+	@Override
+	public String getGoal() {
+		return model.getGoal();
+	}
+
+	@Override
+	public String getGoalTarget() {
+		return model.getGoalTarget();
+	}
+
 	/**
 	 * Returns the group ID of this segments experiment.
 	 *
@@ -253,6 +272,16 @@ public class SegmentsExperimentWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this segments experiment.
+	 *
+	 * @return the mvcc version of this segments experiment
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -285,6 +314,13 @@ public class SegmentsExperimentWrapper
 		return model.getSegmentsEntryId();
 	}
 
+	@Override
+	public String getSegmentsEntryName(java.util.Locale locale)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getSegmentsEntryName(locale);
+	}
+
 	/**
 	 * Returns the segments experience ID of this segments experiment.
 	 *
@@ -293,6 +329,11 @@ public class SegmentsExperimentWrapper
 	@Override
 	public long getSegmentsExperienceId() {
 		return model.getSegmentsExperienceId();
+	}
+
+	@Override
+	public String getSegmentsExperienceKey() {
+		return model.getSegmentsExperienceKey();
 	}
 
 	/**
@@ -315,6 +356,11 @@ public class SegmentsExperimentWrapper
 		return model.getSegmentsExperimentKey();
 	}
 
+	@Override
+	public java.util.List<SegmentsExperimentRel> getSegmentsExperimentRels() {
+		return model.getSegmentsExperimentRels();
+	}
+
 	/**
 	 * Returns the status of this segments experiment.
 	 *
@@ -333,6 +379,13 @@ public class SegmentsExperimentWrapper
 	@Override
 	public String getTypeSettings() {
 		return model.getTypeSettings();
+	}
+
+	@Override
+	public com.liferay.portal.kernel.util.UnicodeProperties
+		getTypeSettingsProperties() {
+
+		return model.getTypeSettingsProperties();
 	}
 
 	/**
@@ -375,6 +428,21 @@ public class SegmentsExperimentWrapper
 		return model.getUuid();
 	}
 
+	@Override
+	public long getWinnerSegmentsExperienceId() {
+		return model.getWinnerSegmentsExperienceId();
+	}
+
+	@Override
+	public String getWinnerSegmentsExperienceKey() {
+		return model.getWinnerSegmentsExperienceKey();
+	}
+
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a segments experiment model instance should use the <code>SegmentsExperiment</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -453,6 +521,16 @@ public class SegmentsExperimentWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this segments experiment.
+	 *
+	 * @param mvccVersion the mvcc version of this segments experiment
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

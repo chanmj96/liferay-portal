@@ -27,11 +27,7 @@ import {
 } from '../../../actions/saveChanges.es';
 import getConnectedComponent from '../../../store/ConnectedComponent.es';
 import templates from './FloatingToolbarImagePropertiesPanel.soy';
-import {
-	CLEAR_FRAGMENT_EDITOR,
-	ENABLE_FRAGMENT_EDITOR,
-	UPDATE_CONFIG_ATTRIBUTES
-} from '../../../actions/actions.es';
+import {UPDATE_CONFIG_ATTRIBUTES} from '../../../actions/actions.es';
 
 /**
  * FloatingToolbarImagePropertiesPanel
@@ -57,15 +53,23 @@ class FloatingToolbarImagePropertiesPanel extends Component {
 	}
 
 	/**
+	 * Handle alt text change
+	 * @private
+	 * @review
+	 */
+	_handleAltTextInputChange() {
+		this._updateFragmentConfig({
+			[EDITABLE_FIELD_CONFIG_KEYS.alt]: event.delegateTarget.value
+		});
+	}
+
+	/**
 	 * Handle select image button change
 	 * @private
 	 * @review
 	 */
 	_handleClearImageButtonClick() {
-		this.store.dispatch({
-			itemId: this.itemId,
-			type: CLEAR_FRAGMENT_EDITOR
-		});
+		this.emit('clearEditor');
 	}
 
 	/**
@@ -98,10 +102,7 @@ class FloatingToolbarImagePropertiesPanel extends Component {
 	 * @review
 	 */
 	_handleSelectImageButtonClick() {
-		this.store.dispatch({
-			itemId: this.itemId,
-			type: ENABLE_FRAGMENT_EDITOR
-		});
+		this.emit('createProcessor');
 	}
 }
 

@@ -2,9 +2,9 @@
 
 {template .render}
 	{@param pages: ?}
-	{@param paginationMode: string}
 	{@param showSubmitButton: bool}
 	{@param spritemap: string}
+	{@param submitLabel: string}
 	{@param total: number}
 	{@param? _handleFieldBlurred: any}
 	{@param? _handleFieldClicked: any}
@@ -15,11 +15,25 @@
 	{@param? empty: bool}
 	{@param? page: ?}
 	{@param? pageIndex: number}
+	{@param? paginationMode: string}
 	{@param? readOnly: bool}
+	{@param? strings: map<string, string>}
 
-	{let $paginationModeVariant: $paginationMode == 'single-page' ? 'single_page' : $paginationMode /}
-
-	{let $contentRenderer: $page.contentRenderer ?: $paginationModeVariant /}
+	{let $contentRenderer kind="text"}
+		{if $page.contentRenderer != null and $page.contentRenderer != ''}
+			{$page.contentRenderer}
+		{elseif $paginationMode == null or $paginationMode == ''}
+			{if length($pages) > 1}
+				wizard
+			{else}
+				single_page
+			{/if}
+		{elseif $paginationMode != null and $paginationMode == 'single-page'}
+			single_page
+		{else}
+			{$paginationMode}
+		{/if}
+	{/let}
 
 	{delcall PageRenderer.container variant="$contentRenderer"}
 		{param _handleFieldBlurred: $_handleFieldBlurred /}
@@ -37,6 +51,8 @@
 		{param readOnly: $readOnly /}
 		{param showSubmitButton: $showSubmitButton /}
 		{param spritemap: $spritemap /}
+		{param strings: $strings /}
+		{param submitLabel: $submitLabel /}
 		{param total: $total /}
 	{/delcall}
 {/template}
@@ -77,13 +93,17 @@
 
 			<div class="row">
 				<div {$attributes}>
-					<div class="ddm-target" id="lfr-initial-col-message">{msg desc=""}drag-from-sidebar-and-drop-here{/msg}</div>
+					<div class="ddm-empty-page ddm-target">
+						<p class="ddm-empty-page-message">
+							{msg desc=""}drag-from-sidebar-and-drop-here{/msg}
+						</p>
+					</div>
 				</div>
 			</div>
 		{else}
 			{foreach $row in $page.rows}
 				{if isFirst($row) and $editable and $activePage == $pageIndex}
-					{call .fieldEmpty}
+					{call .placeholder}
 						{param isRow: true /}
 						{param pageIndex: $pageIndex /}
 						{param rowIndex: 0 /}
@@ -106,7 +126,7 @@
 				{/call}
 
 				{if $editable and $activePage == $pageIndex}
-					{call .fieldEmpty}
+					{call .placeholder}
 						{param isRow: true /}
 						{param pageIndex: $pageIndex /}
 						{param rowIndex: index($row) + 1 /}
@@ -182,9 +202,9 @@
 
 					{delcall PageRenderer.RegisterFieldType variant="$fieldType" data="$field" allowemptydefault="true"}
 						{param events: [
-							'fieldBlurred': $_handleFieldBlurred,
-							'fieldEdited': $_handleFieldEdited,
-							'fieldFocused': $_handleFieldFocused
+						'fieldBlurred': $_handleFieldBlurred,
+						'fieldEdited': $_handleFieldEdited,
+						'fieldFocused': $_handleFieldFocused
 						] /}
 						{param ref: $field.type + $field.fieldName + $field.name + $field.label + $rowIndex + $columnIndex + $pageIndex /}
 						{param spritemap: $spritemap /}
@@ -193,7 +213,9 @@
 			{/let}
 
 			{if $editable}
-				<div class="ddm-field-container h-100">
+				{let $selected: $column.fields[0].selected /}
+
+				<div class="ddm-field-container h-100 {if $selected}selected{/if}">
 					<div class="ddm-resize-handle ddm-resize-handle-left" {$indexes}></div>
 
 					{let $attributesDrag kind="attributes"}
@@ -213,7 +235,7 @@
 			{/if}
 		</div>
 	{elseif $editable and $activePage == $pageIndex}
-		{call .fieldEmpty}
+		{call .placeholder}
 			{param columnIndex: $columnIndex /}
 			{param pageIndex: $pageIndex /}
 			{param rowIndex: $rowIndex /}
@@ -222,7 +244,7 @@
 	{/if}
 {/template}
 
-{template .fieldEmpty}
+{template .placeholder}
 	{@param size: number}
 	{@param? columnIndex: number}
 	{@param? isRow: bool}
@@ -252,7 +274,7 @@
 	{/let}
 
 	{if $isRow}
-		<div class="row">
+		<div class="placeholder row">
 			{$content}
 		</div>
 	{else}

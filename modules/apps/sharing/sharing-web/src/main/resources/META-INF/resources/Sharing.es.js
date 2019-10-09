@@ -14,6 +14,7 @@
 
 import 'clay-multi-select';
 import 'clay-sticker';
+import dom from 'metal-dom';
 import Soy from 'metal-soy';
 import {Config} from 'metal-state';
 import {PortletBase} from 'frontend-js-web';
@@ -27,8 +28,15 @@ class Sharing extends PortletBase {
 		this._classNameId = config.classNameId;
 		this._classPK = config.classPK;
 		this._dialogId = config.dialogId;
-		this._refererPortletNamespace = config.refererPortletNamespace;
 		this._userEmailAddresses = [];
+	}
+
+	attached() {
+		const portalElement = dom.toElement('#clay_dropdown_portal');
+
+		if (portalElement) {
+			dom.addClasses(portalElement, 'show');
+		}
 	}
 
 	/**
@@ -220,9 +228,10 @@ class Sharing extends PortletBase {
 						  });
 				})
 				.then(json => {
-					parent.Liferay.Portlet.refresh(
-						`#p_p_id${this._refererPortletNamespace}`
-					);
+					parent.Liferay.fire('sharing:changed', {
+						classNameId: this._classNameId,
+						classPK: this._classPK
+					});
 
 					this._showNotification(json.successMessage);
 				})
@@ -296,15 +305,15 @@ class Sharing extends PortletBase {
  * @type {!Object}
  */
 Sharing.STATE = {
+	_inputValue: Config.string().internal(),
 	emailAddressErrorMessage: Config.string().value(''),
-	shareable: Config.bool().value(true),
 	shareActionURL: Config.string().required(),
+	shareable: Config.bool().value(true),
 	sharingEntryPermissionDisplayActionId: Config.string().required(),
 	sharingUserAutocompleteURL: Config.string().required(),
 	sharingVerifyEmailAddressURL: Config.string().required(),
 	spritemap: Config.string().required(),
-	submitting: Config.bool().value(false),
-	_inputValue: Config.string().internal()
+	submitting: Config.bool().value(false)
 };
 
 Soy.register(Sharing, templates);

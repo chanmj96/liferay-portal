@@ -130,11 +130,9 @@ public class LayoutAction implements Action {
 					authLoginURL, "p_p_id",
 					PropsValues.AUTH_LOGIN_PORTLET_NAME);
 
-				String currentURL = PortalUtil.getCurrentURL(
-					httpServletRequest);
-
 				authLoginURL = HttpUtil.setParameter(
-					authLoginURL, redirectParam, currentURL);
+					authLoginURL, redirectParam,
+					PortalUtil.getCurrentURL(httpServletRequest));
 
 				if (_log.isDebugEnabled()) {
 					_log.debug("Redirect requested layout to " + authLoginURL);
@@ -143,9 +141,8 @@ public class LayoutAction implements Action {
 				httpServletResponse.sendRedirect(authLoginURL);
 			}
 			else {
-				Layout layout = themeDisplay.getLayout();
-
-				String redirect = PortalUtil.getLayoutURL(layout, themeDisplay);
+				String redirect = PortalUtil.getLayoutURL(
+					themeDisplay.getLayout(), themeDisplay);
 
 				if (_log.isDebugEnabled()) {
 					_log.debug("Redirect default layout to " + redirect);
@@ -337,10 +334,8 @@ public class LayoutAction implements Action {
 			Portlet portlet = null;
 
 			if (Validator.isNotNull(portletId)) {
-				long companyId = PortalUtil.getCompanyId(httpServletRequest);
-
 				portlet = PortletLocalServiceUtil.getPortletById(
-					companyId, portletId);
+					PortalUtil.getCompanyId(httpServletRequest), portletId);
 			}
 
 			if (portlet != null) {

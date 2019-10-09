@@ -60,26 +60,27 @@ public class WikiPage {
 
 	}
 
-	public String getAlternativeHeadline() {
-		return alternativeHeadline;
+	public AggregateRating getAggregateRating() {
+		return aggregateRating;
 	}
 
-	public void setAlternativeHeadline(String alternativeHeadline) {
-		this.alternativeHeadline = alternativeHeadline;
+	public void setAggregateRating(AggregateRating aggregateRating) {
+		this.aggregateRating = aggregateRating;
 	}
 
-	public void setAlternativeHeadline(
-		UnsafeSupplier<String, Exception> alternativeHeadlineUnsafeSupplier) {
+	public void setAggregateRating(
+		UnsafeSupplier<AggregateRating, Exception>
+			aggregateRatingUnsafeSupplier) {
 
 		try {
-			alternativeHeadline = alternativeHeadlineUnsafeSupplier.get();
+			aggregateRating = aggregateRatingUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected String alternativeHeadline;
+	protected AggregateRating aggregateRating;
 
 	public String getContent() {
 		return content;
@@ -186,6 +187,27 @@ public class WikiPage {
 
 	protected Date dateModified;
 
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setDescription(
+		UnsafeSupplier<String, Exception> descriptionUnsafeSupplier) {
+
+		try {
+			description = descriptionUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String description;
+
 	public String getEncodingFormat() {
 		return encodingFormat;
 	}
@@ -267,6 +289,48 @@ public class WikiPage {
 	}
 
 	protected String[] keywords;
+
+	public Integer getNumberOfAttachments() {
+		return numberOfAttachments;
+	}
+
+	public void setNumberOfAttachments(Integer numberOfAttachments) {
+		this.numberOfAttachments = numberOfAttachments;
+	}
+
+	public void setNumberOfAttachments(
+		UnsafeSupplier<Integer, Exception> numberOfAttachmentsUnsafeSupplier) {
+
+		try {
+			numberOfAttachments = numberOfAttachmentsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Integer numberOfAttachments;
+
+	public Integer getNumberOfWikiPages() {
+		return numberOfWikiPages;
+	}
+
+	public void setNumberOfWikiPages(Integer numberOfWikiPages) {
+		this.numberOfWikiPages = numberOfWikiPages;
+	}
+
+	public void setNumberOfWikiPages(
+		UnsafeSupplier<Integer, Exception> numberOfWikiPagesUnsafeSupplier) {
+
+		try {
+			numberOfWikiPages = numberOfWikiPagesUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Integer numberOfWikiPages;
 
 	public RelatedContent[] getRelatedContents() {
 		return relatedContents;

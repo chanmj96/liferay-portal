@@ -16,8 +16,6 @@ package com.liferay.fragment.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link FragmentEntryLinkLocalService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see FragmentEntryLinkLocalService
  * @generated
  */
-@ProviderType
 public class FragmentEntryLinkLocalServiceWrapper
 	implements FragmentEntryLinkLocalService,
 			   ServiceWrapper<FragmentEntryLinkLocalService> {
@@ -496,6 +493,14 @@ public class FragmentEntryLinkLocalServiceWrapper
 			rendererKey);
 	}
 
+	@Override
+	public java.util.List<com.liferay.fragment.model.FragmentEntryLink>
+		getFragmentEntryLinksByFragmentEntryId(long fragmentEntryId) {
+
+		return _fragmentEntryLinkLocalService.
+			getFragmentEntryLinksByFragmentEntryId(fragmentEntryId);
+	}
+
 	/**
 	 * Returns all the fragment entry links matching the UUID and company.
 	 *
@@ -565,6 +570,14 @@ public class FragmentEntryLinkLocalServiceWrapper
 
 		return _fragmentEntryLinkLocalService.getFragmentEntryLinksCount(
 			groupId, fragmentEntryId, classNameId, layoutPageTemplateType);
+	}
+
+	@Override
+	public int getFragmentEntryLinksCountByFragmentEntryId(
+		long fragmentEntryId) {
+
+		return _fragmentEntryLinkLocalService.
+			getFragmentEntryLinksCountByFragmentEntryId(fragmentEntryId);
 	}
 
 	@Override
@@ -693,6 +706,16 @@ public class FragmentEntryLinkLocalServiceWrapper
 	}
 
 	@Override
+	public com.liferay.fragment.model.FragmentEntryLink updateFragmentEntryLink(
+			long fragmentEntryLinkId, String editableValues,
+			boolean updateClassedModel)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLinkLocalService.updateFragmentEntryLink(
+			fragmentEntryLinkId, editableValues, updateClassedModel);
+	}
+
+	@Override
 	public void updateFragmentEntryLinks(
 			long userId, long groupId, long classNameId, long classPK,
 			long[] fragmentEntryIds, String editableValues,
@@ -702,6 +725,15 @@ public class FragmentEntryLinkLocalServiceWrapper
 		_fragmentEntryLinkLocalService.updateFragmentEntryLinks(
 			userId, groupId, classNameId, classPK, fragmentEntryIds,
 			editableValues, serviceContext);
+	}
+
+	@Override
+	public void updateFragmentEntryLinks(
+			java.util.Map<Long, String> fragmentEntryLinksEditableValuesMap)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_fragmentEntryLinkLocalService.updateFragmentEntryLinks(
+			fragmentEntryLinksEditableValuesMap);
 	}
 
 	@Override

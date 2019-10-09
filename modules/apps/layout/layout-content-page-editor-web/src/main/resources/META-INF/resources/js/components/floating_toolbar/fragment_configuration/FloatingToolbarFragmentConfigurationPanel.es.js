@@ -16,25 +16,16 @@ import Component from 'metal-component';
 import {Config} from 'metal-state';
 import Soy from 'metal-soy';
 
-import './field_types/Checkbox.soy';
-import './field_types/Select.soy';
+import './field_types/ColorPaletteField.es';
+import './field_types/CheckboxField.es';
+import './field_types/ItemSelectorField.es';
+import './field_types/SelectField.es';
+import './field_types/TextField.es';
 import './FloatingToolbarFragmentConfigurationPanelDelegateTemplate.soy';
-import {FREEMARKER_FRAGMENT_ENTRY_PROCESSOR} from '../../../utils/constants';
-import {getCheckboxData} from './field_types/Checkbox.es';
 import {getConnectedComponent} from '../../../store/ConnectedComponent.es';
-import {getSelectData} from './field_types/Select.es';
-import {prefixSegmentsExperienceId} from '../../../utils/prefixSegmentsExperienceId.es';
-import {setIn} from '../../../utils/FragmentsEditorUpdateUtils.es';
+import {deleteIn, setIn} from '../../../utils/FragmentsEditorUpdateUtils.es';
 import templates from './FloatingToolbarFragmentConfigurationPanel.soy';
-import {updateEditableValueAction} from '../../../actions/updateEditableValue.es';
-
-/**
- * @type {{ [key: string]: (event: Event) => { fieldName: string, fieldSetName: string, fieldValue: any }}}
- */
-const GET_DATA_FUNCTIONS = {
-	checkbox: getCheckboxData,
-	select: getSelectData
-};
+import {updateFragmentConfigurationAction} from '../../../actions/updateEditableValue.es';
 
 /**
  * FloatingToolbarFragmentConfigurationPanel
@@ -46,15 +37,24 @@ class FloatingToolbarFragmentConfigurationPanel extends Component {
 	 * @review
 	 */
 	_handleChangeConfiguration(event) {
-		const fieldType = event.delegateTarget.dataset.fieldType;
+		const {name: fieldName, value: fieldValue} = event;
 
-		const fieldData = GET_DATA_FUNCTIONS[fieldType](event);
-
-		const nextConfigurationValues = setIn(
+		let nextConfigurationValues = setIn(
 			this.item.configurationValues,
-			[fieldData.fieldSetName, fieldData.fieldName],
-			fieldData.fieldValue
+			[fieldName],
+			fieldValue
 		);
+
+		Object.keys(nextConfigurationValues).forEach(key => {
+			if (
+				nextConfigurationValues[key] ===
+				this.item.defaultConfigurationValues[key]
+			) {
+				nextConfigurationValues = deleteIn(nextConfigurationValues, [
+					key
+				]);
+			}
+		});
 
 		this._sendConfiguration(nextConfigurationValues);
 	}
@@ -65,7 +65,7 @@ class FloatingToolbarFragmentConfigurationPanel extends Component {
 	 * @review
 	 */
 	_handleRestoreButtonClick() {
-		this._sendConfiguration(this.item.defaultConfigurationValues);
+		this._sendConfiguration({});
 	}
 
 	/**
@@ -75,21 +75,11 @@ class FloatingToolbarFragmentConfigurationPanel extends Component {
 	 * @review
 	 */
 	_sendConfiguration(configurationValues) {
-		const defaultSegmentsExperienceId = prefixSegmentsExperienceId(
-			this.defaultSegmentsExperienceId
-		);
-		const segmentsExperienceId = prefixSegmentsExperienceId(
-			this.segmentsExperienceId
-		);
-
 		this.store.dispatch(
-			updateEditableValueAction({
-				fragmentEntryLinkId: this.item.fragmentEntryLinkId,
-				editableValueContent: configurationValues,
-				processor: FREEMARKER_FRAGMENT_ENTRY_PROCESSOR,
-				segmentsExperienceId:
-					segmentsExperienceId || defaultSegmentsExperienceId
-			})
+			updateFragmentConfigurationAction(
+				this.item.fragmentEntryLinkId,
+				configurationValues
+			)
 		);
 	}
 }

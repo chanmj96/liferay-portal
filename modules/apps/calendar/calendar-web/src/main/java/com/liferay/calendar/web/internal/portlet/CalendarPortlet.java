@@ -178,8 +178,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + CalendarPortletKeys.CALENDAR,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator,power-user,user"
 	},
 	service = Portlet.class
 )
@@ -737,9 +736,8 @@ public class CalendarPortlet extends MVCPortlet {
 			return;
 		}
 
-		Calendar calendar = _calendarService.getCalendar(calendarId);
-
-		portletRequest.setAttribute(CalendarWebKeys.CALENDAR, calendar);
+		portletRequest.setAttribute(
+			CalendarWebKeys.CALENDAR, _calendarService.getCalendar(calendarId));
 	}
 
 	protected void getCalendarBooking(PortletRequest portletRequest)
@@ -758,11 +756,9 @@ public class CalendarPortlet extends MVCPortlet {
 			return;
 		}
 
-		CalendarBooking calendarBooking =
-			_calendarBookingService.getCalendarBooking(calendarBookingId);
-
 		portletRequest.setAttribute(
-			CalendarWebKeys.CALENDAR_BOOKING, calendarBooking);
+			CalendarWebKeys.CALENDAR_BOOKING,
+			_calendarBookingService.getCalendarBooking(calendarBookingId));
 	}
 
 	protected void getCalendarResource(PortletRequest portletRequest)
@@ -1223,8 +1219,14 @@ public class CalendarPortlet extends MVCPortlet {
 
 		keywords = StringUtil.toLowerCase(keywords);
 
-		searchContext.setAttribute(Field.NAME, keywords);
-		searchContext.setAttribute("resourceName", keywords);
+		searchContext.setAttribute(
+			LocalizationUtil.getLocalizedName(
+				Field.NAME, searchContext.getLanguageId()),
+			keywords);
+		searchContext.setAttribute(
+			LocalizationUtil.getLocalizedName(
+				"resourceName", searchContext.getLanguageId()),
+			keywords);
 
 		searchContext.setCompanyId(themeDisplay.getCompanyId());
 		searchContext.setEnd(SearchContainer.DEFAULT_DELTA);
@@ -1249,10 +1251,8 @@ public class CalendarPortlet extends MVCPortlet {
 
 		long calendarId = ParamUtil.getLong(resourceRequest, "calendarId");
 
-		Calendar calendar = _calendarService.getCalendar(calendarId);
-
 		JSONObject jsonObject = CalendarUtil.toCalendarJSONObject(
-			themeDisplay, calendar);
+			themeDisplay, _calendarService.getCalendar(calendarId));
 
 		writeJSON(resourceRequest, resourceResponse, jsonObject);
 	}
@@ -1541,10 +1541,8 @@ public class CalendarPortlet extends MVCPortlet {
 			timeZoneId = user.getTimeZoneId();
 		}
 
-		TimeZone timeZone = TimeZone.getTimeZone(timeZoneId);
-
 		java.util.Calendar nowCalendar = CalendarFactoryUtil.getCalendar(
-			timeZone);
+			TimeZone.getTimeZone(timeZoneId));
 
 		JSONObject jsonObject = JSONUtil.put(
 			"day", nowCalendar.get(java.util.Calendar.DAY_OF_MONTH)
@@ -1826,7 +1824,7 @@ public class CalendarPortlet extends MVCPortlet {
 	private Portal _portal;
 
 	@Reference(
-		target = "(&(release.bundle.symbolic.name=com.liferay.calendar.web)(&(release.schema.version>=1.1.0)(!(release.schema.version>=1.2.0))))"
+		target = "(&(release.bundle.symbolic.name=com.liferay.calendar.web)(&(release.schema.version>=1.1.0)(!(release.schema.version>=2.0.0))))"
 	)
 	private Release _release;
 

@@ -261,16 +261,7 @@ public class ServletResponseUtil {
 			}
 		}
 		catch (IOException ioe) {
-			if ((ioe instanceof SocketException) ||
-				isClientAbortException(ioe)) {
-
-				if (_log.isWarnEnabled()) {
-					_log.warn(ioe, ioe);
-				}
-			}
-			else {
-				throw ioe;
-			}
+			_checkSocketException(ioe);
 		}
 	}
 
@@ -302,16 +293,7 @@ public class ServletResponseUtil {
 			}
 		}
 		catch (IOException ioe) {
-			if ((ioe instanceof SocketException) ||
-				isClientAbortException(ioe)) {
-
-				if (_log.isWarnEnabled()) {
-					_log.warn(ioe, ioe);
-				}
-			}
-			else {
-				throw ioe;
-			}
+			_checkSocketException(ioe);
 		}
 	}
 
@@ -376,6 +358,9 @@ public class ServletResponseUtil {
 					0, contentLength,
 					Channels.newChannel(httpServletResponse.getOutputStream()));
 			}
+			catch (IOException ioe) {
+				_checkSocketException(ioe);
+			}
 		}
 	}
 
@@ -413,7 +398,13 @@ public class ServletResponseUtil {
 
 		httpServletResponse.flushBuffer();
 
-		StreamUtil.transfer(inputStream, httpServletResponse.getOutputStream());
+		try {
+			StreamUtil.transfer(
+				inputStream, httpServletResponse.getOutputStream());
+		}
+		catch (IOException ioe) {
+			_checkSocketException(ioe);
+		}
 	}
 
 	public static void write(HttpServletResponse httpServletResponse, String s)
@@ -557,6 +548,19 @@ public class ServletResponseUtil {
 		}
 	}
 
+	private static void _checkSocketException(IOException ioe)
+		throws IOException {
+
+		if ((ioe instanceof SocketException) || isClientAbortException(ioe)) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(ioe, ioe);
+			}
+		}
+		else {
+			throw ioe;
+		}
+	}
+
 	private static InputStream _copyRange(
 			InputStream inputStream, OutputStream outputStream, long start,
 			long length)
@@ -570,9 +574,14 @@ public class ServletResponseUtil {
 
 			byteArrayInputStream.skip(start);
 
-			StreamUtil.transfer(
-				byteArrayInputStream, outputStream, StreamUtil.BUFFER_SIZE,
-				false, length);
+			try {
+				StreamUtil.transfer(
+					byteArrayInputStream, outputStream, StreamUtil.BUFFER_SIZE,
+					false, length);
+			}
+			catch (IOException ioe) {
+				_checkSocketException(ioe);
+			}
 
 			return byteArrayInputStream;
 		}
@@ -581,8 +590,13 @@ public class ServletResponseUtil {
 
 			FileChannel fileChannel = fileInputStream.getChannel();
 
-			fileChannel.transferTo(
-				start, length, Channels.newChannel(outputStream));
+			try {
+				fileChannel.transferTo(
+					start, length, Channels.newChannel(outputStream));
+			}
+			catch (IOException ioe) {
+				_checkSocketException(ioe);
+			}
 
 			return fileInputStream;
 		}
@@ -592,17 +606,28 @@ public class ServletResponseUtil {
 
 			randomAccessInputStream.seek(start);
 
-			StreamUtil.transfer(
-				randomAccessInputStream, outputStream, StreamUtil.BUFFER_SIZE,
-				false, length);
+			try {
+				StreamUtil.transfer(
+					randomAccessInputStream, outputStream,
+					StreamUtil.BUFFER_SIZE, false, length);
+			}
+			catch (IOException ioe) {
+				_checkSocketException(ioe);
+			}
 
 			return randomAccessInputStream;
 		}
 
 		inputStream.skip(start);
 
-		StreamUtil.transfer(
-			inputStream, outputStream, StreamUtil.BUFFER_SIZE, false, length);
+		try {
+			StreamUtil.transfer(
+				inputStream, outputStream, StreamUtil.BUFFER_SIZE, false,
+				length);
+		}
+		catch (IOException ioe) {
+			_checkSocketException(ioe);
+		}
 
 		return inputStream;
 	}

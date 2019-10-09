@@ -14,12 +14,9 @@
 
 package com.liferay.exportimport.kernel.lar;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * @author Raymond Augé
  */
-@ProviderType
 public class PortletDataHandlerKeys {
 
 	/**
@@ -72,6 +69,8 @@ public class PortletDataHandlerKeys {
 
 	public static final String LAYOUTS_IMPORT_MODE_MERGE_BY_LAYOUT_UUID =
 		"MERGE_BY_LAYOUT_UUID";
+
+	public static final String LOCKS = "LOCKS";
 
 	public static final String LOGO = "LOGO";
 

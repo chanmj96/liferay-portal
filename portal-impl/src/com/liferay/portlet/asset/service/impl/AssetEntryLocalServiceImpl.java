@@ -113,10 +113,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 	public void deleteEntry(String className, long classPK)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		AssetEntry entry = assetEntryPersistence.fetchByC_C(
-			classNameId, classPK);
+			classNameLocalService.getClassNameId(className), classPK);
 
 		if (entry != null) {
 			deleteEntry(entry);
@@ -157,9 +155,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 	@Override
 	public AssetEntry fetchEntry(String className, long classPK) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return assetEntryLocalService.fetchEntry(classNameId, classPK);
+		return assetEntryLocalService.fetchEntry(
+			classNameLocalService.getClassNameId(className), classPK);
 	}
 
 	@Override
@@ -292,9 +289,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 	public AssetEntry getEntry(String className, long classPK)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return assetEntryPersistence.findByC_C(classNameId, classPK);
+		return assetEntryPersistence.findByC_C(
+			classNameLocalService.getClassNameId(className), classPK);
 	}
 
 	@Override
@@ -304,9 +300,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 	@Override
 	public double getEntryPriority(String className, long classPK) {
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		return assetEntryFinder.findPriorityByC_C(classNameId, classPK);
+		return assetEntryFinder.findPriorityByC_C(
+			classNameLocalService.getClassNameId(className), classPK);
 	}
 
 	@Override
@@ -467,10 +462,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			return;
 		}
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		AssetEntry entry = assetEntryPersistence.fetchByC_C(
-			classNameId, classPK);
+			classNameLocalService.getClassNameId(className), classPK);
 
 		if (entry == null) {
 			return;
@@ -746,19 +739,71 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		AssetEntry entry = assetEntryPersistence.fetchByC_C(
 			classNameId, classPK);
 
+		long entryId = 0;
+
 		boolean oldVisible = false;
 
-		if (entry != null) {
+		if (entry == null) {
+			entryId = counterLocalService.increment();
+		}
+		else {
+			entryId = entry.getEntryId();
+
 			oldVisible = entry.isVisible();
 		}
 
-		if (modifiedDate == null) {
-			modifiedDate = new Date();
+		// Tags
+
+		if ((tagNames != null) && ((entry != null) || (tagNames.length > 0))) {
+			Group siteGroup = groupLocalService.getGroup(
+				PortalUtil.getSiteGroupId(groupId));
+
+			List<AssetTag> tags = assetTagLocalService.checkTags(
+				userId, siteGroup, tagNames);
+
+			assetEntryPersistence.setAssetTags(entryId, tags);
+
+			if (visible) {
+				if (entry == null) {
+					for (AssetTag tag : tags) {
+						assetTagLocalService.incrementAssetCount(
+							tag.getTagId(), classNameId);
+					}
+				}
+				else {
+					List<AssetTag> oldTags = assetEntryPersistence.getAssetTags(
+						entryId);
+
+					for (AssetTag oldTag : oldTags) {
+						if (!tags.contains(oldTag)) {
+							assetTagLocalService.decrementAssetCount(
+								oldTag.getTagId(), classNameId);
+						}
+					}
+
+					for (AssetTag tag : tags) {
+						if (!oldTags.contains(tag)) {
+							assetTagLocalService.incrementAssetCount(
+								tag.getTagId(), classNameId);
+						}
+					}
+				}
+			}
+			else if (oldVisible) {
+				List<AssetTag> oldTags = assetEntryPersistence.getAssetTags(
+					entryId);
+
+				for (AssetTag oldTag : oldTags) {
+					assetTagLocalService.decrementAssetCount(
+						oldTag.getTagId(), classNameId);
+				}
+			}
 		}
 
-		if (entry == null) {
-			long entryId = counterLocalService.increment();
+		// Update entry after tags so that entry listeners have access to the
+		// saved categories and tags
 
+		if (entry == null) {
 			entry = assetEntryPersistence.create(entryId);
 
 			Group group = groupLocalService.getGroup(groupId);
@@ -792,8 +837,16 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 			entry.setViewCount(0);
 		}
+		else {
+			entry = assetEntryPersistence.findByPrimaryKey(entryId);
+		}
 
 		entry.setGroupId(groupId);
+
+		if (modifiedDate == null) {
+			modifiedDate = new Date();
+		}
+
 		entry.setModifiedDate(modifiedDate);
 		entry.setClassTypeId(classTypeId);
 		entry.setListable(listable);
@@ -819,59 +872,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			entry.setPriority(priority.doubleValue());
 		}
 
-		// Tags
-
-		if ((tagNames != null) && (!entry.isNew() || (tagNames.length > 0))) {
-			long siteGroupId = PortalUtil.getSiteGroupId(groupId);
-
-			Group siteGroup = groupLocalService.getGroup(siteGroupId);
-
-			List<AssetTag> tags = assetTagLocalService.checkTags(
-				userId, siteGroup, tagNames);
-
-			assetEntryPersistence.setAssetTags(entry.getEntryId(), tags);
-
-			if (entry.isVisible()) {
-				if (entry.isNew()) {
-					for (AssetTag tag : tags) {
-						assetTagLocalService.incrementAssetCount(
-							tag.getTagId(), classNameId);
-					}
-				}
-				else {
-					List<AssetTag> oldTags = assetEntryPersistence.getAssetTags(
-						entry.getEntryId());
-
-					for (AssetTag oldTag : oldTags) {
-						if (!tags.contains(oldTag)) {
-							assetTagLocalService.decrementAssetCount(
-								oldTag.getTagId(), classNameId);
-						}
-					}
-
-					for (AssetTag tag : tags) {
-						if (!oldTags.contains(tag)) {
-							assetTagLocalService.incrementAssetCount(
-								tag.getTagId(), classNameId);
-						}
-					}
-				}
-			}
-			else if (oldVisible) {
-				List<AssetTag> oldTags = assetEntryPersistence.getAssetTags(
-					entry.getEntryId());
-
-				for (AssetTag oldTag : oldTags) {
-					assetTagLocalService.decrementAssetCount(
-						oldTag.getTagId(), classNameId);
-				}
-			}
-		}
-
-		// Update entry after tags so that entry listeners have access to the
-		// saved categories and tags
-
-		assetEntryPersistence.update(entry);
+		entry = assetEntryPersistence.update(entry);
 
 		// Indexer
 
@@ -944,10 +945,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			long[] categoryIds, String[] tagNames)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		AssetEntry entry = assetEntryPersistence.fetchByC_C(
-			classNameId, classPK);
+			classNameLocalService.getClassNameId(className), classPK);
 
 		if (entry != null) {
 			return assetEntryLocalService.updateEntry(
@@ -1003,10 +1002,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			Date expirationDate, boolean listable, boolean visible)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		AssetEntry entry = assetEntryPersistence.findByC_C(
-			classNameId, classPK);
+			classNameLocalService.getClassNameId(className), classPK);
 
 		entry.setListable(listable);
 		entry.setPublishDate(publishDate);
@@ -1025,7 +1022,7 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 
 		entry.setVisible(visible);
 
-		assetEntryPersistence.update(entry);
+		entry = assetEntryPersistence.update(entry);
 
 		List<AssetTag> tags = assetEntryPersistence.getAssetTags(
 			entry.getEntryId());
@@ -1057,10 +1054,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 			String className, long classPK, boolean visible)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
 		AssetEntry entry = assetEntryPersistence.findByC_C(
-			classNameId, classPK);
+			classNameLocalService.getClassNameId(className), classPK);
 
 		return updateVisible(entry, visible);
 	}

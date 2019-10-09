@@ -13,13 +13,46 @@
  */
 
 import {FLOATING_TOOLBAR_BUTTONS} from '../../utils/constants';
-import {destroy, init} from './EditableTextFragmentProcessor.es';
+import {destroy, init} from './EditableRichTextFragmentProcessor.es';
 
 /**
  * @return {object[]} Floating toolbar panels
  */
-function getFloatingToolbarButtons() {
-	return [FLOATING_TOOLBAR_BUTTONS.edit, FLOATING_TOOLBAR_BUTTONS.link];
+function getFloatingToolbarButtons(editableValues) {
+	const buttons = [];
+
+	const linkButton = {...FLOATING_TOOLBAR_BUTTONS.link};
+
+	if (
+		editableValues.config &&
+		(editableValues.config.fieldId ||
+			editableValues.config.href ||
+			editableValues.config.mappedField)
+	) {
+		linkButton.cssClass =
+			'fragments-editor__floating-toolbar--linked-field';
+	}
+
+	buttons.push(linkButton);
+
+	const editButton = {...FLOATING_TOOLBAR_BUTTONS.edit};
+
+	if (editableValues.mappedField || editableValues.fieldId) {
+		editButton.cssClass =
+			'fragments-editor__floating-toolbar--mapped-field disabled fragments-editor__floating-toolbar--disabled';
+	}
+
+	buttons.push(editButton);
+
+	const mapButton = {...FLOATING_TOOLBAR_BUTTONS.map};
+
+	if (editableValues.fieldId || editableValues.mappedField) {
+		mapButton.cssClass = 'fragments-editor__floating-toolbar--mapped-field';
+	}
+
+	buttons.push(mapButton);
+
+	return buttons;
 }
 
 /**

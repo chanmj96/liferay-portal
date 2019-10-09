@@ -30,7 +30,7 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface LayoutSet extends LayoutSetModel, PersistedModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this interface directly. Add methods to <code>com.liferay.portal.model.impl.LayoutSetImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -95,6 +95,8 @@ public interface LayoutSet extends LayoutSetModel, PersistedModel {
 	public long getLiveLogoId();
 
 	public boolean getLogo();
+
+	public int getPageCount();
 
 	public com.liferay.portal.kernel.util.UnicodeProperties
 		getSettingsProperties();

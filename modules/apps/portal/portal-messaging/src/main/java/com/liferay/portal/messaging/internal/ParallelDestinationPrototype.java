@@ -14,14 +14,20 @@
 
 package com.liferay.portal.messaging.internal;
 
+import com.liferay.portal.kernel.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.DestinationConfiguration;
-import com.liferay.portal.kernel.messaging.ParallelDestination;
 
 /**
  * @author Michael C. Han
  */
 public class ParallelDestinationPrototype implements DestinationPrototype {
+
+	public ParallelDestinationPrototype(
+		PortalExecutorManager portalExecutorManager) {
+
+		_portalExecutorManager = portalExecutorManager;
+	}
 
 	@Override
 	public Destination createDestination(
@@ -33,6 +39,7 @@ public class ParallelDestinationPrototype implements DestinationPrototype {
 			destinationConfiguration.getDestinationName());
 		parallelDestination.setMaximumQueueSize(
 			destinationConfiguration.getMaximumQueueSize());
+		parallelDestination.setPortalExecutorManager(_portalExecutorManager);
 		parallelDestination.setRejectedExecutionHandler(
 			destinationConfiguration.getRejectedExecutionHandler());
 		parallelDestination.setWorkersCoreSize(
@@ -44,5 +51,7 @@ public class ParallelDestinationPrototype implements DestinationPrototype {
 
 		return parallelDestination;
 	}
+
+	private final PortalExecutorManager _portalExecutorManager;
 
 }

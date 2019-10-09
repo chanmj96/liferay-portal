@@ -16,8 +16,6 @@ package com.liferay.social.kernel.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link SocialActivityInterpreterLocalService}.
  *
@@ -25,10 +23,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialActivityInterpreterLocalService
  * @generated
  */
-@ProviderType
 public class SocialActivityInterpreterLocalServiceWrapper
-	implements SocialActivityInterpreterLocalService,
-			   ServiceWrapper<SocialActivityInterpreterLocalService> {
+	implements ServiceWrapper<SocialActivityInterpreterLocalService>,
+			   SocialActivityInterpreterLocalService {
 
 	public SocialActivityInterpreterLocalServiceWrapper(
 		SocialActivityInterpreterLocalService

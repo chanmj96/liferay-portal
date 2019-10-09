@@ -12,10 +12,10 @@
  * details.
  */
 
-import LayoutProvider from 'source/components/LayoutProvider/LayoutProvider.es';
-import mockPages from 'mock/mockPages.es';
+import LayoutProvider from '../../../../src/main/resources/META-INF/resources/js/components/LayoutProvider/LayoutProvider.es';
+import mockPages from '../../___mock__/mockPages';
 import {JSXComponent} from 'metal-jsx';
-import {PagesVisitor} from 'source/util/visitors.es';
+import {PagesVisitor} from '../../../../src/main/resources/META-INF/resources/js/util/visitors.es';
 
 let component;
 let pages = null;
@@ -62,11 +62,11 @@ class Parent extends JSXComponent {
 		return (
 			<LayoutProvider
 				initialPages={[...pages]}
-				ref='provider'
+				ref="provider"
 				rules={[]}
 				spritemap={spritemap}
 			>
-				<Child ref='child' />
+				<Child ref="child" />
 			</LayoutProvider>
 		);
 	}

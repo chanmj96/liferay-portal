@@ -122,10 +122,7 @@ public class StagedLayoutSetStagedModelDataHandler
 			portletDataContext.isPrivateLayout());
 
 		for (Layout layout : layoutSetLayouts) {
-			String sourcePrototypeLayoutUuid =
-				layout.getSourcePrototypeLayoutUuid();
-
-			if (Validator.isNull(sourcePrototypeLayoutUuid)) {
+			if (Validator.isNull(layout.getSourcePrototypeLayoutUuid())) {
 				continue;
 			}
 
@@ -145,8 +142,7 @@ public class StagedLayoutSetStagedModelDataHandler
 					layout.isPrivateLayout())) {
 
 				_layoutLocalService.deleteLayout(
-					layout, false,
-					ServiceContextThreadLocal.getServiceContext());
+					layout, ServiceContextThreadLocal.getServiceContext());
 			}
 		}
 	}
@@ -205,8 +201,7 @@ public class StagedLayoutSetStagedModelDataHandler
 						continue;
 					}
 
-					_layoutLocalService.deleteLayout(
-						layout, false, serviceContext);
+					_layoutLocalService.deleteLayout(layout, serviceContext);
 				}
 				catch (Exception e) {
 					if (_log.isWarnEnabled()) {
@@ -363,12 +358,6 @@ public class StagedLayoutSetStagedModelDataHandler
 		updateLayoutPriorities(
 			portletDataContext, layoutElements,
 			portletDataContext.isPrivateLayout());
-
-		// Page count
-
-		_layoutSetLocalService.updatePageCount(
-			portletDataContext.getGroupId(),
-			portletDataContext.isPrivateLayout());
 	}
 
 	protected void exportLayouts(
@@ -486,10 +475,9 @@ public class StagedLayoutSetStagedModelDataHandler
 		}
 
 		if ((image != null) && (image.getTextObj() != null)) {
-			String logoPath = ExportImportPathUtil.getRootPath(
-				portletDataContext);
-
-			logoPath += "/logo";
+			String logoPath = ExportImportPathUtil.getModelPath(
+				stagedLayoutSet,
+				image.getImageId() + StringPool.PERIOD + image.getType());
 
 			Element rootElement = portletDataContext.getExportDataRootElement();
 
@@ -836,17 +824,22 @@ public class StagedLayoutSetStagedModelDataHandler
 				importedLayoutSet.getSettingsProperties();
 
 			boolean showSearchHeader = GetterUtil.getBoolean(
+				settingsProperties.getProperty(
+					"lfr-theme:regular:show-header-search"),
+				true);
+
+			boolean importedShowSearchHeader = GetterUtil.getBoolean(
 				importedSettingsProperties.getProperty(
 					"lfr-theme:regular:show-header-search"),
 				true);
 
-			if (!showSearchHeader) {
+			if (showSearchHeader != importedShowSearchHeader) {
 				settingsProperties.setProperty(
 					"lfr-theme:regular:show-header-search",
-					String.valueOf(showSearchHeader));
-			}
+					String.valueOf(importedShowSearchHeader));
 
-			_layoutSetLocalService.updateLayoutSet(layoutSet);
+				_layoutSetLocalService.updateLayoutSet(layoutSet);
+			}
 		}
 	}
 
@@ -870,15 +863,19 @@ public class StagedLayoutSetStagedModelDataHandler
 				importedLayoutSet.getSettingsProperties();
 
 			boolean showSiteName = GetterUtil.getBoolean(
+				settingsProperties.getProperty(
+					Sites.SHOW_SITE_NAME, Boolean.TRUE.toString()));
+
+			boolean importedShowSiteName = GetterUtil.getBoolean(
 				importedSettingsProperties.getProperty(
 					Sites.SHOW_SITE_NAME, Boolean.TRUE.toString()));
 
-			if (!showSiteName) {
+			if (showSiteName != importedShowSiteName) {
 				settingsProperties.setProperty(
-					Sites.SHOW_SITE_NAME, String.valueOf(showSiteName));
-			}
+					Sites.SHOW_SITE_NAME, String.valueOf(importedShowSiteName));
 
-			_layoutSetLocalService.updateLayoutSet(layoutSet);
+				_layoutSetLocalService.updateLayoutSet(layoutSet);
+			}
 		}
 	}
 

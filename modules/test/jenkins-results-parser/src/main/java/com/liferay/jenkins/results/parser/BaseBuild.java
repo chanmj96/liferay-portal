@@ -1235,6 +1235,22 @@ public abstract class BaseBuild implements Build {
 	}
 
 	@Override
+	public boolean hasGenericCIFailure() {
+		for (FailureMessageGenerator failureMessageGenerator :
+				getFailureMessageGenerators()) {
+
+			Element failureMessage = failureMessageGenerator.getMessageElement(
+				this);
+
+			if (failureMessage != null) {
+				return failureMessageGenerator.isGenericCIFailure();
+			}
+		}
+
+		return false;
+	}
+
+	@Override
 	public int hashCode() {
 		String key = getBuildURL();
 
@@ -2227,8 +2243,8 @@ public abstract class BaseBuild implements Build {
 			JenkinsResultsParserUtil.toDurationString(getDuration()));
 	}
 
-	protected Pattern getBuildURLPattern() {
-		return _buildURLPattern;
+	protected MultiPattern getBuildURLMultiPattern() {
+		return _buildURLMultiPattern;
 	}
 
 	protected int getDownstreamBuildCountByResult(String result) {
@@ -2281,7 +2297,7 @@ public abstract class BaseBuild implements Build {
 
 		List<Element> elements = parallelExecutor.execute();
 
-		Map<Build, Element> elementsMap = new LinkedHashMap<>(elements.size());
+		Map<Build, Element> elementsMap = new LinkedHashMap<>();
 
 		for (int i = 0; i < elements.size(); i++) {
 			elementsMap.put(matchingBuilds.get(i), elements.get(i));
@@ -2344,8 +2360,7 @@ public abstract class BaseBuild implements Build {
 
 		Set<String> envMapJSONObjectKeySet = envMapJSONObject.keySet();
 
-		injectedEnvironmentVariablesMap = new HashMap<>(
-			envMapJSONObjectKeySet.size());
+		injectedEnvironmentVariablesMap = new HashMap<>();
 
 		for (String key : envMapJSONObjectKeySet) {
 			injectedEnvironmentVariablesMap.put(
@@ -2916,7 +2931,7 @@ public abstract class BaseBuild implements Build {
 		JSONArray actionsJSONArray = buildJSONObject.getJSONArray("actions");
 
 		if (actionsJSONArray.length() == 0) {
-			_parameters = new HashMap<>(0);
+			_parameters = new HashMap<>();
 
 			return;
 		}
@@ -3023,11 +3038,11 @@ public abstract class BaseBuild implements Build {
 			fromArchive = false;
 		}
 
-		Pattern buildURLPattern = getBuildURLPattern();
+		MultiPattern buildURLMultiPattern = getBuildURLMultiPattern();
 
-		Matcher matcher = buildURLPattern.matcher(buildURL);
+		Matcher matcher = buildURLMultiPattern.find(buildURL);
 
-		if (!matcher.find()) {
+		if (matcher == null) {
 			Pattern archiveBuildURLPattern = getArchiveBuildURLPattern();
 
 			matcher = archiveBuildURLPattern.matcher(buildURL);
@@ -3226,6 +3241,7 @@ public abstract class BaseBuild implements Build {
 
 			_duration = topLevelBuild.getDuration();
 			_startTime = topLevelBuild.getStartTime();
+
 			_timeline = new TimelineDataPoint[size];
 
 			for (int i = 0; i < size; i++) {
@@ -3360,7 +3376,7 @@ public abstract class BaseBuild implements Build {
 			Pattern.quote(JenkinsResultsParserUtil.URL_DEPENDENCIES_HTTP),
 			")/*(?<archiveName>.*)/(?<master>[^/]+)/+(?<jobName>[^/]+)",
 			".*/(?<buildNumber>\\d+)/?"));
-	private static final Pattern _buildURLPattern = Pattern.compile(
+	private static final MultiPattern _buildURLMultiPattern = new MultiPattern(
 		JenkinsResultsParserUtil.combine(
 			"\\w+://(?<master>[^/]+)/+job/+(?<jobName>[^/]+).*/(?<buildNumber>",
 			"\\d+)/?"));

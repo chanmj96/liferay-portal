@@ -15,7 +15,7 @@
 package com.liferay.fragment.entry.processor.background.image;
 
 import com.liferay.fragment.constants.FragmentEntryLinkConstants;
-import com.liferay.fragment.entry.processor.util.FragmentEntryProcessorUtil;
+import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
 import com.liferay.fragment.exception.FragmentEntryContentException;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.FragmentEntryProcessor;
@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,6 +54,27 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class BackgroundImageFragmentEntryProcessor
 	implements FragmentEntryProcessor {
+
+	@Override
+	public JSONObject getDefaultEditableValuesJSONObject(
+		String html, String configuration) {
+
+		JSONObject defaultEditableValuesJSONObject =
+			JSONFactoryUtil.createJSONObject();
+
+		Document document = _getDocument(html);
+
+		for (Element element :
+				document.select("[data-lfr-background-image-id]")) {
+
+			String id = element.attr("data-lfr-background-image-id");
+
+			defaultEditableValuesJSONObject.put(
+				id, JSONFactoryUtil.createJSONObject());
+		}
+
+		return defaultEditableValuesJSONObject;
+	}
 
 	@Override
 	public String processFragmentEntryLinkHTML(
@@ -89,33 +111,63 @@ public class BackgroundImageFragmentEntryProcessor
 
 			String value = StringPool.BLANK;
 
-			if (_fragmentEntryProcessorUtil.isAssetDisplayPage(
+			if (_fragmentEntryProcessorHelper.isAssetDisplayPage(
 					fragmentEntryProcessorContext.getMode())) {
 
-				value = editableValueJSONObject.getString("mappedField");
+				String mappedField = editableValueJSONObject.getString(
+					"mappedField");
+
+				Optional<Map<String, Object>> fieldValuesOptional =
+					fragmentEntryProcessorContext.getFieldValuesOptional();
+
+				Map<String, Object> fieldValues = fieldValuesOptional.orElse(
+					new HashMap<>());
+
+				Object fieldValue = fieldValues.get(mappedField);
+
+				if (fieldValue instanceof JSONObject) {
+					JSONObject fieldValueJSONObject = (JSONObject)fieldValue;
+
+					value = fieldValueJSONObject.getString("url");
+				}
 			}
 
-			if (_fragmentEntryProcessorUtil.isMapped(editableValueJSONObject)) {
-				Object fieldValue = _fragmentEntryProcessorUtil.getMappedValue(
-					editableValueJSONObject, infoDisplaysFieldValues,
-					fragmentEntryProcessorContext.getMode(),
-					fragmentEntryProcessorContext.getLocale(),
-					fragmentEntryProcessorContext.getPreviewClassPK(),
-					fragmentEntryProcessorContext.getPreviewType());
+			if (_fragmentEntryProcessorHelper.isMapped(
+					editableValueJSONObject)) {
+
+				Object fieldValue =
+					_fragmentEntryProcessorHelper.getMappedValue(
+						editableValueJSONObject, infoDisplaysFieldValues,
+						fragmentEntryProcessorContext);
 
 				if (fieldValue != null) {
-					value = String.valueOf(fieldValue);
+					if (fieldValue instanceof JSONObject) {
+						JSONObject fieldValueJSONObject =
+							(JSONObject)fieldValue;
+
+						value = fieldValueJSONObject.getString("url");
+					}
+					else {
+						value = String.valueOf(fieldValue);
+					}
 				}
 			}
 
 			if (Validator.isNull(value)) {
-				value = _fragmentEntryProcessorUtil.getEditableValue(
+				value = _fragmentEntryProcessorHelper.getEditableValue(
 					editableValueJSONObject,
 					fragmentEntryProcessorContext.getLocale(),
 					fragmentEntryProcessorContext.getSegmentsExperienceIds());
 			}
 
 			if (Validator.isNotNull(value)) {
+				if (value.startsWith(StringPool.OPEN_CURLY_BRACE)) {
+					JSONObject valueJSONObject =
+						JSONFactoryUtil.createJSONObject(value);
+
+					value = valueJSONObject.getString("url", value);
+				}
+
 				element.attr(
 					"style",
 					"background-image: url(" + value +
@@ -188,6 +240,6 @@ public class BackgroundImageFragmentEntryProcessor
 	}
 
 	@Reference
-	private FragmentEntryProcessorUtil _fragmentEntryProcessorUtil;
+	private FragmentEntryProcessorHelper _fragmentEntryProcessorHelper;
 
 }

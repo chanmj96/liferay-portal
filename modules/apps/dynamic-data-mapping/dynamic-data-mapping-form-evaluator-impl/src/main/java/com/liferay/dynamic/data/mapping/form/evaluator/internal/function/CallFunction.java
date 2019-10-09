@@ -33,7 +33,6 @@ import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -140,7 +139,7 @@ public class CallFunction
 			parameterValue = getDDMFormFieldValue(parameterValue);
 		}
 
-		parameters.put(parameterName, HtmlUtil.escapeURL(parameterValue));
+		parameters.put(parameterName, parameterValue);
 	}
 
 	protected Map<String, String> extractParameters(String expression) {

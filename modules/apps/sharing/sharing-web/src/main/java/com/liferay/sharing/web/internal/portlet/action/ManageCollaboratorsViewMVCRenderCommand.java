@@ -76,8 +76,18 @@ public class ManageCollaboratorsViewMVCRenderCommand
 
 		template.put(
 			"actionUrl", _getManageCollaboratorsActionURL(renderResponse));
+
+		long classNameId = ParamUtil.getLong(renderRequest, "classNameId");
+
+		template.put("classNameId", classNameId);
+
+		long classPK = ParamUtil.getLong(renderRequest, "classPK");
+
+		template.put("classPK", classPK);
 		template.put(
-			"collaborators", _getCollaboratorsJSONArray(renderRequest));
+			"collaborators",
+			_getCollaboratorsJSONArray(classNameId, classPK, renderRequest));
+
 		template.put(
 			"dialogId",
 			ParamUtil.getString(
@@ -88,13 +98,11 @@ public class ManageCollaboratorsViewMVCRenderCommand
 		return "ManageCollaborators";
 	}
 
-	private JSONArray _getCollaboratorsJSONArray(RenderRequest renderRequest)
+	private JSONArray _getCollaboratorsJSONArray(
+			long classNameId, long classPK, RenderRequest renderRequest)
 		throws PortletException {
 
 		try {
-			long classNameId = ParamUtil.getLong(renderRequest, "classNameId");
-			long classPK = ParamUtil.getLong(renderRequest, "classPK");
-
 			int sharingEntriesCount =
 				_sharingEntryLocalService.getSharingEntriesCount(
 					classNameId, classPK);

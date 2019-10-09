@@ -14,7 +14,7 @@
 
 import Component from 'metal-component';
 import {Config} from 'metal-state';
-import {openToast} from 'frontend-js-web';
+import {fetch, openToast} from 'frontend-js-web';
 import Soy from 'metal-soy';
 
 import templates from './BulkStatus.soy';
@@ -25,8 +25,6 @@ import templates from './BulkStatus.soy';
  * @abstract
  * @extends {Component}
  */
-
-/* eslint no-unused-vars: "warn" */
 
 class BulkStatus extends Component {
 	/**
@@ -69,21 +67,14 @@ class BulkStatus extends Component {
 	 * @protected
 	 */
 	_getBulkStatus() {
-		const request = {
-			credentials: 'include',
-			headers: {
-				'X-CSRF-Token': Liferay.authToken
-			}
-		};
-
-		fetch(this.pathModule + this.bulkStatusUrl, request)
+		fetch(this.pathModule + this.bulkStatusUrl)
 			.then(response => response.json())
 			.then(response => {
 				if (!response.actionInProgress) {
 					this._onBulkFinish(false);
 				}
 			})
-			.catch(e => {
+			.catch(() => {
 				this._onBulkFinish(true);
 			});
 	}

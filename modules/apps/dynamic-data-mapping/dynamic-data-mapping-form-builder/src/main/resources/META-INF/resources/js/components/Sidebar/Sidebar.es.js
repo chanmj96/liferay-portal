@@ -15,6 +15,7 @@
 import * as FormSupport from 'dynamic-data-mapping-form-renderer/js/components/FormRenderer/FormSupport.es';
 import classnames from 'classnames';
 import ClayButton from 'clay-button';
+import ClayModal from 'clay-modal';
 import Component, {Fragment} from 'metal-jsx';
 import dom from 'metal-dom';
 import FieldTypeBox from '../FieldTypeBox/FieldTypeBox.es.js';
@@ -25,14 +26,12 @@ import {Config} from 'metal-state';
 import {Drag, DragDrop} from 'metal-drag-drop';
 import {EventHandler} from 'metal-events';
 import {focusedFieldStructure} from '../../util/config.es';
+import {makeFetch} from 'dynamic-data-mapping-form-renderer/js/util/fetch.es';
 import {
 	getFieldProperties,
 	normalizeSettingsContextPages
 } from '../../util/fieldSupport.es';
-import {
-	PagesVisitor,
-	RulesVisitor
-} from 'dynamic-data-mapping-form-renderer/js/util/visitors.es';
+import {PagesVisitor} from 'dynamic-data-mapping-form-renderer/js/util/visitors.es';
 import {selectText} from '../../util/dom.es';
 
 /**
@@ -145,7 +144,6 @@ class Sidebar extends Component {
 
 		this._eventHandler.removeAllListeners();
 		this.disposeDragAndDrop();
-		this.emit('fieldBlurred');
 	}
 
 	getSettingsFormContext() {
@@ -179,15 +177,21 @@ class Sidebar extends Component {
 	isFieldReadOnly({localizable, type}) {
 		const {defaultLanguageId, editingLanguageId} = this.props;
 
-		return (
-			defaultLanguageId !== editingLanguageId &&
-			(!localizable || type === 'validation')
-		);
+		if (type === 'validation') {
+			return false;
+		}
+
+		return defaultLanguageId !== editingLanguageId && !localizable;
 	}
 
 	open() {
 		const {container} = this.refs;
+		const {open} = this.state;
 		const {transitionEnd} = this;
+
+		if (open) {
+			return;
+		}
 
 		dom.once(container, transitionEnd, () => {
 			if (this._isEditMode()) {
@@ -223,60 +227,97 @@ class Sidebar extends Component {
 		const styles = classnames('sidebar-container', {open});
 
 		return (
-			<div class={styles} ref='container'>
-				<div class='sidebar sidebar-light'>
-					<nav class='component-tbar tbar'>
-						<div class='container-fluid'>
-							{this._renderTopBar()}
-						</div>
-					</nav>
-					<nav class='component-navigation-bar navbar navigation-bar navbar-collapse-absolute navbar-expand-md navbar-underline'>
-						<a
-							aria-controls='sidebarLightCollapse00'
-							aria-expanded='false'
-							aria-label='Toggle Navigation'
-							class='collapsed navbar-toggler navbar-toggler-link'
-							data-toggle='collapse'
-							href='#sidebarLightCollapse00'
-							role='button'
-						>
-							<span class='navbar-text-truncate'>
-								{'Details'}
-							</span>
-							<svg
-								aria-hidden='true'
-								class='lexicon-icon lexicon-icon-caret-bottom'
-							>
-								<use xlink:href={`${spritemap}#caret-bottom`} />
-							</svg>
-						</a>
-						<div
-							class='collapse navbar-collapse'
-							id='sidebarLightCollapse00'
-						>
-							<ul class='nav navbar-nav' role='tablist'>
-								{this._renderNavItems()}
-							</ul>
-						</div>
-					</nav>
-					<div class='ddm-sidebar-body'>
-						{!editMode &&
-							activeTab == 0 &&
-							this._renderFieldTypeGroups()}
-
-						{!editMode &&
-							activeTab == 1 &&
-							this._renderElementSets()}
-
-						{editMode && (
-							<div class='sidebar-body ddm-field-settings'>
-								<div class='tab-content'>
-									<form>{this._renderSettingsForm()}</form>
-								</div>
+			<div>
+				<div class={styles} ref="container">
+					<div class="sidebar sidebar-light">
+						<nav class="component-tbar tbar">
+							<div class="container-fluid">
+								{this._renderTopBar()}
 							</div>
-						)}
+						</nav>
+						<nav class="component-navigation-bar navbar navigation-bar navbar-collapse-absolute navbar-expand-md navbar-underline">
+							<a
+								aria-controls="sidebarLightCollapse00"
+								aria-expanded="false"
+								aria-label="Toggle Navigation"
+								class="collapsed navbar-toggler navbar-toggler-link"
+								data-toggle="collapse"
+								href="#sidebarLightCollapse00"
+								role="button"
+							>
+								<span class="navbar-text-truncate">
+									{'Details'}
+								</span>
+								<svg
+									aria-hidden="true"
+									class="lexicon-icon lexicon-icon-caret-bottom"
+								>
+									<use
+										xlink:href={`${spritemap}#caret-bottom`}
+									/>
+								</svg>
+							</a>
+							<div
+								class="collapse navbar-collapse"
+								id="sidebarLightCollapse00"
+							>
+								<ul class="nav navbar-nav" role="tablist">
+									{this._renderNavItems()}
+								</ul>
+							</div>
+						</nav>
+						<div class="ddm-sidebar-body">
+							{!editMode &&
+								activeTab == 0 &&
+								this._renderFieldTypeGroups()}
+
+							{!editMode &&
+								activeTab == 1 &&
+								this._renderElementSets()}
+
+							{editMode && (
+								<div class="sidebar-body ddm-field-settings">
+									<div class="tab-content">
+										<form>
+											{this._renderSettingsForm()}
+										</form>
+									</div>
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
+
+				<ClayModal
+					body={Liferay.Language.get(
+						'are-you-sure-you-want-to-cancel'
+					)}
+					events={{
+						clickButton: this._handleCancelChangesModalButtonClicked.bind(
+							this
+						)
+					}}
+					footerButtons={[
+						{
+							alignment: 'right',
+							label: Liferay.Language.get('dismiss'),
+							style: 'primary',
+							type: 'close'
+						},
+						{
+							alignment: 'right',
+							label: Liferay.Language.get('yes-cancel'),
+							style: 'primary',
+							type: 'button'
+						}
+					]}
+					ref="cancelChangesModal"
+					size="sm"
+					spritemap={spritemap}
+					title={Liferay.Language.get(
+						'cancel-field-changes-question'
+					)}
+				/>
 			</div>
 		);
 	}
@@ -287,21 +328,24 @@ class Sidebar extends Component {
 		const {focusedField} = this.props;
 
 		if (evaluableForm) {
-			evaluableForm.evaluate().then(pages => {
-				dispatch('focusedFieldUpdated', {
-					...focusedField,
-					settingsContext: {
-						...focusedField.settingsContext,
-						pages
-					}
-				});
-			});
+			evaluableForm
+				.evaluate()
+				.then(pages => {
+					dispatch('focusedFieldUpdated', {
+						...focusedField,
+						settingsContext: {
+							...focusedField.settingsContext,
+							pages
+						}
+					});
+				})
+				.catch(error => dispatch('evaluationError', error));
 		}
 	}
 
 	syncVisible(visible) {
 		if (!visible) {
-			this.emit('fieldBlurred');
+			this.dispatchFieldBlurred();
 		}
 	}
 
@@ -320,12 +364,24 @@ class Sidebar extends Component {
 		);
 	}
 
-	_cancelFieldChanges(indexes) {
-		this.emit('fieldChangesCanceled', indexes);
+	_cancelFieldChanges() {
+		const {cancelChangesModal} = this.refs;
+
+		cancelChangesModal.show();
 	}
 
 	_deleteField(indexes) {
-		this.emit('fieldDeleted', {indexes});
+		const {dispatch} = this.context;
+
+		dispatch('fieldDeleted', {indexes});
+	}
+
+	dispatchFieldBlurred() {
+		const {dispatch} = this.context;
+
+		if (!this.isDisposed()) {
+			dispatch('sidebarFieldBlurred');
+		}
 	}
 
 	_dropdownFieldTypesValueFn() {
@@ -344,7 +400,27 @@ class Sidebar extends Component {
 	}
 
 	_duplicateField(indexes) {
-		this.emit('fieldDuplicated', {indexes});
+		const {dispatch} = this.context;
+
+		dispatch('fieldDuplicated', {indexes});
+	}
+
+	_fetchFieldSet(fieldSetId) {
+		const {
+			editingLanguageId,
+			fieldSetDefinitionURL,
+			groupId,
+			portletNamespace
+		} = this.props;
+
+		return makeFetch({
+			method: 'GET',
+			url: `${fieldSetDefinitionURL}?ddmStructureId=${fieldSetId}&languageId=${editingLanguageId}&portletNamespace=${portletNamespace}&scopeGroupId=${groupId}`
+		})
+			.then(({pages}) => pages)
+			.catch(error => {
+				throw new Error(error);
+			});
 	}
 
 	_fieldTypesGroupValueFn() {
@@ -369,14 +445,25 @@ class Sidebar extends Component {
 		}, group);
 	}
 
+	_getTabItems() {
+		if (!this._isEditMode()) {
+			return this.state.tabs;
+		}
+
+		const {focusedField} = this.props;
+		const {settingsContext} = focusedField;
+
+		return settingsContext.pages.map(({title}) => title);
+	}
+
 	_getTransitionEndEvent() {
 		const el = document.createElement('metalClayTransitionEnd');
 
 		const transitionEndEvents = {
 			MozTransition: 'transitionend',
 			OTransition: 'oTransitionEnd otransitionend',
-			transition: 'transitionend',
-			WebkitTransition: 'webkitTransitionEnd'
+			WebkitTransition: 'webkitTransitionEnd',
+			transition: 'transitionend'
 		};
 
 		let eventName = false;
@@ -389,6 +476,24 @@ class Sidebar extends Component {
 		}
 
 		return eventName;
+	}
+
+	_handleCancelChangesModalButtonClicked(event) {
+		const {dispatch} = this.context;
+		const {target} = event;
+		const {cancelChangesModal} = this.refs;
+
+		event.stopPropagation();
+
+		if (this._isOutsideModal(target)) {
+			this.close();
+		}
+
+		cancelChangesModal.emit('hide');
+
+		if (!event.target.classList.contains('close-modal')) {
+			dispatch('fieldChangesCanceled', {});
+		}
 	}
 
 	_handleChangeFieldTypeItemClicked({data}) {
@@ -414,16 +519,18 @@ class Sidebar extends Component {
 			this.close();
 
 			dom.once(this.refs.container, transitionEnd, () =>
-				this.emit('fieldBlurred')
+				this.dispatchFieldBlurred()
 			);
 
 			if (!this._isModalElement(target)) {
-				setTimeout(() => this.emit('fieldBlurred'), 500);
+				setTimeout(() => this.dispatchFieldBlurred(), 500);
 			}
 		}
 	}
 
 	_handleDragEnded(data, event) {
+		const {dispatch} = this.context;
+
 		event.preventDefault();
 
 		if (!data.target) {
@@ -432,26 +539,34 @@ class Sidebar extends Component {
 
 		const {fieldTypes} = this.props;
 		const {fieldSetId} = data.source.dataset;
-		const target = FormSupport.getIndexes(data.target.parentElement);
+		const indexes = FormSupport.getIndexes(data.target.parentElement);
 
 		if (fieldSetId) {
-			this.emit('fieldSetAdded', {
-				data,
-				fieldSetId,
-				target
+			this._fetchFieldSet(fieldSetId).then(pages => {
+				dispatch('fieldSetAdded', {
+					data,
+					fieldSetId,
+					fieldSetPages: pages,
+					indexes
+				});
 			});
 		} else {
 			const fieldType = fieldTypes.find(({name}) => {
 				return name === data.source.dataset.fieldTypeName;
 			});
 
-			this.emit('fieldAdded', {
+			const addedToPlaceholder = data.target.parentElement.parentElement.classList.contains(
+				'placeholder'
+			);
+
+			dispatch('fieldAdded', {
+				addedToPlaceholder,
 				data,
 				fieldType: {
 					...fieldType,
 					editable: true
 				},
-				target
+				indexes
 			});
 		}
 	}
@@ -501,17 +616,35 @@ class Sidebar extends Component {
 		this.close();
 
 		dom.once(this.refs.container, transitionEnd, () => {
-			this.emit('fieldBlurred');
+			this.dispatchFieldBlurred();
 			this.open();
 		});
 	}
 
-	_handleSettingsFieldBlurred(event) {
-		this.emit('settingsFieldBlurred', event);
+	_handleSettingsFieldBlurred({fieldInstance, value}) {
+		const {dispatch} = this.context;
+		const {editingLanguageId} = this.props;
+		const {fieldName} = fieldInstance;
+
+		dispatch('fieldBlurred', {
+			editingLanguageId,
+			propertyName: fieldName,
+			propertyValue: value
+		});
 	}
 
-	_handleSettingsFieldEdited(event) {
-		this.emit('settingsFieldEdited', event);
+	_handleSettingsFieldEdited({fieldInstance, value}) {
+		if (fieldInstance && !fieldInstance.isDisposed()) {
+			const {editingLanguageId} = this.props;
+			const {fieldName} = fieldInstance;
+			const {dispatch} = this.context;
+
+			dispatch('fieldEdited', {
+				editingLanguageId,
+				propertyName: fieldName,
+				propertyValue: value
+			});
+		}
 	}
 
 	_handleSettingsFormAttached() {
@@ -531,13 +664,6 @@ class Sidebar extends Component {
 		});
 	}
 
-	_hasRuleExpression(fieldName) {
-		const {rules} = this.props;
-		const visitor = new RulesVisitor(rules);
-
-		return visitor.containsFieldExpression(fieldName);
-	}
-
 	_isCloseButton(node) {
 		const {closeButton} = this.refs;
 
@@ -547,14 +673,15 @@ class Sidebar extends Component {
 	_isEditMode() {
 		const {focusedField} = this.props;
 
-		return !(
-			Object.keys(focusedField).length === 0 &&
-			focusedField.constructor === Object
-		);
+		return Object.keys(focusedField).length > 0;
 	}
 
 	_isModalElement(node) {
 		return dom.closest(node, '.modal');
+	}
+
+	_isOutsideModal(node) {
+		return !dom.closest(node, '.close-modal');
 	}
 
 	_isSettingsElement(target) {
@@ -679,32 +806,32 @@ class Sidebar extends Component {
 		const {fieldSets, spritemap} = this.props;
 		return (
 			<div
-				aria-orientation='vertical'
-				class='ddm-field-types-panel panel-group'
-				id='accordion03'
-				role='tablist'
+				aria-orientation="vertical"
+				class="ddm-field-types-panel panel-group"
+				id="accordion03"
+				role="tablist"
 			>
 				{groups.map(key => (
 					<div
 						aria-labelledby={`#ddm-field-types-${key}-header`}
-						class='panel-collapse show'
+						class="panel-collapse show"
 						id={`ddm-field-types-${key}-body`}
 						key={key}
-						role='tabpanel'
+						role="tabpanel"
 					>
-						<div class='panel-body p-0 m-0 list-group'>
+						<div class="panel-body p-0 m-0 list-group">
 							<div
-								class='ddm-drag-item list-group-item list-group-item-flex'
+								class="ddm-drag-item list-group-item list-group-item-flex"
 								data-field-set-id={fieldSets[key].id}
 								data-field-set-name={fieldSets[key].name}
 								key={`fieldType_${fieldSets[key].name}`}
 								ref={`fieldType_${fieldSets[key].name}`}
 							>
-								<div class='autofit-col'>
-									<span class='sticker sticker-secondary'>
-										<span class='inline-item'>
+								<div class="autofit-col">
+									<span class="sticker sticker-secondary">
+										<span class="inline-item">
 											<svg
-												aria-hidden='true'
+												aria-hidden="true"
 												class={`lexicon-icon lexicon-icon-${fieldSets[key].icon}`}
 											>
 												<use
@@ -714,8 +841,8 @@ class Sidebar extends Component {
 										</span>
 									</span>
 								</div>
-								<div class='autofit-col autofit-col-expand'>
-									<h4 class='list-group-title text-truncate'>
+								<div class="autofit-col autofit-col-expand">
+									<h4 class="list-group-title text-truncate">
 										<span>{fieldSets[key].name}</span>
 									</h4>
 								</div>
@@ -729,10 +856,10 @@ class Sidebar extends Component {
 
 	_renderEmptyElementSets() {
 		return (
-			<div class='list-group-body  list-group'>
-				<div class='main-content-body'>
-					<div class='text-center text-muted'>
-						<p class='text-default'>
+			<div class="list-group-body  list-group">
+				<div class="main-content-body">
+					<div class="text-center text-muted">
+						<p class="text-default">
 							{Liferay.Language.get(
 								'there-are-no-element-sets-yet'
 							)}
@@ -773,43 +900,43 @@ class Sidebar extends Component {
 
 		return (
 			<div
-				aria-orientation='vertical'
-				class='ddm-field-types-panel panel-group'
-				id='accordion03'
-				role='tablist'
+				aria-orientation="vertical"
+				class="ddm-field-types-panel panel-group"
+				id="accordion03"
+				role="tablist"
 			>
 				{group.map((key, index) => (
 					<div
-						class='panel panel-secondary'
+						class="panel panel-secondary"
 						key={`fields-group-${key}-${index}`}
 					>
 						<a
-							aria-controls='collapseTwo'
-							aria-expanded='true'
-							class='collapse-icon panel-header panel-header-link'
-							data-parent='#accordion03'
-							data-toggle='collapse'
+							aria-controls="collapseTwo"
+							aria-expanded="true"
+							class="collapse-icon panel-header panel-header-link"
+							data-parent="#accordion03"
+							data-toggle="collapse"
 							href={`#ddm-field-types-${key}-body`}
 							id={`ddm-field-types-${key}-header`}
-							role='tab'
+							role="tab"
 						>
-							<span class='panel-title'>
+							<span class="panel-title">
 								{fieldTypesGroup[key].label}
 							</span>
-							<span class='collapse-icon-closed'>
+							<span class="collapse-icon-closed">
 								<svg
-									aria-hidden='true'
-									class='lexicon-icon lexicon-icon-angle-right'
+									aria-hidden="true"
+									class="lexicon-icon lexicon-icon-angle-right"
 								>
 									<use
 										xlink:href={`${spritemap}#angle-right`}
 									/>
 								</svg>
 							</span>
-							<span class='collapse-icon-open'>
+							<span class="collapse-icon-open">
 								<svg
-									aria-hidden='true'
-									class='lexicon-icon lexicon-icon-angle-down'
+									aria-hidden="true"
+									class="lexicon-icon lexicon-icon-angle-down"
 								>
 									<use
 										xlink:href={`${spritemap}#angle-down`}
@@ -819,11 +946,11 @@ class Sidebar extends Component {
 						</a>
 						<div
 							aria-labelledby={`#ddm-field-types-${key}-header`}
-							class='panel-collapse show'
+							class="panel-collapse show"
 							id={`ddm-field-types-${key}-body`}
-							role='tabpanel'
+							role="tabpanel"
 						>
-							<div class='panel-body p-0 m-0 list-group'>
+							<div class="panel-body p-0 m-0 list-group">
 								{fieldTypesGroup[key].fields.map(fieldType => (
 									<FieldTypeBox
 										fieldType={fieldType}
@@ -840,35 +967,33 @@ class Sidebar extends Component {
 	}
 
 	_renderNavItems() {
-		const {activeTab, tabs} = this.state;
+		const {activeTab} = this.state;
 
-		return tabs[this._isEditMode() ? 'edit' : 'add'].items.map(
-			(name, index) => {
-				const style = classnames('nav-link', {
-					active: index === activeTab
-				});
+		return this._getTabItems().map((name, index) => {
+			const style = classnames('nav-link', {
+				active: index === activeTab
+			});
 
-				return (
-					<li
-						class='nav-item'
-						data-index={index}
-						data-onclick={this._handleTabItemClicked}
-						key={`tab${index}`}
-						ref={`tab${index}`}
+			return (
+				<li
+					class="nav-item"
+					data-index={index}
+					data-onclick={this._handleTabItemClicked}
+					key={`tab${index}`}
+					ref={`tab${index}`}
+				>
+					<a
+						aria-controls="sidebarLightDetails"
+						class={style}
+						data-toggle="tab"
+						href="javascript:;"
+						role="tab"
 					>
-						<a
-							aria-controls='sidebarLightDetails'
-							class={style}
-							data-toggle='tab'
-							href='javascript:;'
-							role='tab'
-						>
-							<span class='navbar-text-truncate'>{name}</span>
-						</a>
-					</li>
-				);
-			}
-		);
+						<span class="navbar-text-truncate">{name}</span>
+					</a>
+				</li>
+			);
+		});
 	}
 
 	_renderSettingsForm() {
@@ -881,24 +1006,22 @@ class Sidebar extends Component {
 		} = this.props;
 		const {pages, rules} = this.getSettingsFormContext();
 
-		const formEvents = {
-			attached: this._handleSettingsFormAttached,
-			evaluated: this._handleEvaluatorChanged,
-			fieldBlurred: this._handleSettingsFieldBlurred,
-			fieldEdited: this._handleSettingsFieldEdited
-		};
-
 		return (
 			<Form
 				activePage={activeTab}
 				defaultLanguageId={defaultLanguageId}
 				editable={true}
 				editingLanguageId={editingLanguageId}
-				events={formEvents}
+				events={{
+					attached: this._handleSettingsFormAttached,
+					evaluated: this._handleEvaluatorChanged,
+					fieldBlurred: this._handleSettingsFieldBlurred,
+					fieldEdited: this._handleSettingsFieldEdited
+				}}
 				pages={pages}
-				paginationMode='tabbed'
+				paginationMode="tabbed"
 				portletNamespace={portletNamespace}
-				ref='evaluableForm'
+				ref={`evaluableForm`}
 				rules={rules}
 				spritemap={spritemap}
 			/>
@@ -932,12 +1055,12 @@ class Sidebar extends Component {
 		};
 
 		return (
-			<ul class='tbar-nav'>
+			<ul class="tbar-nav">
 				{!editMode && (
-					<li class='tbar-item tbar-item-expand text-left'>
-						<div class='tbar-section'>
-							<span class='text-truncate-inline'>
-								<span class='text-truncate'>
+					<li class="tbar-item tbar-item-expand text-left">
+						<div class="tbar-section">
+							<span class="text-truncate-inline">
+								<span class="text-truncate">
 									{Liferay.Language.get('add-elements')}
 								</span>
 							</span>
@@ -946,18 +1069,18 @@ class Sidebar extends Component {
 				)}
 				{editMode && (
 					<Fragment>
-						<li class='tbar-item'>
+						<li class="tbar-item">
 							<ClayButton
 								disabled={this.isActionsDisabled()}
 								events={previousButtonEvents}
-								icon='angle-left'
-								ref='previousButton'
-								size='sm'
+								icon="angle-left"
+								ref="previousButton"
+								size="sm"
 								spritemap={spritemap}
-								style='secondary'
+								style="secondary"
 							/>
 						</li>
-						<li class='tbar-item ddm-fieldtypes-dropdown tbar-item-expand text-left'>
+						<li class="tbar-item ddm-fieldtypes-dropdown tbar-item-expand text-left">
 							<div>
 								<ClayDropdownBase
 									disabled={!this.isChangeFieldTypeEnabled()}
@@ -975,31 +1098,31 @@ class Sidebar extends Component {
 								/>
 							</div>
 						</li>
-						<li class='tbar-item'>
+						<li class="tbar-item">
 							<ClayActionsDropdown
 								events={{
 									itemClicked: this
 										._handleFieldSettingsClicked
 								}}
 								items={fieldActions}
-								ref='fieldSettingsActions'
+								ref="fieldSettingsActions"
 								spritemap={spritemap}
 								triggerClasses={'component-action'}
 							/>
 						</li>
 					</Fragment>
 				)}
-				<li class='tbar-item'>
+				<li class="tbar-item">
 					<a
-						class='component-action sidebar-close'
+						class="component-action sidebar-close"
 						data-onclick={this._handleCloseButtonClicked}
-						href='#1'
-						ref='closeButton'
-						role='button'
+						href="#1"
+						ref="closeButton"
+						role="button"
 					>
 						<svg
-							aria-hidden='true'
-							class='lexicon-icon lexicon-icon-times'
+							aria-hidden="true"
+							class="lexicon-icon lexicon-icon-times"
 						>
 							<use xlink:href={`${spritemap}#times`} />
 						</svg>
@@ -1058,20 +1181,10 @@ Sidebar.STATE = {
 	 */
 
 	tabs: Config.object()
-		.value({
-			add: {
-				items: [
-					Liferay.Language.get('elements'),
-					Liferay.Language.get('element-sets')
-				]
-			},
-			edit: {
-				items: [
-					Liferay.Language.get('basic'),
-					Liferay.Language.get('properties')
-				]
-			}
-		})
+		.value([
+			Liferay.Language.get('elements'),
+			Liferay.Language.get('element-sets')
+		])
 		.internal()
 };
 
@@ -1093,6 +1206,24 @@ Sidebar.PROPS = {
 	 */
 
 	editingLanguageId: Config.string(),
+
+	/**
+	 * @default undefined
+	 * @instance
+	 * @memberof Sidebar
+	 * @type {?string}
+	 */
+
+	fieldSetDefinitionURL: Config.string(),
+
+	/**
+	 * @default []
+	 * @instance
+	 * @memberof Sidebar
+	 * @type {?(array|undefined)}
+	 */
+
+	fieldSets: Config.array().value([]),
 
 	/**
 	 * @default []

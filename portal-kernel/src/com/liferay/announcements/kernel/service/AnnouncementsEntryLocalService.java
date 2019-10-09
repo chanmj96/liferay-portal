@@ -59,7 +59,7 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface AnnouncementsEntryLocalService
 	extends BaseLocalService, PersistedModelLocalService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link AnnouncementsEntryLocalServiceUtil} to access the announcements entry local service. Add custom service methods to <code>com.liferay.portlet.announcements.service.impl.AnnouncementsEntryLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -131,6 +131,8 @@ public interface AnnouncementsEntryLocalService
 	@Indexable(type = IndexableType.DELETE)
 	public AnnouncementsEntry deleteAnnouncementsEntry(long entryId)
 		throws PortalException;
+
+	public void deleteEntries(long companyId);
 
 	public void deleteEntries(long classNameId, long classPK)
 		throws PortalException;

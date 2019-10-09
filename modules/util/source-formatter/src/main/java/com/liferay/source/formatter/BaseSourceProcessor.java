@@ -348,7 +348,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 		if (newContent.length() > content.length()) {
 			count++;
 
-			if (count > 500) {
+			if (count > 10000) {
 				_sourceFormatterMessagesMap.remove(fileName);
 
 				processMessage(fileName, "Infinite loop in SourceFormatter");
@@ -615,9 +615,7 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 				continue;
 			}
 
-			String absolutePath = SourceUtil.getAbsolutePath(fileName);
-
-			if (_isModulesFile(absolutePath, true)) {
+			if (_isModulesFile(SourceUtil.getAbsolutePath(fileName), true)) {
 				return true;
 			}
 		}
@@ -732,10 +730,11 @@ public abstract class BaseSourceProcessor implements SourceProcessor {
 	}
 
 	private String _normalizePattern(String originalPattern) {
-		String pattern = originalPattern.replace(
-			CharPool.SLASH, File.separatorChar);
+		String pattern = StringUtil.replace(
+			originalPattern, CharPool.SLASH, File.separatorChar);
 
-		pattern = pattern.replace(CharPool.BACK_SLASH, File.separatorChar);
+		pattern = StringUtil.replace(
+			pattern, CharPool.BACK_SLASH, File.separatorChar);
 
 		if (pattern.endsWith(File.separator)) {
 			pattern += SelectorUtils.DEEP_TREE_MATCH;

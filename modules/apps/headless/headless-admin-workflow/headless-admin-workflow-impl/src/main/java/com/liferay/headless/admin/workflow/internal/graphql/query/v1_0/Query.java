@@ -27,12 +27,18 @@ import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLTypeExtension;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
 import java.util.function.BiFunction;
 
 import javax.annotation.Generated;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import javax.ws.rs.core.UriInfo;
 
 import org.osgi.service.component.ComponentServiceObjects;
 
@@ -59,8 +65,13 @@ public class Query {
 			workflowTaskResourceComponentServiceObjects;
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {workflowLog(workflowLogId: ___){auditPerson, commentLog, dateCreated, id, person, previousPerson, previousState, state, taskId, type}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public WorkflowLog getWorkflowLog(
+	public WorkflowLog workflowLog(
 			@GraphQLName("workflowLogId") Long workflowLogId)
 		throws Exception {
 
@@ -71,8 +82,13 @@ public class Query {
 				workflowLogId));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {workflowTaskWorkflowLogs(page: ___, pageSize: ___, workflowTaskId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public WorkflowLogPage getWorkflowTaskWorkflowLogsPage(
+	public WorkflowLogPage workflowTaskWorkflowLogs(
 			@GraphQLName("workflowTaskId") Long workflowTaskId,
 			@GraphQLName("pageSize") int pageSize,
 			@GraphQLName("page") int page)
@@ -86,8 +102,13 @@ public class Query {
 					workflowTaskId, Pagination.of(page, pageSize))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {roleWorkflowTasks(page: ___, pageSize: ___, roleId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public WorkflowTaskPage getRoleWorkflowTasksPage(
+	public WorkflowTaskPage roleWorkflowTasks(
 			@GraphQLName("roleId") Long roleId,
 			@GraphQLName("pageSize") int pageSize,
 			@GraphQLName("page") int page)
@@ -101,8 +122,13 @@ public class Query {
 					roleId, Pagination.of(page, pageSize))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {workflowTasksAssignedToMe(page: ___, pageSize: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public WorkflowTaskPage getWorkflowTasksAssignedToMePage(
+	public WorkflowTaskPage workflowTasksAssignedToMe(
 			@GraphQLName("pageSize") int pageSize,
 			@GraphQLName("page") int page)
 		throws Exception {
@@ -115,8 +141,13 @@ public class Query {
 					Pagination.of(page, pageSize))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {workflowTasksAssignedToMyRoles(page: ___, pageSize: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public WorkflowTaskPage getWorkflowTasksAssignedToMyRolesPage(
+	public WorkflowTaskPage workflowTasksAssignedToMyRoles(
 			@GraphQLName("pageSize") int pageSize,
 			@GraphQLName("page") int page)
 		throws Exception {
@@ -129,8 +160,13 @@ public class Query {
 					Pagination.of(page, pageSize))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {workflowTask(workflowTaskId: ___){completed, dateCompleted, dateCreated, definitionName, description, dueDate, id, name, objectReviewed, transitions}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public WorkflowTask getWorkflowTask(
+	public WorkflowTask workflowTask(
 			@GraphQLName("workflowTaskId") Long workflowTaskId)
 		throws Exception {
 
@@ -139,6 +175,33 @@ public class Query {
 			this::_populateResourceContext,
 			workflowTaskResource -> workflowTaskResource.getWorkflowTask(
 				workflowTaskId));
+	}
+
+	@GraphQLTypeExtension(WorkflowTask.class)
+	public class GetWorkflowTaskWorkflowLogsPageTypeExtension {
+
+		public GetWorkflowTaskWorkflowLogsPageTypeExtension(
+			WorkflowTask workflowTask) {
+
+			_workflowTask = workflowTask;
+		}
+
+		@GraphQLField
+		public WorkflowLogPage workflowLogs(
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_workflowLogResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				workflowLogResource -> new WorkflowLogPage(
+					workflowLogResource.getWorkflowTaskWorkflowLogsPage(
+						_workflowTask.getId(), Pagination.of(page, pageSize))));
+		}
+
+		private WorkflowTask _workflowTask;
+
 	}
 
 	@GraphQLName("WorkflowLogPage")
@@ -214,6 +277,9 @@ public class Query {
 
 		workflowLogResource.setContextAcceptLanguage(_acceptLanguage);
 		workflowLogResource.setContextCompany(_company);
+		workflowLogResource.setContextHttpServletRequest(_httpServletRequest);
+		workflowLogResource.setContextHttpServletResponse(_httpServletResponse);
+		workflowLogResource.setContextUriInfo(_uriInfo);
 		workflowLogResource.setContextUser(_user);
 	}
 
@@ -223,6 +289,10 @@ public class Query {
 
 		workflowTaskResource.setContextAcceptLanguage(_acceptLanguage);
 		workflowTaskResource.setContextCompany(_company);
+		workflowTaskResource.setContextHttpServletRequest(_httpServletRequest);
+		workflowTaskResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		workflowTaskResource.setContextUriInfo(_uriInfo);
 		workflowTaskResource.setContextUser(_user);
 	}
 
@@ -235,6 +305,9 @@ public class Query {
 	private BiFunction<Object, String, Filter> _filterBiFunction;
 	private BiFunction<Object, String, Sort[]> _sortsBiFunction;
 	private Company _company;
+	private HttpServletRequest _httpServletRequest;
+	private HttpServletResponse _httpServletResponse;
+	private UriInfo _uriInfo;
 	private User _user;
 
 }

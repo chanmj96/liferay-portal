@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AssetEntry}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetEntry
  * @generated
  */
-@ProviderType
 public class AssetEntryWrapper
 	extends BaseModelWrapper<AssetEntry>
 	implements AssetEntry, ModelWrapper<AssetEntry> {
@@ -45,6 +42,7 @@ public class AssetEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("entryId", getEntryId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -78,6 +76,12 @@ public class AssetEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long entryId = (Long)attributes.get("entryId");
 
 		if (entryId != null) {
@@ -508,6 +512,16 @@ public class AssetEntryWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this asset entry.
+	 *
+	 * @return the mvcc version of this asset entry
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this asset entry.
 	 *
 	 * @return the primary key of this asset entry
@@ -799,6 +813,11 @@ public class AssetEntryWrapper
 		return model.isVisible();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a asset entry model instance should use the <code>AssetEntry</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -1039,6 +1058,16 @@ public class AssetEntryWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset entry.
+	 *
+	 * @param mvccVersion the mvcc version of this asset entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

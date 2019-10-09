@@ -3,7 +3,7 @@
 		background: #fff;
 	}
 
-	.glyphicon-ok {
+	.icon-check {
 		background: #fff;
 		opacity: 0;
 		z-index: -1;
@@ -16,7 +16,7 @@
 		}
 	}
 
-	&.check-active .glyphicon-ok {
+	&.check-active .icon-check {
 		opacity: 1;
 		z-index: 0;
 	}
@@ -28,7 +28,7 @@
 			opacity: 0;
 		}
 
-		.glyphicon-ok {
+		.icon-check {
 			opacity: 0;
 		}
 
@@ -54,16 +54,31 @@
 			opacity: 0;
 		}
 
-		.glyphicon-ok {
+		.icon-check {
 			opacity: 0;
 		}
 	}
 }
 
-.item-selector {
-	.input-file {
-		$focus-box-shadow: 0 0 0 2px #fff, 0 0 0 4px #80acff !default;
+.dialog-iframe-popup {
+	background-color: #fff;
+}
 
+.portlet-item-selector .management-bar {
+	border-bottom-color: #e7e7ed;
+	border-top: 1px solid #e7e7ed;
+}
+
+.item-selector {
+	.card-row {
+		align-items: center;
+	}
+
+	.drop-zone {
+		background-color: #f1f2f5;
+	}
+
+	.input-file {
 		height: 0.1px;
 		opacity: 0;
 		overflow: hidden;

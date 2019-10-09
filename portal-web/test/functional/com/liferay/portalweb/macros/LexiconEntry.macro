@@ -58,7 +58,12 @@ definition {
 			MetalComponent.waitForManagementBar();
 		}
 
-		Click(locator1 = "Button#PLUS");
+		if ("${browserType}" == "internetexplorer") {
+			Click(locator1 = "Button#PLUS_IE");
+		}
+		else {
+			Click(locator1 = "Button#PLUS");
+		}
 	}
 
 	macro gotoAddDropdownMenuItem {
@@ -140,6 +145,12 @@ definition {
 		MenuItem.click(menuItem = "${menuItem}");
 	}
 
+	macro gotoVerticalEllipsisMenuItemNoError {
+		Click.waitForMenuToggleJSClick(locator1 = "Icon#VERTICAL_ELLIPSIS_BUTTON");
+
+		MenuItem.clickNoError(menuItem = "${menuItem}");
+	}
+
 	macro openEntryMenu {
 		Click.waitForMenuToggleJSClick(
 			key_rowEntry = "${rowEntry}",
@@ -173,6 +184,13 @@ definition {
 				locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_NAME",
 				value1 = "${rowEntry}");
 		}
+	}
+
+	macro viewEntryStatus {
+		AssertElementPresent(
+			key_rowEntry = "${rowEntry}",
+			key_rowStatus = "${rowStatus}",
+			locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_STATUS");
 	}
 
 	macro viewNoEntry {

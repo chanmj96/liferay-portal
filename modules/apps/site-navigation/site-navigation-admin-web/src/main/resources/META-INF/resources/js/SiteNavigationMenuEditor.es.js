@@ -12,8 +12,7 @@
  * details.
  */
 
-/* eslint no-unused-vars: "warn" */
-
+import {fetch} from 'frontend-js-web';
 import {dom} from 'metal-dom';
 import {Drag, DragDrop} from 'metal-drag-drop';
 import position from 'metal-position';
@@ -135,10 +134,9 @@ class SiteNavigationMenuEditor extends State {
 	 * Handles the event when the user drags the item across the container.
 	 *
 	 * @param {!object} data The drag event data.
-	 * @param {!Event} event The drag event.
 	 * @private
 	 */
-	_handleDragItem(data, event) {
+	_handleDragItem(data) {
 		const placeholderMenuItem = data.placeholder;
 		const sourceMenuItem = data.source;
 
@@ -352,7 +350,6 @@ class SiteNavigationMenuEditor extends State {
 
 		return fetch(this.editSiteNavigationMenuItemParentURL, {
 			body: formData,
-			credentials: 'include',
 			method: 'POST'
 		});
 	}
@@ -365,36 +362,6 @@ class SiteNavigationMenuEditor extends State {
  * @type {!Object}
  */
 SiteNavigationMenuEditor.STATE = {
-	/**
-	 * URL for the edit site navigation menu item parent action.
-	 *
-	 * @default undefined
-	 * @instance
-	 * @memberOf SiteNavigationMenuEditor
-	 * @type {!string}
-	 */
-	editSiteNavigationMenuItemParentURL: Config.string().required(),
-
-	/**
-	 * Portlet namespace to use in the edit action.
-	 *
-	 * @default undefined
-	 * @instance
-	 * @memberOf SiteNavigationMenuEditor
-	 * @type {!string}
-	 */
-	namespace: Config.string().required(),
-
-	/**
-	 * Selected menu item DOM element.
-	 *
-	 * @default null
-	 * @instance
-	 * @memberOf SiteNavigationMenuEditor
-	 * @type {HTMLElement}
-	 */
-	selectedMenuItem: Config.object().value(null),
-
 	/**
 	 * Control menu height.
 	 *
@@ -451,7 +418,37 @@ SiteNavigationMenuEditor.STATE = {
 	 */
 	_managementBarHeight: Config.number()
 		.internal()
-		.value(0)
+		.value(0),
+
+	/**
+	 * URL for the edit site navigation menu item parent action.
+	 *
+	 * @default undefined
+	 * @instance
+	 * @memberOf SiteNavigationMenuEditor
+	 * @type {!string}
+	 */
+	editSiteNavigationMenuItemParentURL: Config.string().required(),
+
+	/**
+	 * Portlet namespace to use in the edit action.
+	 *
+	 * @default undefined
+	 * @instance
+	 * @memberOf SiteNavigationMenuEditor
+	 * @type {!string}
+	 */
+	namespace: Config.string().required(),
+
+	/**
+	 * Selected menu item DOM element.
+	 *
+	 * @default null
+	 * @instance
+	 * @memberOf SiteNavigationMenuEditor
+	 * @type {HTMLElement}
+	 */
+	selectedMenuItem: Config.object().value(null)
 };
 
 export {SiteNavigationMenuEditor};

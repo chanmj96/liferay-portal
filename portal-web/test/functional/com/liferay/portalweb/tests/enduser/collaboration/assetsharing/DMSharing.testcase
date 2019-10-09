@@ -70,6 +70,7 @@ definition {
 		DMNavigator.gotoShare(dmDocumentTitle = "DM Document Title 1");
 
 		DMDocument.sharePG(
+			noAutocomplete = "true",
 			userEmailAddress = "userea@liferay.com",
 			userName = "userfn userln");
 
@@ -140,7 +141,7 @@ definition {
 			ownerName = "Test Test");
 	}
 
-	@description = "This test covers LPS-94858. It asserts deleted entry displays in a user's Shared Content."
+	@description = "This test covers LPS-94858. It asserts deleted entry displays in a user's Shared Content using share button from info panel."
 	@priority = "4"
 	test AssertSingleDeleteEntry {
 		Navigator.gotoPage(pageName = "Documents and Media Page");
@@ -187,7 +188,9 @@ definition {
 		AssertElementNotPresent(
 			key_contentTitle = "DM Document Title",
 			locator1 = "Sharing#SHARED_CONTENT_CONTENT_OPTIONS");
-		AssertElementNotPresent(locator1 = "//tbody/tr/td[contains(@class,'table-cell-content')]/a[contains(.,'DM Document Title')]");
+		AssertElementNotPresent(
+			key_contentTitle = "DM Document Title",
+			locator1 = "Sharing#SHARED_CONTENT_CONTENT_TITLE");
 	}
 
 	@description = "This test asserts only one entry displays in a user's Shared Content app when multiple users share the same document to him."
@@ -281,7 +284,9 @@ definition {
 		AssertTextEquals(
 			locator1 = "Sharing#SHARED_CONTENT_CONTENT_TITLE",
 			value1 = "DM Document Title");
-		AssertElementNotPresent(locator1 = "//tbody/tr[2]/td[contains(@class,'table-cell-content')]/a[contains(.,'DM Document Title')]");
+		AssertElementNotPresent(
+			key_contentTitle = "DM Document Title",
+			locator1 = "Sharing#SHARED_CONTENT_CONTENT_TITLE_2");
 	}
 
 	@description = "This test ensures that users receives an email when a document is shared with them. This email contains a link that navigates user to Shared Content app."
@@ -293,6 +298,16 @@ definition {
 		var portalURL = PropsUtil.get("portal.url");
 
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		Gmail.login(
+			userEmailAddress = PropsUtil.get("email.address.3"),
+			userPassword = PropsUtil.get("email.password.3"));
+
+		Gmail.gotoHtmlMode();
+
+		Gmail.deleteSpecificMail(gmailMessageTitleList = "Test Test has shared DM Document Title with you for viewing.,Your New Account,Your New Password");
+
+		Navigator.openSpecificURL(url = "${portalURL}");
 
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
@@ -356,10 +371,6 @@ definition {
 
 		Pause(locator1 = "30000");
 
-		Gmail.login(
-			userEmailAddress = PropsUtil.get("email.address.3"),
-			userPassword = PropsUtil.get("email.password.3"));
-
 		Gmail.gotoHtmlMode();
 
 		Gmail.viewMail(
@@ -414,7 +425,7 @@ definition {
 			dmDocumentTitle = "DM Document Title");
 	}
 
-	@description = "This use case covers sharing a document to a user, and changing its sharing permissions via Manage Collaborators. This test also covers permissions and making sure users only have access to sharing permissions assigned to him. "
+	@description = "This test covers LPS-94294. It ensures that sharing a document to a user, and changing its sharing permissions via Manage Collaborators. This test also covers permissions and making sure users only have access to sharing permissions assigned to him."
 	@priority = "5"
 	test ManageCollaborators {
 		DMDocumentSharing.addDocumentWithOnlyOwnerPermissions(
@@ -535,7 +546,7 @@ definition {
 		AssertElementNotPresent(locator1 = "Sharing#MODAL_INVITE_TO_COLLABORATE_TAG");
 	}
 
-	@description = "This test asserts that users can share via Shared Content app."
+	@description = "This test covers LPS-94585. It ensures that users can share via Shared Content app."
 	@priority = "5"
 	test ShareViaSharedContent {
 		JSONUser.addUser(
@@ -580,6 +591,8 @@ definition {
 		DMNavigator.gotoShareViaSharedContent(dmDocumentTitle = "DM Document Title");
 
 		DMDocument.shareWithNoSharingPermissionsUser(userEmailAddress = "userea2@liferay.com");
+
+		AssertConsoleTextNotPresent(value1 = "ArrayIndexOutOfBoundsException");
 
 		User.logoutPG();
 
@@ -730,6 +743,63 @@ definition {
 		MenuItem.viewNotPresent(menuItem = "Share");
 	}
 
+	@description = "This test covers LPS-94661. It ensures that the user can share a document with an apostrophe in the title."
+	@priority = "3"
+	test ShareWithSpecialCharacter {
+		property test.name.skip.portal.instance = "DMSharing#ShareWithSpecialCharacter";
+
+		DMDocument.addPG(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentFile = "Document_1.doc",
+			dmDocumentTitle = "DM Document&apos;s Title",
+			viewableBy = "Owner");
+
+		Click(
+			key_dmDocumentTitle = "DM Document&apos;s Title",
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_VERTICAL_ELLIPSIS_SPECIFIC");
+
+		ClickNoError(
+			key_menuItem = "Permissions",
+			locator1 = "MenuItem#ANY_MENU_ITEM");
+
+		Role.removePermissionPG(
+			permissionDefinitionKey = "INLINE_PERMISSIONS_ADD_DISCUSSION_CHECKBOX",
+			roleTitle = "Guest");
+
+		IFrame.closeFrame();
+
+		Navigator.gotoPage(pageName = "Documents and Media Page");
+
+		Click(
+			key_dmDocumentTitle = "DM Document&apos;s Title",
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_VERTICAL_ELLIPSIS_SPECIFIC");
+
+		ClickNoError(
+			key_menuItem = "Share",
+			locator1 = "MenuItem#ANY_MENU_ITEM");
+
+		DMDocument.sharePG(
+			noAutocomplete = "true",
+			userEmailAddress = "userea@liferay.com",
+			userName = "userfn userln");
+
+		User.logoutPG();
+
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
+
+		Notifications.viewBadgeCount(notificationCount = "1");
+
+		Notifications.gotoNotifications();
+
+		Notifications.viewNewSharedContent(
+			contentSharingPermission = "viewing",
+			contentTitle = "DM Document&apos;s Title",
+			ownerName = "Test Test",
+			specialCharacter = "true");
+	}
+
 	@description = "This test makes sure all collaborators will view all collaborators of the document that was shared to him. This usecase also tests that a user can successfully remove collaborators through Manage Collaborators and asserts that empty message displays when all collaborators are removed."
 	@priority = "5"
 	test ViewAndRemoveCollaborators {
@@ -758,6 +828,7 @@ definition {
 		DMNavigator.gotoShare(dmDocumentTitle = "DM Document Title");
 
 		DMDocument.sharePG(
+			noAutocomplete = "true",
 			userEmailAddress = "userea@liferay.com",
 			userName = "userfn userln");
 

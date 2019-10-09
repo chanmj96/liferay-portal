@@ -12,8 +12,6 @@
  * details.
  */
 
-/* eslint no-undef: "warn" */
-
 'use strict';
 
 import dom from 'metal-dom';
@@ -82,14 +80,14 @@ describe('Liferay.Util.postForm', () => {
 
 		postForm(form, {
 			data: {
-				foo: 'def',
-				bar: '456'
+				bar: '456',
+				foo: 'def'
 			},
 			url: 'http://sampleurl.com'
 		});
 
-		const fooElement = getFormElement(form, 'foo');
 		const barElement = getFormElement(form, 'bar');
+		const fooElement = getFormElement(form, 'foo');
 
 		expect(fooElement.value).toEqual('def');
 		expect(barElement.value).toEqual('456');

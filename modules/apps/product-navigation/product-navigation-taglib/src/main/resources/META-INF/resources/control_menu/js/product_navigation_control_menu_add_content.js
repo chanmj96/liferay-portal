@@ -21,8 +21,6 @@ AUI.add(
 
 		var STR_CLICK = 'click';
 
-		var STR_RESPONSE_DATA = 'responseData';
-
 		var AddContent = A.Component.create({
 			AUGMENTS: [ControlMenu.AddContentSearch, Liferay.PortletBase],
 
@@ -31,36 +29,13 @@ AUI.add(
 			NAME: 'addcontent',
 
 			prototype: {
-				initializer: function(config) {
+				_afterSuccess(response) {
 					var instance = this;
 
-					instance._config = config;
-					instance._delta = config.delta;
-					instance._displayStyle = config.displayStyle;
-
-					instance._addContentForm = instance.byId('addContentForm');
-					instance._entriesPanel = instance.byId('entriesContainer');
-
-					instance._entriesPanel.plug(A.Plugin.ParseContent);
-
-					instance._bindUI();
+					instance._entriesPanel.setContent(response);
 				},
 
-				destructor: function() {
-					var instance = this;
-
-					new A.EventHandle(instance._eventHandles).detach();
-				},
-
-				_afterSuccess: function(event) {
-					var instance = this;
-
-					instance._entriesPanel.setContent(
-						event.currentTarget.get(STR_RESPONSE_DATA)
-					);
-				},
-
-				_bindUI: function() {
+				_bindUI() {
 					var instance = this;
 
 					instance._eventHandles.push(
@@ -75,13 +50,13 @@ AUI.add(
 							instance._refreshContentList,
 							instance
 						),
-						Liferay.on('AddContent:addPortlet', function(event) {
+						Liferay.once('AddContent:addPortlet', function(event) {
 							instance.addPortlet(event.node, event.options);
 						})
 					);
 				},
 
-				_refreshContentList: function(event) {
+				_refreshContentList(event) {
 					var instance = this;
 
 					var delta = event.delta;
@@ -100,25 +75,52 @@ AUI.add(
 					if (displayStyle) {
 						instance._displayStyle = displayStyle;
 
-						Liferay.Store(
+						Liferay.Util.Session.set(
 							'com.liferay.product.navigation.control.menu.web_addPanelDisplayStyle',
 							displayStyle
 						);
 					}
 
-					A.io.request(
+					var data = instance.ns({
+						delta: instance._delta,
+						displayStyle: instance._displayStyle,
+						keywords: instance.get('inputNode').val()
+					});
+
+					Liferay.Util.fetch(
 						instance._addContentForm.getAttribute('action'),
 						{
-							after: {
-								success: A.bind('_afterSuccess', instance)
-							},
-							data: instance.ns({
-								delta: instance._delta,
-								displayStyle: instance._displayStyle,
-								keywords: instance.get('inputNode').val()
-							})
+							body: Liferay.Util.objectToFormData(data),
+							method: 'POST'
 						}
-					);
+					)
+						.then(function(response) {
+							return response.text();
+						})
+						.then(function(response) {
+							instance._afterSuccess(response);
+						});
+				},
+
+				destructor() {
+					var instance = this;
+
+					new A.EventHandle(instance._eventHandles).detach();
+				},
+
+				initializer(config) {
+					var instance = this;
+
+					instance._config = config;
+					instance._delta = config.delta;
+					instance._displayStyle = config.displayStyle;
+
+					instance._addContentForm = instance.byId('addContentForm');
+					instance._entriesPanel = instance.byId('entriesContainer');
+
+					instance._entriesPanel.plug(A.Plugin.ParseContent);
+
+					instance._bindUI();
 				}
 			}
 		});
@@ -129,11 +131,9 @@ AUI.add(
 	{
 		requires: [
 			'aui-parse-content',
-			'aui-io-request',
 			'liferay-product-navigation-control-menu',
 			'liferay-product-navigation-control-menu-add-base',
-			'liferay-product-navigation-control-menu-add-content-search',
-			'liferay-store'
+			'liferay-product-navigation-control-menu-add-content-search'
 		]
 	}
 );

@@ -14,9 +14,11 @@
 
 package com.liferay.data.engine.rest.dto.v1_0;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
@@ -32,6 +34,8 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -44,7 +48,42 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "DataDefinitionField")
 public class DataDefinitionField {
 
+	@GraphQLName("IndexType")
+	public static enum IndexType {
+
+		ALL("all"), KEYWORD("keyword"), NONE("none"), TEXT("text");
+
+		@JsonCreator
+		public static IndexType create(String value) {
+			for (IndexType indexType : values()) {
+				if (Objects.equals(indexType.getValue(), value)) {
+					return indexType;
+				}
+			}
+
+			return null;
+		}
+
+		@JsonValue
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private IndexType(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
+
 	@Schema
+	@Valid
 	public Map<String, Object> getCustomProperties() {
 		return customProperties;
 	}
@@ -74,6 +113,7 @@ public class DataDefinitionField {
 	protected Map<String, Object> customProperties;
 
 	@Schema
+	@Valid
 	public Map<String, Object> getDefaultValue() {
 		return defaultValue;
 	}
@@ -157,6 +197,44 @@ public class DataDefinitionField {
 	protected Long id;
 
 	@Schema
+	@Valid
+	public IndexType getIndexType() {
+		return indexType;
+	}
+
+	@JsonIgnore
+	public String getIndexTypeAsString() {
+		if (indexType == null) {
+			return null;
+		}
+
+		return indexType.toString();
+	}
+
+	public void setIndexType(IndexType indexType) {
+		this.indexType = indexType;
+	}
+
+	@JsonIgnore
+	public void setIndexType(
+		UnsafeSupplier<IndexType, Exception> indexTypeUnsafeSupplier) {
+
+		try {
+			indexType = indexTypeUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected IndexType indexType;
+
+	@Schema
 	public Boolean getIndexable() {
 		return indexable;
 	}
@@ -185,6 +263,7 @@ public class DataDefinitionField {
 	protected Boolean indexable;
 
 	@Schema
+	@Valid
 	public Map<String, Object> getLabel() {
 		return label;
 	}
@@ -267,6 +346,67 @@ public class DataDefinitionField {
 	protected String name;
 
 	@Schema
+	@Valid
+	public DataDefinitionField[] getNestedDataDefinitionFields() {
+		return nestedDataDefinitionFields;
+	}
+
+	public void setNestedDataDefinitionFields(
+		DataDefinitionField[] nestedDataDefinitionFields) {
+
+		this.nestedDataDefinitionFields = nestedDataDefinitionFields;
+	}
+
+	@JsonIgnore
+	public void setNestedDataDefinitionFields(
+		UnsafeSupplier<DataDefinitionField[], Exception>
+			nestedDataDefinitionFieldsUnsafeSupplier) {
+
+		try {
+			nestedDataDefinitionFields =
+				nestedDataDefinitionFieldsUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected DataDefinitionField[] nestedDataDefinitionFields;
+
+	@Schema
+	public Boolean getReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(Boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+
+	@JsonIgnore
+	public void setReadOnly(
+		UnsafeSupplier<Boolean, Exception> readOnlyUnsafeSupplier) {
+
+		try {
+			readOnly = readOnlyUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Boolean readOnly;
+
+	@Schema
 	public Boolean getRepeatable() {
 		return repeatable;
 	}
@@ -295,6 +435,63 @@ public class DataDefinitionField {
 	protected Boolean repeatable;
 
 	@Schema
+	public Boolean getRequired() {
+		return required;
+	}
+
+	public void setRequired(Boolean required) {
+		this.required = required;
+	}
+
+	@JsonIgnore
+	public void setRequired(
+		UnsafeSupplier<Boolean, Exception> requiredUnsafeSupplier) {
+
+		try {
+			required = requiredUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Boolean required;
+
+	@Schema
+	public Boolean getShowLabel() {
+		return showLabel;
+	}
+
+	public void setShowLabel(Boolean showLabel) {
+		this.showLabel = showLabel;
+	}
+
+	@JsonIgnore
+	public void setShowLabel(
+		UnsafeSupplier<Boolean, Exception> showLabelUnsafeSupplier) {
+
+		try {
+			showLabel = showLabelUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Boolean showLabel;
+
+	@Schema
+	@Valid
 	public Map<String, Object> getTip() {
 		return tip;
 	}
@@ -321,6 +518,34 @@ public class DataDefinitionField {
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Map<String, Object> tip;
+
+	@Schema
+	public Boolean getVisible() {
+		return visible;
+	}
+
+	public void setVisible(Boolean visible) {
+		this.visible = visible;
+	}
+
+	@JsonIgnore
+	public void setVisible(
+		UnsafeSupplier<Boolean, Exception> visibleUnsafeSupplier) {
+
+		try {
+			visible = visibleUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Boolean visible;
 
 	@Override
 	public boolean equals(Object object) {
@@ -393,6 +618,20 @@ public class DataDefinitionField {
 			sb.append(id);
 		}
 
+		if (indexType != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"indexType\": ");
+
+			sb.append("\"");
+
+			sb.append(indexType);
+
+			sb.append("\"");
+		}
+
 		if (indexable != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -437,6 +676,36 @@ public class DataDefinitionField {
 			sb.append("\"");
 		}
 
+		if (nestedDataDefinitionFields != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"nestedDataDefinitionFields\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < nestedDataDefinitionFields.length; i++) {
+				sb.append(String.valueOf(nestedDataDefinitionFields[i]));
+
+				if ((i + 1) < nestedDataDefinitionFields.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
+		if (readOnly != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"readOnly\": ");
+
+			sb.append(readOnly);
+		}
+
 		if (repeatable != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -447,6 +716,26 @@ public class DataDefinitionField {
 			sb.append(repeatable);
 		}
 
+		if (required != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"required\": ");
+
+			sb.append(required);
+		}
+
+		if (showLabel != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"showLabel\": ");
+
+			sb.append(showLabel);
+		}
+
 		if (tip != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -455,6 +744,16 @@ public class DataDefinitionField {
 			sb.append("\"tip\": ");
 
 			sb.append(_toJSON(tip));
+		}
+
+		if (visible != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"visible\": ");
+
+			sb.append(visible);
 		}
 
 		sb.append("}");

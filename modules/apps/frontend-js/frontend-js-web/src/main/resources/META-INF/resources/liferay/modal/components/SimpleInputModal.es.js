@@ -22,16 +22,12 @@ import PortletBase from '../../PortletBase.es';
 import templates from './SimpleInputModal.soy';
 
 /**
- * SimpleInputModal
- * @review
+ * Manipulates small amounts of data with a form shown inside a modal.
  */
-
 class SimpleInputModal extends PortletBase {
 	/**
 	 * @inheritDoc
-	 * @review
 	 */
-
 	attached() {
 		this.addListener(
 			'formSubmit',
@@ -42,9 +38,7 @@ class SimpleInputModal extends PortletBase {
 
 	/**
 	 * @inheritDoc
-	 * @review
 	 */
-
 	rendered() {
 		requestAnimationFrame(() => {
 			this.refs.modal.refs.mainField.focus();
@@ -52,12 +46,11 @@ class SimpleInputModal extends PortletBase {
 	}
 
 	/**
-	 * Default event listener for form submission.
-	 * @param {Event} event
+	 * The default event listener for form submission.
+	 *
+	 * @param {Event} event The event to listen for.
 	 * @private
-	 * @review
 	 */
-
 	_defaultFormSubmit(event) {
 		fetch(this.formSubmitURL, {
 			body: new FormData(event.form),
@@ -80,25 +73,23 @@ class SimpleInputModal extends PortletBase {
 	}
 
 	/**
-	 * Callback executed when the SimpleInputModal cancel button
+	 * Callback executed when the <code>SimpleInputModal</code> Cancel button
 	 * has been clicked.
+	 *
 	 * @private
-	 * @review
 	 */
-
 	_handleCancelButtonClick() {
 		this.emit('cancelButtonClicked');
 	}
 
 	/**
-	 * Callback executed when the SimpleInputModal form has been
-	 * submited and it receives a server error as response.
-	 * It emits a formError event with the errorMessage received.
-	 * @param {{error: string}} responseContent
+	 * Callback executed when the <code>SimpleInputModal</code> form has been
+	 * submitted and it receives a server error as a response. It emits a form
+	 * error event with the error message received.
+	 *
+	 * @param {{error: string}} responseContent The error response as a string.
 	 * @private
-	 * @review
 	 */
-
 	_handleFormError(responseContent) {
 		this._errorMessage = responseContent.error || '';
 
@@ -108,14 +99,14 @@ class SimpleInputModal extends PortletBase {
 	}
 
 	/**
-	 * Callback executed when the SimpleInputModal form has been
-	 * submited. It prevents the default behaviour and sends this form
-	 * using a fetch request.
-	 * @param {Event} event
+	 * Callback executed when the <code>SimpleInputModal</code> form has been
+	 * submitted. It prevents the default behavior and sends this form using a
+	 * fetch request.
+	 *
+	 * @param {Event} event The default behavior for the submission event to
+	 *        prevent.
 	 * @private
-	 * @review
 	 */
-
 	_handleFormSubmit(event) {
 		event.preventDefault();
 
@@ -125,26 +116,26 @@ class SimpleInputModal extends PortletBase {
 	}
 
 	/**
-	 * Callback executed when the SimpleInputModal form has been
-	 * submited and it receives a server successful response.
-	 * It emits a formSuccess event with the redirectURL received.
-	 * @param {{redirectURL: string}} responseContent
+	 * Callback executed when the <code>SimpleInputModal</code> form has been
+	 * submitted successfully. It emits a form success event with the redirect
+	 * URL received.
+	 *
+	 * @param {{redirectURL: string}} responseContent The redirect URL as a
+	 *        string.
 	 * @private
-	 * @review
 	 */
-
 	_handleFormSuccess(responseContent) {
 		this.emit('formSuccess', {
+			...responseContent,
 			redirectURL: responseContent.redirectURL || ''
 		});
 	}
 
 	/**
-	 * Callback executed when the modal visibility property changes
+	 * Callback executed when the modal visibility property changes.
+	 *
 	 * @private
-	 * @review
 	 */
-
 	_handleModalVisibleChanged() {
 		this.emit('dialogHidden');
 	}
@@ -152,21 +143,60 @@ class SimpleInputModal extends PortletBase {
 
 /**
  * State definition.
- * @review
+ *
  * @static
  * @type {!Object}
  */
-
 SimpleInputModal.STATE = {
 	/**
-	 * Label for the optional checkbox
+	 * Form error message returned by the server.
+	 *
 	 * @default ''
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
+	 * @private
+	 * @type {!string}
+	 */
+	_errorMessage: Config.string()
+		.internal()
+		.value(''),
+
+	/**
+	 * Flag that checks whether a server response must be detected after a form
+	 * submission.
+	 *
+	 * @default false
+	 * @instance
+	 * @memberOf SimpleInputModal
+	 * @private
+	 * @type {boolean}
+	 */
+	_loadingResponse: Config.bool()
+		.internal()
+		.value(false),
+
+	/**
+	 * Optional ClayAlert in SimpleInputModal
+	 *
+	 * @default undefined
+	 * @instance
+	 * @memberOf SimpleInputModal
+	 * @type {!object}
+	 */
+	alert: Config.shapeOf({
+		message: Config.string(),
+		style: Config.string(),
+		title: Config.string()
+	}),
+
+	/**
+	 * Label for the optional checkbox.
+	 *
+	 * @default ''
+	 * @instance
+	 * @memberOf SimpleInputModal
 	 * @type {string}
 	 */
-
 	checkboxFieldLabel: Config.setter(checkboxFieldLabel => {
 		return isString(checkboxFieldLabel) && checkboxFieldLabel
 			? Soy.toIncDom(checkboxFieldLabel)
@@ -176,103 +206,95 @@ SimpleInputModal.STATE = {
 		.value(''),
 
 	/**
-	 * Name for the optional checkbox
+	 * Name for the optional checkbox.
+	 *
 	 * @default ''
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {string}
 	 */
-
 	checkboxFieldName: Config.string().value(''),
 
 	/**
-	 * Initial value for the optional checkbox
+	 * Initial value for the optional checkbox.
+	 *
 	 * @default false
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {boolean}
 	 */
-
 	checkboxFieldValue: Config.bool().value(false),
 
 	/**
-	 * Modal window title
+	 * Modal window title.
+	 *
 	 * @default undefined
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {!string}
 	 */
-
 	dialogTitle: Config.string().required(),
 
 	/**
-	 * Adds a hidden bogus input when necessary to work around some formdata + ajax
-	 * formatting issues. See LPS-86960 for more details
+	 * Adds a hidden bogus input when necessary to work around some form data +
+	 * Ajax formatting issues. See {@link
+	 * https://issues.liferay.com/browse/LPS-86960|LPS-86960} for more details.
+	 *
 	 * @default false
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {!string}
 	 */
-
 	fixFormData: Config.bool().value(false),
 
 	/**
-	 * URL where the form will be submitted to
+	 * URL where the form will be submitted.
+	 *
 	 * @default undefined
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {!string}
 	 */
-
 	formSubmitURL: Config.string().required(),
 
 	/**
-	 * Autogenerated id provided by templates
+	 * Autogenerated ID provided by templates.
+	 *
 	 * @default ''
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {string}
 	 */
-
 	id: Config.string().value(''),
 
 	/**
-	 * Name for the hidden id field
+	 * Name for the hidden ID field.
+	 *
 	 * @default ''
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {string}
 	 */
-
 	idFieldName: Config.string().value(''),
 
 	/**
-	 * Value for the hidden id field
+	 * Value for the hidden ID field.
+	 *
 	 * @default ''
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {string}
 	 */
-
 	idFieldValue: Config.string().value(''),
 
 	/**
-	 * Label for the main field
+	 * Label for the main field.
+	 *
 	 * @default undefined
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {!string}
 	 */
-
 	mainFieldLabel: Config.setter(mainFieldLabel =>
 		Soy.toIncDom(mainFieldLabel)
 	)
@@ -280,88 +302,54 @@ SimpleInputModal.STATE = {
 		.required(),
 
 	/**
-	 * Name for the main field
+	 * Name for the main field.
+	 *
 	 * @default undefined
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {!string}
 	 */
-
 	mainFieldName: Config.string().required(),
 
 	/**
-	 * Placeholder for the main field
+	 * Placeholder for the main field.
+	 *
 	 * @default ''
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {string}
 	 */
-
 	mainFieldPlaceholder: Config.string().value(''),
 
 	/**
-	 * Initial value for the main field
+	 * Initial value for the main field.
+	 *
 	 * @default ''
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {string}
 	 */
-
 	mainFieldValue: Config.string().value(''),
 
 	/**
-	 * Namespace that will be prepended to field names
+	 * Namespace that will be prepended to field names.
+	 *
 	 * @default undefined
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {!string}
 	 */
-
 	namespace: Config.string().required(),
 
 	/**
-	 * URL for the portal icons being used
+	 * URL for the portal icons being used.
+	 *
 	 * @default undefined
 	 * @instance
 	 * @memberOf SimpleInputModal
-	 * @review
 	 * @type {!string}
 	 */
-
-	spritemap: Config.string().required(),
-
-	/**
-	 * Form error message returned by the server
-	 * @default ''
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @private
-	 * @review
-	 * @type {!string}
-	 */
-
-	_errorMessage: Config.string()
-		.internal()
-		.value(''),
-
-	/**
-	 * Flag indicating if we are waiting for a server response
-	 * after a form submission.
-	 * @default false
-	 * @instance
-	 * @memberOf SimpleInputModal
-	 * @private
-	 * @review
-	 * @type {boolean}
-	 */
-
-	_loadingResponse: Config.bool()
-		.internal()
-		.value(false)
+	spritemap: Config.string().required()
 };
 
 Soy.register(SimpleInputModal, templates);

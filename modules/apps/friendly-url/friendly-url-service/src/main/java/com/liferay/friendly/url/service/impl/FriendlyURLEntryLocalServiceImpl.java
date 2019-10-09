@@ -60,10 +60,9 @@ public class FriendlyURLEntryLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(clazz);
-
 		return addFriendlyURLEntry(
-			groupId, classNameId, classPK, urlTitle, serviceContext);
+			groupId, classNameLocalService.getClassNameId(clazz), classPK,
+			urlTitle, serviceContext);
 	}
 
 	@Override
@@ -266,9 +265,8 @@ public class FriendlyURLEntryLocalServiceImpl
 	public FriendlyURLEntry fetchFriendlyURLEntry(
 		long groupId, Class<?> clazz, String urlTitle) {
 
-		long classNameId = classNameLocalService.getClassNameId(clazz);
-
-		return fetchFriendlyURLEntry(groupId, classNameId, urlTitle);
+		return fetchFriendlyURLEntry(
+			groupId, classNameLocalService.getClassNameId(clazz), urlTitle);
 	}
 
 	@Override
@@ -277,7 +275,8 @@ public class FriendlyURLEntryLocalServiceImpl
 
 		FriendlyURLEntryLocalization friendlyURLEntryLocalization =
 			friendlyURLEntryLocalizationPersistence.fetchByG_C_U(
-				groupId, classNameId, urlTitle);
+				groupId, classNameId,
+				FriendlyURLNormalizerUtil.normalizeWithEncoding(urlTitle));
 
 		if (friendlyURLEntryLocalization != null) {
 			return friendlyURLEntryPersistence.fetchByPrimaryKey(
@@ -292,7 +291,8 @@ public class FriendlyURLEntryLocalServiceImpl
 		long groupId, long classNameId, String urlTitle) {
 
 		return friendlyURLEntryLocalizationPersistence.fetchByG_C_U(
-			groupId, classNameId, urlTitle);
+			groupId, classNameId,
+			FriendlyURLNormalizerUtil.normalizeWithEncoding(urlTitle));
 	}
 
 	@Override
@@ -308,9 +308,8 @@ public class FriendlyURLEntryLocalServiceImpl
 			Class<?> clazz, long classPK)
 		throws PortalException {
 
-		long classNameId = classNameLocalService.getClassNameId(clazz);
-
-		return getMainFriendlyURLEntry(classNameId, classPK);
+		return getMainFriendlyURLEntry(
+			classNameLocalService.getClassNameId(clazz), classPK);
 	}
 
 	@Override

@@ -16,8 +16,6 @@ package com.liferay.portal.kernel.service;
 
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the local service utility for UserNotificationEvent. This utility wraps
  * <code>com.liferay.portal.service.impl.UserNotificationEventLocalServiceImpl</code> and
@@ -30,14 +28,34 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see UserNotificationEventLocalService
  * @generated
  */
-@ProviderType
 public class UserNotificationEventLocalServiceUtil {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.service.impl.UserNotificationEventLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
+
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this interface directly. Always use {@link UserNotificationEventLocalServiceUtil} to access the user notification event local service. Add custom service methods to <code>com.liferay.portal.service.impl.UserNotificationEventLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 */
+	public static com.liferay.portal.kernel.model.UserNotificationEvent
+			addUserNotificationEvent(
+				long userId, boolean delivered, boolean actionRequired,
+				com.liferay.portal.kernel.notifications.NotificationEvent
+					notificationEvent)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addUserNotificationEvent(
+			userId, delivered, actionRequired, notificationEvent);
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static com.liferay.portal.kernel.model.UserNotificationEvent
 			addUserNotificationEvent(
 				long userId, boolean actionRequired,
@@ -59,6 +77,23 @@ public class UserNotificationEventLocalServiceUtil {
 		return getService().addUserNotificationEvent(userId, notificationEvent);
 	}
 
+	public static com.liferay.portal.kernel.model.UserNotificationEvent
+			addUserNotificationEvent(
+				long userId, String type, long timestamp, int deliveryType,
+				long deliverBy, boolean delivered, String payload,
+				boolean actionRequired, boolean archived,
+				ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().addUserNotificationEvent(
+			userId, type, timestamp, deliveryType, deliverBy, delivered,
+			payload, actionRequired, archived, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Mueller (7.2.x)
+	 */
+	@Deprecated
 	public static com.liferay.portal.kernel.model.UserNotificationEvent
 			addUserNotificationEvent(
 				long userId, String type, long timestamp, int deliveryType,
@@ -356,6 +391,31 @@ public class UserNotificationEventLocalServiceUtil {
 	public static java.util.List
 		<com.liferay.portal.kernel.model.UserNotificationEvent>
 			getArchivedUserNotificationEvents(
+				long userId, int deliveryType, boolean delivered,
+				boolean actionRequired, boolean archived, int start, int end) {
+
+		return getService().getArchivedUserNotificationEvents(
+			userId, deliveryType, delivered, actionRequired, archived, start,
+			end);
+	}
+
+	public static java.util.List
+		<com.liferay.portal.kernel.model.UserNotificationEvent>
+			getArchivedUserNotificationEvents(
+				long userId, int deliveryType, boolean delivered,
+				boolean actionRequired, boolean archived, int start, int end,
+				com.liferay.portal.kernel.util.OrderByComparator
+					<com.liferay.portal.kernel.model.UserNotificationEvent>
+						obc) {
+
+		return getService().getArchivedUserNotificationEvents(
+			userId, deliveryType, delivered, actionRequired, archived, start,
+			end, obc);
+	}
+
+	public static java.util.List
+		<com.liferay.portal.kernel.model.UserNotificationEvent>
+			getArchivedUserNotificationEvents(
 				long userId, int deliveryType, boolean actionRequired,
 				boolean archived, int start, int end) {
 
@@ -413,6 +473,21 @@ public class UserNotificationEventLocalServiceUtil {
 
 		return getService().getArchivedUserNotificationEventsCount(
 			userId, deliveryType, actionRequired, archived);
+	}
+
+	public static int getArchivedUserNotificationEventsCount(
+		long userId, int deliveryType, boolean delivered,
+		boolean actionRequired, boolean archived) {
+
+		return getService().getArchivedUserNotificationEventsCount(
+			userId, deliveryType, delivered, actionRequired, archived);
+	}
+
+	public static int getDeliveredArchivedUserNotificationEventsCount(
+		long userId, int deliveryType, boolean delivered, boolean archived) {
+
+		return getService().getDeliveredArchivedUserNotificationEventsCount(
+			userId, deliveryType, delivered, archived);
 	}
 
 	public static java.util.List
@@ -662,10 +737,38 @@ public class UserNotificationEventLocalServiceUtil {
 	}
 
 	public static int getUserNotificationEventsCount(
+		long userId, int deliveryType, boolean delivered, boolean archived) {
+
+		return getService().getUserNotificationEventsCount(
+			userId, deliveryType, delivered, archived);
+	}
+
+	public static int getUserNotificationEventsCount(
 		long userId, String type, int deliveryType, boolean archived) {
 
 		return getService().getUserNotificationEventsCount(
 			userId, type, deliveryType, archived);
+	}
+
+	public static int getUserNotificationEventsCount(
+		long userId, String type, int deliveryType, boolean delivered,
+		boolean archived) {
+
+		return getService().getUserNotificationEventsCount(
+			userId, type, deliveryType, delivered, archived);
+	}
+
+	public static com.liferay.portal.kernel.model.UserNotificationEvent
+			sendUserNotificationEvents(
+				long userId, String portletId, int deliveryType,
+				boolean delivered, boolean actionRequired,
+				com.liferay.portal.kernel.json.JSONObject
+					notificationEventJSONObject)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return getService().sendUserNotificationEvents(
+			userId, portletId, deliveryType, delivered, actionRequired,
+			notificationEventJSONObject);
 	}
 
 	public static com.liferay.portal.kernel.model.UserNotificationEvent

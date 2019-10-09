@@ -43,7 +43,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.segments.constants.SegmentsConstants;
+import com.liferay.segments.constants.SegmentsExperienceConstants;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.util.SegmentsExperiencePortletUtil;
@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
@@ -99,21 +100,30 @@ public class FragmentEntryLinkExportImportContentProcessor
 				continue;
 			}
 
-			Iterator<String> editableKeysIterator =
-				editableProcessorJSONObject.keys();
+			if (Objects.equals(key, _KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR)) {
+				Iterator<String> editableKeysIterator =
+					editableProcessorJSONObject.keys();
 
-			while (editableKeysIterator.hasNext()) {
-				String editableKey = editableKeysIterator.next();
+				while (editableKeysIterator.hasNext()) {
+					String editableKey = editableKeysIterator.next();
 
-				JSONObject editableJSONObject =
-					editableProcessorJSONObject.getJSONObject(editableKey);
+					JSONObject editableJSONObject =
+						editableProcessorJSONObject.getJSONObject(editableKey);
 
-				_replaceMappedFieldExportContentReferences(
-					portletDataContext, stagedModel, editableJSONObject,
-					exportReferencedContent);
+					_replaceMappedFieldExportContentReferences(
+						portletDataContext, stagedModel, editableJSONObject,
+						exportReferencedContent);
+
+					_replaceSegmentsExperienceExportContentReferences(
+						portletDataContext, stagedModel, editableJSONObject);
+				}
+			}
+			else if (Objects.equals(
+						key, _KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR)) {
 
 				_replaceSegmentsExperienceExportContentReferences(
-					portletDataContext, stagedModel, editableJSONObject);
+					portletDataContext, stagedModel,
+					editableProcessorJSONObject);
 			}
 		}
 
@@ -158,20 +168,30 @@ public class FragmentEntryLinkExportImportContentProcessor
 				continue;
 			}
 
-			Iterator<String> editableKeysIterator =
-				editableProcessorJSONObject.keys();
+			if (Objects.equals(key, _KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR)) {
+				Iterator<String> editableKeysIterator =
+					editableProcessorJSONObject.keys();
 
-			while (editableKeysIterator.hasNext()) {
-				String editableKey = editableKeysIterator.next();
+				while (editableKeysIterator.hasNext()) {
+					String editableKey = editableKeysIterator.next();
 
-				JSONObject editableJSONObject =
-					editableProcessorJSONObject.getJSONObject(editableKey);
+					JSONObject editableJSONObject =
+						editableProcessorJSONObject.getJSONObject(editableKey);
 
-				_replaceMappedFieldImportContentReferences(
-					portletDataContext, editableJSONObject);
+					_replaceMappedFieldImportContentReferences(
+						portletDataContext, editableJSONObject);
 
-				_replaceSegmentsExperienceImportContentReferences(
-					portletDataContext, editableJSONObject);
+					_replaceSegmentsExperienceImportContentReferences(
+						portletDataContext, editableJSONObject);
+				}
+			}
+			else {
+				if (Objects.equals(
+						key, _KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR)) {
+
+					_replaceSegmentsExperienceImportContentReferences(
+						portletDataContext, editableProcessorJSONObject);
+				}
 			}
 		}
 
@@ -449,14 +469,14 @@ public class FragmentEntryLinkExportImportContentProcessor
 			String editableKey = editableKeysIterator.next();
 
 			if (!editableKey.startsWith(
-					SegmentsConstants.SEGMENTS_EXPERIENCE_ID_PREFIX)) {
+					SegmentsExperienceConstants.ID_PREFIX)) {
 
 				continue;
 			}
 
 			long segmentsExperienceId = GetterUtil.getLong(
 				editableKey.substring(
-					SegmentsConstants.SEGMENTS_EXPERIENCE_ID_PREFIX.length()));
+					SegmentsExperienceConstants.ID_PREFIX.length()));
 
 			SegmentsExperience segmentsExperience =
 				_segmentsExperienceLocalService.fetchSegmentsExperience(
@@ -477,20 +497,20 @@ public class FragmentEntryLinkExportImportContentProcessor
 
 		Iterator<String> editableKeysIterator = editableJSONObject.keys();
 
-		Set<String> editableKeys = new HashSet();
+		Set<String> editableKeys = new HashSet<>();
 
 		editableKeysIterator.forEachRemaining(editableKeys::add);
 
 		for (String editableKey : editableKeys) {
 			if (!editableKey.startsWith(
-					SegmentsConstants.SEGMENTS_EXPERIENCE_ID_PREFIX)) {
+					SegmentsExperienceConstants.ID_PREFIX)) {
 
 				continue;
 			}
 
 			long segmentsExperienceId = GetterUtil.getLong(
 				editableKey.substring(
-					SegmentsConstants.SEGMENTS_EXPERIENCE_ID_PREFIX.length()));
+					SegmentsExperienceConstants.ID_PREFIX.length()));
 
 			Map<Long, Long> segmentsExperienceIds =
 				(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
@@ -506,13 +526,21 @@ public class FragmentEntryLinkExportImportContentProcessor
 			editableJSONObject.remove(editableKey);
 
 			editableJSONObject.put(
-				SegmentsConstants.SEGMENTS_EXPERIENCE_ID_PREFIX +
+				SegmentsExperienceConstants.ID_PREFIX +
 					importedSegmentsExperienceId,
 				segmentsExperienceJSONObject);
 		}
 	}
 
 	private static final String _DDM_TEMPLATE = "ddmTemplate_";
+
+	private static final String _KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR =
+		"com.liferay.fragment.entry.processor.editable." +
+			"EditableFragmentEntryProcessor";
+
+	private static final String _KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR =
+		"com.liferay.fragment.entry.processor.freemarker." +
+			"FreeMarkerFragmentEntryProcessor";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		FragmentEntryLinkExportImportContentProcessor.class);

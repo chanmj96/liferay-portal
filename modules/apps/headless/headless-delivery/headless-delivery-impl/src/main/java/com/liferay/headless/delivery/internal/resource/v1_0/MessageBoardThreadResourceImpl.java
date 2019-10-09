@@ -54,7 +54,6 @@ import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.search.filter.TermFilter;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.service.UserService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -350,7 +349,8 @@ public class MessageBoardThreadResourceImpl
 						MBMessage.class.getName(), mbMessage.getMessageId()));
 				articleBody = mbMessage.getBody();
 				creator = CreatorUtil.toCreator(
-					_portal, _userService.getUserById(mbThread.getUserId()));
+					_portal,
+					_userLocalService.getUserById(mbThread.getUserId()));
 				customFields = CustomFieldsUtil.toCustomFields(
 					MBMessage.class.getName(), mbMessage.getMessageId(),
 					mbThread.getCompanyId(),
@@ -378,6 +378,7 @@ public class MessageBoardThreadResourceImpl
 				siteId = mbThread.getGroupId();
 				threadType = _toThreadType(
 					mbThread.getGroupId(), mbThread.getPriority());
+				viewCount = mbThread.getViewCount();
 			}
 		};
 	}
@@ -495,8 +496,5 @@ public class MessageBoardThreadResourceImpl
 
 	@Reference
 	private UserLocalService _userLocalService;
-
-	@Reference
-	private UserService _userService;
 
 }

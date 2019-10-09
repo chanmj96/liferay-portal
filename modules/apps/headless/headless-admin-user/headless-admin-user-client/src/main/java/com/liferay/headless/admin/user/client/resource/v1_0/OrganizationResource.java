@@ -20,7 +20,9 @@ import com.liferay.headless.admin.user.client.pagination.Page;
 import com.liferay.headless.admin.user.client.pagination.Pagination;
 import com.liferay.headless.admin.user.client.serdes.v1_0.OrganizationSerDes;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,13 +40,13 @@ public interface OrganizationResource {
 	}
 
 	public Page<Organization> getOrganizationsPage(
-			String search, String filterString, Pagination pagination,
-			String sortString)
+			Boolean flatten, String search, String filterString,
+			Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getOrganizationsPageHttpResponse(
-			String search, String filterString, Pagination pagination,
-			String sortString)
+			Boolean flatten, String search, String filterString,
+			Pagination pagination, String sortString)
 		throws Exception;
 
 	public Organization getOrganization(Long organizationId) throws Exception;
@@ -54,14 +56,14 @@ public interface OrganizationResource {
 		throws Exception;
 
 	public Page<Organization> getOrganizationOrganizationsPage(
-			Long parentOrganizationId, String search, String filterString,
-			Pagination pagination, String sortString)
+			Long parentOrganizationId, Boolean flatten, String search,
+			String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			getOrganizationOrganizationsPageHttpResponse(
-				Long parentOrganizationId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long parentOrganizationId, Boolean flatten, String search,
+				String filterString, Pagination pagination, String sortString)
 		throws Exception;
 
 	public static class Builder {
@@ -85,8 +87,20 @@ public interface OrganizationResource {
 			return this;
 		}
 
+		public Builder header(String key, String value) {
+			_headers.put(key, value);
+
+			return this;
+		}
+
 		public Builder locale(Locale locale) {
 			_locale = locale;
+
+			return this;
+		}
+
+		public Builder parameter(String key, String value) {
+			_parameters.put(key, value);
 
 			return this;
 		}
@@ -94,10 +108,12 @@ public interface OrganizationResource {
 		private Builder() {
 		}
 
+		private Map<String, String> _headers = new LinkedHashMap<>();
 		private String _host = "localhost";
 		private Locale _locale;
 		private String _login = "test@liferay.com";
 		private String _password = "test";
+		private Map<String, String> _parameters = new LinkedHashMap<>();
 		private int _port = 8080;
 		private String _scheme = "http";
 
@@ -107,13 +123,13 @@ public interface OrganizationResource {
 		implements OrganizationResource {
 
 		public Page<Organization> getOrganizationsPage(
-				String search, String filterString, Pagination pagination,
-				String sortString)
+				Boolean flatten, String search, String filterString,
+				Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getOrganizationsPageHttpResponse(
-					search, filterString, pagination, sortString);
+					flatten, search, filterString, pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -127,8 +143,8 @@ public interface OrganizationResource {
 		}
 
 		public HttpInvoker.HttpResponse getOrganizationsPageHttpResponse(
-				String search, String filterString, Pagination pagination,
-				String sortString)
+				Boolean flatten, String search, String filterString,
+				Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
@@ -138,7 +154,23 @@ public interface OrganizationResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			if (flatten != null) {
+				httpInvoker.parameter("flatten", String.valueOf(flatten));
+			}
 
 			if (search != null) {
 				httpInvoker.parameter("search", String.valueOf(search));
@@ -207,6 +239,18 @@ public interface OrganizationResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
 
 			httpInvoker.path(
@@ -222,14 +266,14 @@ public interface OrganizationResource {
 		}
 
 		public Page<Organization> getOrganizationOrganizationsPage(
-				Long parentOrganizationId, String search, String filterString,
-				Pagination pagination, String sortString)
+				Long parentOrganizationId, Boolean flatten, String search,
+				String filterString, Pagination pagination, String sortString)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				getOrganizationOrganizationsPageHttpResponse(
-					parentOrganizationId, search, filterString, pagination,
-					sortString);
+					parentOrganizationId, flatten, search, filterString,
+					pagination, sortString);
 
 			String content = httpResponse.getContent();
 
@@ -244,7 +288,7 @@ public interface OrganizationResource {
 
 		public HttpInvoker.HttpResponse
 				getOrganizationOrganizationsPageHttpResponse(
-					Long parentOrganizationId, String search,
+					Long parentOrganizationId, Boolean flatten, String search,
 					String filterString, Pagination pagination,
 					String sortString)
 			throws Exception {
@@ -256,7 +300,23 @@ public interface OrganizationResource {
 					"Accept-Language", _builder._locale.toLanguageTag());
 			}
 
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
 			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			if (flatten != null) {
+				httpInvoker.parameter("flatten", String.valueOf(flatten));
+			}
 
 			if (search != null) {
 				httpInvoker.parameter("search", String.valueOf(search));

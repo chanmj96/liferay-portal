@@ -20,20 +20,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.polls.service.http.PollsQuestionServiceSoap}.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class PollsQuestionSoap implements Serializable {
 
 	public static PollsQuestionSoap toSoapModel(PollsQuestion model) {
 		PollsQuestionSoap soapModel = new PollsQuestionSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setQuestionId(model.getQuestionId());
 		soapModel.setGroupId(model.getGroupId());
@@ -98,6 +96,14 @@ public class PollsQuestionSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setQuestionId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -204,6 +210,7 @@ public class PollsQuestionSoap implements Serializable {
 		_lastVoteDate = lastVoteDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _questionId;
 	private long _groupId;

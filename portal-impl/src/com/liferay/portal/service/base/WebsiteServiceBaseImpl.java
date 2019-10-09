@@ -45,9 +45,9 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class WebsiteServiceBaseImpl
-	extends BaseServiceImpl implements WebsiteService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, WebsiteService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>WebsiteService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.WebsiteServiceUtil</code>.

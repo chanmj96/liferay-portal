@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -97,10 +96,8 @@ public class ScopeLocatorImpl implements ScopeLocator {
 				scopeFinder = serviceReferenceServiceTuple.getService();
 			}
 
-			ServiceReference<?> serviceReference =
-				serviceReferenceServiceTuple.getServiceReference();
-
-			Bundle bundle = getBundle(serviceReference);
+			Bundle bundle = getBundle(
+				serviceReferenceServiceTuple.getServiceReference());
 
 			for (String scope : scopeFinder.findScopes()) {
 				liferayOAuth2Scopes.add(
@@ -154,7 +151,7 @@ public class ScopeLocatorImpl implements ScopeLocator {
 
 		Bundle bundle = getBundle(serviceReference);
 
-		Set<LiferayOAuth2Scope> locatedScopes = new HashSet<>(scopes.size());
+		Set<LiferayOAuth2Scope> locatedScopes = new HashSet<>();
 
 		Map<String, Set<String>> mappedScopeToUnmappedScopes = new HashMap<>();
 		Map<String, Boolean> matchCache = new HashMap<>();
@@ -193,7 +190,7 @@ public class ScopeLocatorImpl implements ScopeLocator {
 		ScopeLocatorConfiguration scopeLocatorConfiguration =
 			scopeLocatorConfigurationProvider.getScopeLocatorConfiguration();
 
-		Set<String> processedScopes = new HashSet<>(queue.size());
+		Set<String> processedScopes = new HashSet<>();
 
 		for (String scope = queue.poll(); scope != null; scope = queue.poll()) {
 			processedScopes.add(scope);
@@ -294,7 +291,6 @@ public class ScopeLocatorImpl implements ScopeLocator {
 		return scopesAliases;
 	}
 
-	@ProviderType
 	public interface ScopeLocatorConfigurationProvider {
 
 		public ScopeLocatorConfiguration getScopeLocatorConfiguration();

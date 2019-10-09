@@ -15,22 +15,21 @@
 package com.liferay.talend.resource;
 
 import com.liferay.talend.LiferayBaseComponentDefinition;
+import com.liferay.talend.common.oas.OASExplorer;
+import com.liferay.talend.common.oas.OASSource;
+import com.liferay.talend.common.oas.constants.OASConstants;
+import com.liferay.talend.common.schema.SchemaBuilder;
 import com.liferay.talend.common.schema.SchemaUtils;
 import com.liferay.talend.properties.ExceptionUtils;
-import com.liferay.talend.runtime.LiferaySourceOrSinkRuntime;
-import com.liferay.talend.runtime.ValidatedSoSSandboxRuntime;
+import com.liferay.talend.source.LiferayOASSource;
 import com.liferay.talend.tliferayoutput.Action;
-
-import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import javax.ws.rs.HttpMethod;
+import javax.json.JsonObject;
 
 import org.apache.avro.Schema;
 
@@ -44,13 +43,14 @@ import org.talend.daikon.exception.TalendRuntimeException;
 import org.talend.daikon.i18n.GlobalI18N;
 import org.talend.daikon.i18n.I18nMessageProvider;
 import org.talend.daikon.i18n.I18nMessages;
+import org.talend.daikon.properties.Properties;
 import org.talend.daikon.properties.ValidationResult;
-import org.talend.daikon.properties.ValidationResultMutable;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
 
 /**
  * @author Ivica Cardic
+ * @author Igor Beslic
  */
 public class LiferayOutputResourceProperties
 	extends BaseLiferayResourceProperties {
@@ -63,6 +63,10 @@ public class LiferayOutputResourceProperties
 
 		_schemaFlow = schemaFlow;
 		_schemaReject = schemaReject;
+
+		if (_logger.isTraceEnabled()) {
+			_logger.trace("Instantiated " + System.identityHashCode(this));
+		}
 	}
 
 	public ValidationResult afterOperations() {
@@ -72,55 +76,58 @@ public class LiferayOutputResourceProperties
 			_logger.debug("Selected method: " + action.getMethodName());
 		}
 
-		ValidatedSoSSandboxRuntime validatedSoSSandboxRuntime =
-			LiferayBaseComponentDefinition.initializeSandboxedRuntime(
+		LiferayOASSource liferayOASSource =
+			LiferayBaseComponentDefinition.getLiferayOASSource(
 				getEffectiveLiferayConnectionProperties());
 
-		ValidationResultMutable validationResultMutable =
-			validatedSoSSandboxRuntime.getValidationResultMutable();
-
-		LiferaySourceOrSinkRuntime liferaySourceOrSinkRuntime =
-			validatedSoSSandboxRuntime.getLiferaySourceOrSinkRuntime();
+		if (!liferayOASSource.isValid()) {
+			return liferayOASSource.getValidationResult();
+		}
 
 		if (action == Action.Unavailable) {
 			_resetComponents();
-		}
-		else {
-			populateParametersTable(
-				liferaySourceOrSinkRuntime, action.getMethodName());
 
-			_createEndpointSchema(
-				liferaySourceOrSinkRuntime, validationResultMutable);
+			return liferayOASSource.getValidationResult();
 		}
 
-		return validationResultMutable;
+		OASSource oasSource = liferayOASSource.getOASSource();
+
+		OASExplorer oasExplorer = new OASExplorer();
+
+		populateParametersTable(
+			oasExplorer.getParameters(
+				endpoint.getValue(), action.getMethodName(),
+				oasSource.getOASJsonObject(connection.apiSpecURL.getValue())));
+
+		return _createEndpointSchema(oasSource);
 	}
 
 	public ValidationResult beforeEndpoint() {
-		ValidatedSoSSandboxRuntime validatedSoSSandboxRuntime =
-			LiferayBaseComponentDefinition.initializeSandboxedRuntime(
+		LiferayOASSource liferayOASSource =
+			LiferayBaseComponentDefinition.getLiferayOASSource(
 				getEffectiveLiferayConnectionProperties());
 
-		ValidationResultMutable validationResultMutable =
-			validatedSoSSandboxRuntime.getValidationResultMutable();
-
-		if (validationResultMutable.getStatus() ==
-				ValidationResult.Result.ERROR) {
-
-			return validationResultMutable;
+		if (!liferayOASSource.isValid()) {
+			return liferayOASSource.getValidationResult();
 		}
 
-		LiferaySourceOrSinkRuntime liferaySourceOrSinkRuntime =
-			validatedSoSSandboxRuntime.getLiferaySourceOrSinkRuntime();
+		OASSource oasSource = liferayOASSource.getOASSource();
+
+		OASExplorer oasExplorer = new OASExplorer();
+
+		JsonObject oasJsonObject = oasSource.getOASJsonObject(
+			connection.getApiSpecURL());
 
 		try {
-			Set<String> endpoints = liferaySourceOrSinkRuntime.getEndpointList(
-				HttpMethod.POST);
+			Set<String> endpoints = oasExplorer.getEndpointList(
+				OASConstants.OPERATION_POST, oasJsonObject);
 
 			endpoints.addAll(
-				liferaySourceOrSinkRuntime.getEndpointList(HttpMethod.PATCH));
+				oasExplorer.getEndpointList(
+					OASConstants.OPERATION_PATCH, oasJsonObject));
 			endpoints.addAll(
-				liferaySourceOrSinkRuntime.getEndpointList(HttpMethod.DELETE));
+				oasExplorer.getEndpointList(
+					OASConstants.OPERATION_DELETE, oasJsonObject));
 
 			List<NamedThing> endpointsNamedThing = new ArrayList<>();
 
@@ -129,12 +136,9 @@ public class LiferayOutputResourceProperties
 					new SimpleNamedThing(endpoint, endpoint)));
 
 			if (endpointsNamedThing.isEmpty()) {
-				validationResultMutable.setMessage(
+				return new ValidationResult(
+					ValidationResult.Result.ERROR,
 					_i18nMessages.getMessage("error.validation.resources"));
-				validationResultMutable.setStatus(
-					ValidationResult.Result.ERROR);
-
-				return validationResultMutable;
 			}
 
 			endpoint.setPossibleNamedThingValues(endpointsNamedThing);
@@ -144,6 +148,17 @@ public class LiferayOutputResourceProperties
 		}
 
 		return null;
+	}
+
+	@Override
+	public Properties init() {
+		Properties properties = super.init();
+
+		if (_logger.isTraceEnabled()) {
+			_logger.trace("Initialized " + System.identityHashCode(this));
+		}
+
+		return properties;
 	}
 
 	@Override
@@ -177,83 +192,75 @@ public class LiferayOutputResourceProperties
 
 		operations.setPossibleValues((List<?>)null);
 		operations.setTaggedValue(_ADD_QUOTES, true);
+
+		if (_logger.isTraceEnabled()) {
+			_logger.trace("Properties set " + System.identityHashCode(this));
+		}
 	}
 
 	@Override
-	protected ValidationResult doAfterEndpoint(
-		LiferaySourceOrSinkRuntime liferaySourceOrSinkRuntime,
-		ValidationResultMutable validationResultMutable) {
-
+	protected ValidationResult doAfterEndpoint(OASSource oasSource) {
 		Set<String> supportedOperations = Collections.emptySet();
 
 		try {
 			endpoint.setValue(endpoint.getValue());
 
-			supportedOperations =
-				liferaySourceOrSinkRuntime.getSupportedOperations(
-					endpoint.getValue());
+			OASExplorer oasExplorer = new OASExplorer();
+
+			supportedOperations = oasExplorer.getSupportedOperations(
+				endpoint.getValue(),
+				oasSource.getOASJsonObject(connection.getApiSpecURL()));
 		}
 		catch (TalendRuntimeException tre) {
 			endpoint.setValue(null);
 			operations.setValue(null);
 
 			operations.setPossibleValues((List<?>)null);
+
+			return new ValidationResult(
+				ValidationResult.Result.ERROR,
+				"Unable to resolve http operations");
 		}
 
-		if (supportedOperations.isEmpty()) {
-			operations.setPossibleValues(Action.Unavailable);
+		List<Action> actions = new ArrayList<>();
+
+		actions.add(Action.Unavailable);
+
+		for (String supportedOperation : supportedOperations) {
+			actions.add(Action.toAction(supportedOperation));
 		}
-		else {
-			Stream<String> operationsStream = supportedOperations.stream();
 
-			List<Action> actions = operationsStream.filter(
-				operation -> {
-					Set<String> availableMethodNames =
-						Action.getAvailableMethodNames();
-
-					return availableMethodNames.contains(operation);
-				}
-			).map(
-				this::_toAction
-			).collect(
-				Collectors.toList()
-			);
-
-			actions.add(0, Action.Unavailable);
-
-			operations.setPossibleValues(actions);
-		}
+		operations.setPossibleValues(actions);
 
 		_resetComponents();
 
-		return validationResultMutable;
+		return ValidationResult.OK;
 	}
 
-	private void _createEndpointSchema(
-		LiferaySourceOrSinkRuntime liferaySourceOrSinkRuntime,
-		ValidationResultMutable validationResultMutable) {
-
+	private ValidationResult _createEndpointSchema(OASSource oasSource) {
 		try {
 			Action action = operations.getValue();
 
-			Schema endpointSchema =
-				liferaySourceOrSinkRuntime.getEndpointSchema(
-					endpoint.getValue(), action.getMethodName());
+			SchemaBuilder schemaBuilder = new SchemaBuilder();
 
-			main.schema.setValue(endpointSchema);
+			main.schema.setValue(
+				schemaBuilder.inferSchema(
+					endpoint.getValue(), action.getMethodName(),
+					oasSource.getOASJsonObject(connection.getApiSpecURL())));
 
 			_updateSchemas();
-
-			validationResultMutable.setMessage(
-				_i18nMessages.getMessage("success.validation.schema"));
 		}
-		catch (IOException | TalendRuntimeException e) {
-			validationResultMutable.setMessage(
+		catch (TalendRuntimeException tre) {
+			_logger.error("Unable to generate schema", tre);
+
+			return new ValidationResult(
+				ValidationResult.Result.ERROR,
 				_i18nMessages.getMessage("error.validation.schema"));
-			validationResultMutable.setStatus(ValidationResult.Result.ERROR);
-
-			_logger.error("Unable to generate schema", e);
 		}
+
+		return new ValidationResult(
+			ValidationResult.Result.OK,
+			_i18nMessages.getMessage("success.validation.schema"));
 	}
 
 	private void _resetComponents() {
@@ -264,18 +271,6 @@ public class LiferayOutputResourceProperties
 		parametersTable.columnName.setValue(Collections.emptyList());
 		parametersTable.valueColumnName.setValue(Collections.emptyList());
 		parametersTable.typeColumnName.setValue(Collections.emptyList());
-	}
-
-	private Action _toAction(String method) {
-		Stream<Action> actionsStream = Action.getActionsStream();
-
-		return actionsStream.filter(
-			action -> method.equals(action.getMethodName())
-		).findFirst(
-		).orElseThrow(
-			() -> new UnsupportedOperationException(
-				String.format("Unsupported operation: %s.", method))
-		);
 	}
 
 	private void _updateSchemas() {

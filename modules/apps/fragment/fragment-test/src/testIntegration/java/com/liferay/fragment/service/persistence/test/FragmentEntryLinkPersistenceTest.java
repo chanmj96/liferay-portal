@@ -125,6 +125,8 @@ public class FragmentEntryLinkPersistenceTest {
 
 		FragmentEntryLink newFragmentEntryLink = _persistence.create(pk);
 
+		newFragmentEntryLink.setMvccVersion(RandomTestUtil.nextLong());
+
 		newFragmentEntryLink.setUuid(RandomTestUtil.randomString());
 
 		newFragmentEntryLink.setGroupId(RandomTestUtil.nextLong());
@@ -173,6 +175,9 @@ public class FragmentEntryLinkPersistenceTest {
 		FragmentEntryLink existingFragmentEntryLink =
 			_persistence.findByPrimaryKey(newFragmentEntryLink.getPrimaryKey());
 
+		Assert.assertEquals(
+			existingFragmentEntryLink.getMvccVersion(),
+			newFragmentEntryLink.getMvccVersion());
 		Assert.assertEquals(
 			existingFragmentEntryLink.getUuid(),
 			newFragmentEntryLink.getUuid());
@@ -277,6 +282,13 @@ public class FragmentEntryLinkPersistenceTest {
 	}
 
 	@Test
+	public void testCountByFragmentEntryId() throws Exception {
+		_persistence.countByFragmentEntryId(RandomTestUtil.nextLong());
+
+		_persistence.countByFragmentEntryId(0L);
+	}
+
+	@Test
 	public void testCountByRendererKey() throws Exception {
 		_persistence.countByRendererKey("");
 
@@ -345,13 +357,13 @@ public class FragmentEntryLinkPersistenceTest {
 
 	protected OrderByComparator<FragmentEntryLink> getOrderByComparator() {
 		return OrderByComparatorFactoryUtil.create(
-			"FragmentEntryLink", "uuid", true, "fragmentEntryLinkId", true,
-			"groupId", true, "companyId", true, "userId", true, "userName",
-			true, "createDate", true, "modifiedDate", true,
-			"originalFragmentEntryLinkId", true, "fragmentEntryId", true,
-			"classNameId", true, "classPK", true, "namespace", true, "position",
-			true, "rendererKey", true, "lastPropagationDate", true,
-			"lastPublishDate", true);
+			"FragmentEntryLink", "mvccVersion", true, "uuid", true,
+			"fragmentEntryLinkId", true, "groupId", true, "companyId", true,
+			"userId", true, "userName", true, "createDate", true,
+			"modifiedDate", true, "originalFragmentEntryLinkId", true,
+			"fragmentEntryId", true, "classNameId", true, "classPK", true,
+			"namespace", true, "position", true, "rendererKey", true,
+			"lastPropagationDate", true, "lastPublishDate", true);
 	}
 
 	@Test
@@ -600,6 +612,8 @@ public class FragmentEntryLinkPersistenceTest {
 		long pk = RandomTestUtil.nextLong();
 
 		FragmentEntryLink fragmentEntryLink = _persistence.create(pk);
+
+		fragmentEntryLink.setMvccVersion(RandomTestUtil.nextLong());
 
 		fragmentEntryLink.setUuid(RandomTestUtil.randomString());
 

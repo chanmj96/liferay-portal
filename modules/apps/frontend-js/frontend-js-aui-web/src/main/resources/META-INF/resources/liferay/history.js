@@ -15,7 +15,7 @@
 /**
  * The History Utility, a utility for SPA.
  *
- * @deprecated since 7.2, unused, replaced by senna.js
+ * @deprecated As of Mueller (7.2.x), replaced by senna.js
  * @module liferay-history
  */
 
@@ -36,8 +36,20 @@ AUI.add(
 
 			NAME: 'liferayhistory',
 
+			PAIR_SEPARATOR: '&',
+
+			VALUE_SEPARATOR: '=',
+
 			prototype: {
-				get: function(key) {
+				_parse: A.cached(function(str) {
+					return QueryString.parse(
+						str,
+						History.PAIR_SEPARATOR,
+						History.VALUE_SEPARATOR
+					);
+				}),
+
+				get(key) {
 					var instance = this;
 
 					var value = History.superclass.get.apply(this, arguments);
@@ -47,26 +59,16 @@ AUI.add(
 
 						var queryMap = instance._parse(query.substr(1));
 
-						if (queryMap.hasOwnProperty(key)) {
+						if (
+							Object.prototype.hasOwnProperty.call(queryMap, key)
+						) {
 							value = queryMap[key];
 						}
 					}
 
 					return value;
-				},
-
-				_parse: A.cached(function(str) {
-					return QueryString.parse(
-						str,
-						History.PAIR_SEPARATOR,
-						History.VALUE_SEPARATOR
-					);
-				})
-			},
-
-			PAIR_SEPARATOR: '&',
-
-			VALUE_SEPARATOR: '='
+				}
+			}
 		});
 
 		Liferay.History = History;

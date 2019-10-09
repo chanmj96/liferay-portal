@@ -4,10 +4,10 @@
 
 <plugin>
 	<name>com.liferay.portal.tools.service.builder</name>
-	<description/>
+	<description></description>
 	<groupId>com.liferay</groupId>
 	<artifactId>com.liferay.portal.tools.service.builder</artifactId>
-	<version>1.0.292</version>
+	<version>1.0.307</version>
 	<goalPrefix>service-builder</goalPrefix>
 	<isolatedRealm>false</isolatedRealm>
 	<inheritedByDefault>true</inheritedByDefault>
@@ -32,210 +32,210 @@
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>autoImportDefaultReferences</name>
 					<type>boolean</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>autoNamespaceTables</name>
 					<type>boolean</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>baseDir</name>
 					<type>java.io.File</type>
 					<required>false</required>
 					<editable>false</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>beanLocatorUtil</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>buildNumber</name>
 					<type>long</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>buildNumberIncrement</name>
 					<type>boolean</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>databaseNameMaxLength</name>
 					<type>int</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>hbmFileName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>implDirName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>inputFileName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>mergeModelHintsConfigs</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>mergeReadOnlyPrefixes</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>mergeResourceActionsConfigs</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>modelHintsConfigs</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>modelHintsFileName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>osgiModule</name>
 					<type>boolean</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>pluginName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>propsUtil</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>readOnlyPrefixes</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>resourceActionsConfigs</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>resourcesDirName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>springFileName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>springNamespaces</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>sqlDirName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>sqlFileName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>sqlIndexesFileName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>sqlSequencesFileName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>targetEntityName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>testDirName</name>
 					<type>java.lang.String</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 			</parameters>
 			<configuration>
@@ -406,11 +406,5 @@
 			<type>jar</type>
 			<version>2.3.23</version>
 		</dependency>
-		<dependency>
-			<groupId>com.ibm.icu</groupId>
-			<artifactId>icu4j</artifactId>
-			<type>jar</type>
-			<version>2.6.1</version>
-		</dependency>
-	</dependencies>
+		<dependency><groupId>com.ibm.icu</groupId><artifactId>icu4j</artifactId><type>jar</type><version>2.6.1</version></dependency></dependencies>
 </plugin>

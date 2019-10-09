@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AssetLink}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetLink
  * @generated
  */
-@ProviderType
 public class AssetLinkWrapper
 	extends BaseModelWrapper<AssetLink>
 	implements AssetLink, ModelWrapper<AssetLink> {
@@ -45,6 +42,7 @@ public class AssetLinkWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("linkId", getLinkId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
@@ -60,6 +58,12 @@ public class AssetLinkWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long linkId = (Long)attributes.get("linkId");
 
 		if (linkId != null) {
@@ -166,6 +170,16 @@ public class AssetLinkWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this asset link.
+	 *
+	 * @return the mvcc version of this asset link
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this asset link.
 	 *
 	 * @return the primary key of this asset link
@@ -225,6 +239,11 @@ public class AssetLinkWrapper
 		return model.getWeight();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a asset link model instance should use the <code>AssetLink</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -278,6 +297,16 @@ public class AssetLinkWrapper
 	@Override
 	public void setLinkId(long linkId) {
 		model.setLinkId(linkId);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset link.
+	 *
+	 * @param mvccVersion the mvcc version of this asset link
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

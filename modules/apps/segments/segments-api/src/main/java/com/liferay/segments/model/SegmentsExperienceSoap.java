@@ -20,20 +20,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.segments.service.http.SegmentsExperienceServiceSoap}.
  *
  * @author Eduardo Garcia
  * @generated
  */
-@ProviderType
 public class SegmentsExperienceSoap implements Serializable {
 
 	public static SegmentsExperienceSoap toSoapModel(SegmentsExperience model) {
 		SegmentsExperienceSoap soapModel = new SegmentsExperienceSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setSegmentsExperienceId(model.getSegmentsExperienceId());
 		soapModel.setGroupId(model.getGroupId());
@@ -110,6 +108,14 @@ public class SegmentsExperienceSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setSegmentsExperienceId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -244,6 +250,7 @@ public class SegmentsExperienceSoap implements Serializable {
 		_lastPublishDate = lastPublishDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _segmentsExperienceId;
 	private long _groupId;

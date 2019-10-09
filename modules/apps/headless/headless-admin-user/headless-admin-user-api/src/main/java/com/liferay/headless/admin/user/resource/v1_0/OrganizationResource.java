@@ -25,6 +25,11 @@ import com.liferay.portal.vulcan.pagination.Pagination;
 
 import javax.annotation.Generated;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import javax.ws.rs.core.UriInfo;
+
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -40,14 +45,15 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface OrganizationResource {
 
 	public Page<Organization> getOrganizationsPage(
-			String search, Filter filter, Pagination pagination, Sort[] sorts)
+			Boolean flatten, String search, Filter filter,
+			Pagination pagination, Sort[] sorts)
 		throws Exception;
 
 	public Organization getOrganization(Long organizationId) throws Exception;
 
 	public Page<Organization> getOrganizationOrganizationsPage(
-			Long parentOrganizationId, String search, Filter filter,
-			Pagination pagination, Sort[] sorts)
+			Long parentOrganizationId, Boolean flatten, String search,
+			Filter filter, Pagination pagination, Sort[] sorts)
 		throws Exception;
 
 	public default void setContextAcceptLanguage(
@@ -55,6 +61,17 @@ public interface OrganizationResource {
 	}
 
 	public void setContextCompany(Company contextCompany);
+
+	public default void setContextHttpServletRequest(
+		HttpServletRequest contextHttpServletRequest) {
+	}
+
+	public default void setContextHttpServletResponse(
+		HttpServletResponse contextHttpServletResponse) {
+	}
+
+	public default void setContextUriInfo(UriInfo contextUriInfo) {
+	}
 
 	public void setContextUser(User contextUser);
 

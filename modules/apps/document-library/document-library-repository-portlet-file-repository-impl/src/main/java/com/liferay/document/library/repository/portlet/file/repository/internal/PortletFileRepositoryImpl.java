@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.LocalRepository;
+import com.liferay.portal.kernel.repository.RepositoryFactory;
 import com.liferay.portal.kernel.repository.RepositoryProvider;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -72,7 +73,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  * @author Alexander Chow
  */
-@Component(immediate = true, service = PortletFileRepository.class)
+@Component(service = PortletFileRepository.class)
 public class PortletFileRepositoryImpl implements PortletFileRepository {
 
 	@Override
@@ -314,9 +315,7 @@ public class PortletFileRepositoryImpl implements PortletFileRepository {
 			LocalRepository localRepository =
 				_repositoryProvider.getFileEntryLocalRepository(fileEntryId);
 
-			FileEntry fileEntry = localRepository.getFileEntry(fileEntryId);
-
-			if (_isAttachment(fileEntry)) {
+			if (_isAttachment(localRepository.getFileEntry(fileEntryId))) {
 				_run(
 					FileEntry.class,
 					() -> {
@@ -798,6 +797,11 @@ public class PortletFileRepositoryImpl implements PortletFileRepository {
 
 	@Reference
 	private Portal _portal;
+
+	@Reference(
+		target = "(repository.target.class.name=com.liferay.portal.repository.portletrepository.PortletRepository)"
+	)
+	private RepositoryFactory _repositoryFactory;
 
 	@Reference
 	private RepositoryLocalService _repositoryLocalService;

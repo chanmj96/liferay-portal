@@ -150,7 +150,7 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 		public BaseLicenseReportConfigurator(Project project) {
 			this.project = project;
 
-			_licensePropertiesFile = _getLicensePropertiesFile();
+			_overridePropertiesFile = _getOverridePropertiesFile();
 		}
 
 		@Override
@@ -183,16 +183,16 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 				licenseReportExtension.outputDir = outputDir;
 			}
 
-			Properties licenseProperties = new Properties();
+			Properties overrideProperties = new Properties();
 
-			if (_licensePropertiesFile != null) {
-				licenseProperties = GUtil.loadProperties(
-					_licensePropertiesFile);
+			if (_overridePropertiesFile != null) {
+				overrideProperties = GUtil.loadProperties(
+					_overridePropertiesFile);
 			}
 
 			licenseReportExtension.renderers = new ReportRenderer[] {
 				new ThirdPartyVersionsXmlReportRenderer(
-					fileName, licenseProperties, licenseReportExtension,
+					fileName, overrideProperties, licenseReportExtension,
 					new Callable<String>() {
 
 						@Override
@@ -204,13 +204,13 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 					})
 			};
 
-			if (_licensePropertiesFile != null) {
+			if (_overridePropertiesFile != null) {
 				ReportTask reportTask = (ReportTask)GradleUtil.getTask(
 					project, "generateLicenseReport");
 
 				TaskInputs taskInputs = reportTask.getInputs();
 
-				taskInputs.file(_licensePropertiesFile);
+				taskInputs.file(_overridePropertiesFile);
 			}
 		}
 
@@ -231,15 +231,15 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 
 		protected final Project project;
 
-		private File _getLicensePropertiesFile() {
-			String propertiesFile = System.getProperty(
-				"license.report.properties.file");
+		private File _getOverridePropertiesFile() {
+			String overridePropertiesFileName = System.getProperty(
+				"license.report.override.properties.file");
 
-			if (Validator.isNull(propertiesFile)) {
+			if (Validator.isNull(overridePropertiesFileName)) {
 				return null;
 			}
 
-			File file = new File(propertiesFile);
+			File file = new File(overridePropertiesFileName);
 
 			if (!file.exists()) {
 				return null;
@@ -248,7 +248,7 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 			return file;
 		}
 
-		private final File _licensePropertiesFile;
+		private final File _overridePropertiesFile;
 
 	}
 
@@ -349,14 +349,14 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 		extends VersionsXmlReportRenderer {
 
 		public ThirdPartyVersionsXmlReportRenderer(
-			String fileName, Properties licenseProperties,
+			String fileName, Properties overrideProperties,
 			LicenseReportExtension licenseReportExtension,
 			Callable<String> moduleFileNamePrefixCallable) {
 
 			super(
 				fileName, licenseReportExtension, moduleFileNamePrefixCallable);
 
-			_licenseProperties = licenseProperties;
+			_overrideProperties = overrideProperties;
 		}
 
 		@Override
@@ -365,8 +365,8 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 
 			String key = "license.name[" + moduleFileName + "]";
 
-			if (_licenseProperties.containsKey(key)) {
-				return _licenseProperties.getProperty(key);
+			if (_overrideProperties.containsKey(key)) {
+				return _overrideProperties.getProperty(key);
 			}
 
 			return super.getLicenseName(moduleFileName, moduleData);
@@ -378,8 +378,8 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 
 			String key = "license.url[" + moduleFileName + "]";
 
-			if (_licenseProperties.containsKey(key)) {
-				return _licenseProperties.getProperty(key);
+			if (_overrideProperties.containsKey(key)) {
+				return _overrideProperties.getProperty(key);
 			}
 
 			return super.getLicenseUrl(moduleFileName, moduleData);
@@ -406,7 +406,7 @@ public class LicenseReportDefaultsPlugin implements Plugin<Project> {
 			return false;
 		}
 
-		private final Properties _licenseProperties;
+		private final Properties _overrideProperties;
 
 	}
 

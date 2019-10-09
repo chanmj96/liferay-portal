@@ -123,7 +123,7 @@ if (!portletName.equals(PortletKeys.SERVER_ADMIN)) {
 	}
 </aui:script>
 
-<aui:script use="aui-io-request,aui-loading-mask-deprecated,aui-parse-content,aui-toggler,autocomplete-base,autocomplete-filters,liferay-notification">
+<aui:script use="aui-loading-mask-deprecated,aui-parse-content,aui-toggler,autocomplete-base,autocomplete-filters,liferay-notification">
 	var AParseContent = A.Plugin.ParseContent;
 
 	var permissionNavigationDataContainer = A.one('#<portlet:namespace />permissionNavigationDataContainer');
@@ -273,12 +273,7 @@ if (!portletName.equals(PortletKeys.SERVER_ADMIN)) {
 
 				permissionContentContainerNode.unplug(AParseContent);
 
-				fetch(
-					href,
-					{
-						credentials: 'include'
-					}
-				).then(
+				Liferay.Util.fetch(href).then(
 					function(response) {
 						if (response.status === 401) {
 							window.location.reload();

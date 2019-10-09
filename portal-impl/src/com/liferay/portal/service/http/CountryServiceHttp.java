@@ -22,8 +22,6 @@ import com.liferay.portal.kernel.service.http.TunnelUtil;
 import com.liferay.portal.kernel.util.MethodHandler;
 import com.liferay.portal.kernel.util.MethodKey;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the HTTP utility for the
  * <code>CountryServiceUtil</code> service
@@ -51,7 +49,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CountryServiceSoap
  * @generated
  */
-@ProviderType
 public class CountryServiceHttp {
 
 	public static com.liferay.portal.kernel.model.Country addCountry(
@@ -403,9 +400,8 @@ public class CountryServiceHttp {
 		new Class[] {String.class};
 	private static final Class<?>[] _fetchCountryByA3ParameterTypes3 =
 		new Class[] {String.class};
-	private static final Class<?>[] _getCountriesParameterTypes4 = new Class[] {
-		
-	};
+	private static final Class<?>[] _getCountriesParameterTypes4 =
+		new Class[] {};
 	private static final Class<?>[] _getCountriesParameterTypes5 = new Class[] {
 		boolean.class
 	};

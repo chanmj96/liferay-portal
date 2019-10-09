@@ -16,11 +16,7 @@ import * as FormSupport from 'dynamic-data-mapping-form-renderer/js/components/F
 import Component from 'metal-jsx';
 import {Config} from 'metal-state';
 import {DragDrop} from 'metal-drag-drop';
-import {
-	focusedFieldStructure,
-	pageStructure,
-	ruleStructure
-} from '../../util/config.es';
+import {focusedFieldStructure, pageStructure} from '../../util/config.es';
 
 const withMoveableFields = ChildComponent => {
 	class MoveableFields extends Component {
@@ -77,31 +73,37 @@ const withMoveableFields = ChildComponent => {
 		}
 
 		_handleDragAndDropEnd({source, target}) {
-			const lastParent = document.querySelector('.ddm-parent-dragging');
+			const lastParent = document.querySelector('.dragging');
 
 			if (lastParent) {
-				lastParent.classList.remove('ddm-parent-dragging');
+				lastParent.classList.remove('dragging');
 				lastParent.removeAttribute('style');
 			}
 
-			if (target) {
-				const sourceIndex = FormSupport.getIndexes(
-					source.parentElement.parentElement
+			if (!target) {
+				target = document.querySelector(
+					'.ddm-form-builder .ddm-target.targetOver'
 				);
-				const targetIndex = FormSupport.getIndexes(
-					target.parentElement
-				);
+			}
 
+			if (target) {
 				source.innerHTML = '';
 
-				const addedToPlaceholder = ![]
-					.concat(target.parentElement.parentElement.classList)
-					.includes('position-relative');
+				const sourceIndexes = FormSupport.getIndexes(
+					source.parentElement.parentElement
+				);
+
+				const targetColumn = target.parentElement;
+				const targetIndexes = FormSupport.getIndexes(targetColumn);
+
+				const addedToPlaceholder = targetColumn.parentElement.classList.contains(
+					'placeholder'
+				);
 
 				this._handleFieldMoved({
 					addedToPlaceholder,
-					source: sourceIndex,
-					target: targetIndex
+					source: sourceIndexes,
+					target: targetIndexes
 				});
 			}
 
@@ -116,7 +118,7 @@ const withMoveableFields = ChildComponent => {
 				'style',
 				`height: ${height}px !important;`
 			);
-			parentElement.classList.add('ddm-parent-dragging');
+			parentElement.classList.add('dragging');
 		}
 
 		_handleFieldMoved(event) {
@@ -160,9 +162,27 @@ const withMoveableFields = ChildComponent => {
 		editingLanguageId: Config.string(),
 
 		/**
+		 * @default undefined
+		 * @instance
+		 * @memberof FormBuilder
+		 * @type {?string}
+		 */
+
+		fieldSetDefinitionURL: Config.string(),
+
+		/**
 		 * @default []
 		 * @instance
-		 * @memberof Sidebar
+		 * @memberof FormBuilder
+		 * @type {?(array|undefined)}
+		 */
+
+		fieldSets: Config.array().value([]),
+
+		/**
+		 * @default []
+		 * @instance
+		 * @memberof FormBuilder
 		 * @type {?(array|undefined)}
 		 */
 
@@ -203,21 +223,34 @@ const withMoveableFields = ChildComponent => {
 		portletNamespace: Config.string().required(),
 
 		/**
+		 * @default undefined
 		 * @instance
 		 * @memberof FormBuilder
-		 * @type {string}
+		 * @type {!string}
 		 */
 
-		rules: Config.arrayOf(ruleStructure).required(),
+		spritemap: Config.string().required(),
+
+		/**
+		 * @instance
+		 * @memberof FormBuilder
+		 * @type {object}
+		 */
+
+		successPageSettings: Config.shapeOf({
+			body: Config.object(),
+			enabled: Config.bool(),
+			title: Config.object()
+		}).value({}),
 
 		/**
 		 * @default undefined
 		 * @instance
-		 * @memberof FormRenderer
-		 * @type {!string}
+		 * @memberof FormBuilder
+		 * @type {?string}
 		 */
 
-		spritemap: Config.string().required()
+		view: Config.string()
 	};
 
 	return MoveableFields;

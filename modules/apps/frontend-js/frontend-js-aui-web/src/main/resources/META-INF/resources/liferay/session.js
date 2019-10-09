@@ -71,84 +71,7 @@ AUI.add(
 			EXTENDS: A.Base,
 			NAME: 'liferaysession',
 			prototype: {
-				initializer: function(config) {
-					var instance = this;
-
-					instance._cookieOptions = {
-						path: '/',
-						secure: A.UA.secure
-					};
-
-					instance._registered = {};
-
-					instance.set('timestamp');
-
-					instance._initEvents();
-
-					instance._startTimer();
-				},
-
-				destructor: function() {
-					var instance = this;
-
-					new A.EventHandle(instance._eventHandlers).detach();
-
-					instance._stopTimer();
-				},
-
-				expire: function() {
-					var instance = this;
-
-					instance.set('sessionState', 'expired', SRC_EVENT_OBJ);
-				},
-
-				extend: function() {
-					var instance = this;
-
-					instance.set('sessionState', 'active', SRC_EVENT_OBJ);
-				},
-
-				registerInterval: function(fn) {
-					var instance = this;
-
-					var fnId;
-					var registered = instance._registered;
-
-					if (Lang.isFunction(fn)) {
-						fnId = A.stamp(fn);
-
-						registered[fnId] = fn;
-					}
-
-					return fnId;
-				},
-
-				resetInterval: function() {
-					var instance = this;
-
-					instance._stopTimer();
-					instance._startTimer();
-				},
-
-				unregisterInterval: function(fnId) {
-					var instance = this;
-
-					var registered = instance._registered;
-
-					if (registered.hasOwnProperty(fnId)) {
-						delete registered[fnId];
-					}
-
-					return fnId;
-				},
-
-				warn: function() {
-					var instance = this;
-
-					instance.set('sessionState', 'warned', SRC_EVENT_OBJ);
-				},
-
-				_afterSessionStateChange: function(event) {
+				_afterSessionStateChange(event) {
 					var instance = this;
 
 					var details = event.details;
@@ -166,17 +89,17 @@ AUI.add(
 					);
 				},
 
-				_defActivatedFn: function(event) {
+				_defActivatedFn(event) {
 					var instance = this;
 
 					instance.set('timestamp');
 
 					if (event.src == SRC) {
-						instance._getExtendIO().start();
+						Liferay.Util.fetch(URL_BASE + 'extend_session');
 					}
 				},
 
-				_defExpiredFn: function(event) {
+				_defExpiredFn(event) {
 					var instance = this;
 
 					A.clearInterval(instance._intervalId);
@@ -184,67 +107,35 @@ AUI.add(
 					instance.set('timestamp', 'expired');
 
 					if (event.src === SRC) {
-						instance._getExpireIO().start();
+						instance._expireSession();
 					}
 				},
 
-				_getExpireIO: function() {
+				_expireSession() {
 					var instance = this;
 
-					var expireIO = instance._expireIO;
+					Liferay.Util.fetch(URL_BASE + 'expire_session').then(
+						response => {
+							if (response.ok) {
+								Liferay.fire('sessionExpired');
 
-					if (!expireIO) {
-						expireIO = A.io.request(URL_BASE + 'expire_session', {
-							autoLoad: false,
-							on: {
-								failure: function(event, id, obj) {
-									instance._expireIO = null;
-
-									A.setTimeout(function() {
-										instance._getExpireIO().start();
-									}, 1000);
-								},
-								success: function(event, id, obj) {
-									Liferay.fire('sessionExpired');
-
-									if (instance.get('redirectOnExpire')) {
-										location.href = instance.get(
-											'redirectUrl'
-										);
-									}
+								if (instance.get('redirectOnExpire')) {
+									location.href = instance.get('redirectUrl');
 								}
+							} else {
+								A.setTimeout(function() {
+									instance._expireSession();
+								}, 1000);
 							}
-						});
-
-						instance._expireIO = expireIO;
-					}
-
-					return expireIO;
+						}
+					);
 				},
 
-				_getExtendIO: function() {
-					var instance = this;
-
-					var extendIO = instance._extendIO;
-
-					if (!extendIO) {
-						extendIO = A.io.request(URL_BASE + 'extend_session', {
-							autoLoad: false
-						});
-
-						instance._extendIO = extendIO;
-					}
-
-					return extendIO;
-				},
-
-				_getLengthInMillis: function(value) {
-					var instance = this;
-
+				_getLengthInMillis(value) {
 					return value * 1000;
 				},
 
-				_getTimestamp: function(value) {
+				_getTimestamp() {
 					var instance = this;
 
 					return (
@@ -255,7 +146,7 @@ AUI.add(
 					);
 				},
 
-				_getWarningTime: function() {
+				_getWarningTime() {
 					var instance = this;
 
 					return (
@@ -264,7 +155,7 @@ AUI.add(
 					);
 				},
 
-				_initEvents: function() {
+				_initEvents() {
 					var instance = this;
 
 					instance.publish('activated', {
@@ -305,7 +196,7 @@ AUI.add(
 					];
 				},
 
-				_onSessionStateChange: function(event) {
+				_onSessionStateChange(event) {
 					var instance = this;
 
 					var newVal = event.newVal;
@@ -318,7 +209,7 @@ AUI.add(
 					}
 				},
 
-				_setTimestamp: function(value) {
+				_setTimestamp(value) {
 					var instance = this;
 
 					value = String(value || Date.now());
@@ -334,13 +225,13 @@ AUI.add(
 					}
 				},
 
-				_setWarningLength: function(value) {
+				_setWarningLength(value) {
 					var instance = this;
 
 					return Math.min(instance.get('sessionLength'), value);
 				},
 
-				_startTimer: function() {
+				_startTimer() {
 					var instance = this;
 
 					var sessionLength = instance.get('sessionLength');
@@ -433,13 +324,93 @@ AUI.add(
 					}, interval);
 				},
 
-				_stopTimer: function() {
+				_stopTimer() {
 					var instance = this;
 
 					A.clearInterval(instance._intervalId);
 				},
 
-				_cookieKey: 'LFR_SESSION_STATE_' + themeDisplay.getUserId()
+				destructor() {
+					var instance = this;
+
+					new A.EventHandle(instance._eventHandlers).detach();
+
+					instance._stopTimer();
+				},
+
+				expire() {
+					var instance = this;
+
+					instance.set('sessionState', 'expired', SRC_EVENT_OBJ);
+				},
+
+				extend() {
+					var instance = this;
+
+					instance.set('sessionState', 'active', SRC_EVENT_OBJ);
+				},
+
+				initializer() {
+					var instance = this;
+
+					instance._cookieKey =
+						'LFR_SESSION_STATE_' + themeDisplay.getUserId();
+
+					instance._cookieOptions = {
+						path: '/',
+						secure: A.UA.secure
+					};
+
+					instance._registered = {};
+
+					instance.set('timestamp');
+
+					instance._initEvents();
+
+					instance._startTimer();
+				},
+
+				registerInterval(fn) {
+					var instance = this;
+
+					var fnId;
+					var registered = instance._registered;
+
+					if (Lang.isFunction(fn)) {
+						fnId = A.stamp(fn);
+
+						registered[fnId] = fn;
+					}
+
+					return fnId;
+				},
+
+				resetInterval() {
+					var instance = this;
+
+					instance._stopTimer();
+					instance._startTimer();
+				},
+
+				unregisterInterval(fnId) {
+					var instance = this;
+
+					var registered = instance._registered;
+
+					if (
+						Object.prototype.hasOwnProperty.call(registered, fnId)
+					) {
+						delete registered[fnId];
+					}
+
+					return fnId;
+				},
+
+				warn() {
+					var instance = this;
+
+					instance.set('sessionState', 'warned', SRC_EVENT_OBJ);
+				}
 			}
 		});
 
@@ -455,7 +426,239 @@ AUI.add(
 			NAME: 'liferaysessiondisplay',
 			NS: 'display',
 			prototype: {
-				initializer: function(config) {
+				_afterDefActivatedFn() {
+					var instance = this;
+
+					instance._uiSetActivated();
+				},
+
+				_afterDefExpiredFn() {
+					var instance = this;
+
+					instance._host.unregisterInterval(instance._intervalId);
+
+					instance._uiSetExpired();
+				},
+
+				_beforeHostWarned() {
+					var instance = this;
+
+					var host = instance._host;
+
+					var sessionLength = host.get('sessionLength');
+					var timestamp = host.get('timestamp');
+					var warningLength = host.get('warningLength');
+
+					var elapsed = sessionLength;
+
+					if (Lang.toInt(timestamp)) {
+						elapsed =
+							Math.floor((Date.now() - timestamp) / 1000) * 1000;
+					}
+
+					var remainingTime = sessionLength - elapsed;
+
+					if (remainingTime > warningLength) {
+						remainingTime = warningLength;
+					}
+
+					var banner = instance._getBanner();
+
+					var counterTextNode = banner.one('.countdown-timer');
+
+					instance._uiSetRemainingTime(
+						remainingTime,
+						counterTextNode
+					);
+
+					banner.show();
+
+					instance._intervalId = host.registerInterval(function(
+						elapsed,
+						interval,
+						hasWarned,
+						hasExpired,
+						warningMoment
+					) {
+						if (!hasWarned) {
+							instance._uiSetActivated();
+						} else if (!hasExpired) {
+							if (warningMoment) {
+								if (remainingTime <= 0) {
+									remainingTime = warningLength;
+								}
+
+								banner.show();
+							}
+
+							elapsed =
+								Math.floor((Date.now() - timestamp) / 1000) *
+								1000;
+
+							remainingTime = sessionLength - elapsed;
+
+							instance._uiSetRemainingTime(
+								remainingTime,
+								counterTextNode
+							);
+						}
+
+						remainingTime -= interval;
+					});
+				},
+
+				_destroyBanner() {
+					var instance = this;
+
+					instance._banner = false;
+
+					var notificationContainer = A.one(
+						'.lfr-notification-container'
+					);
+
+					if (notificationContainer) {
+						notificationContainer.remove();
+					}
+				},
+
+				_formatNumber(value) {
+					return Lang.String.padNumber(Math.floor(value), 2);
+				},
+
+				_formatTime(time) {
+					var instance = this;
+
+					time = Number(time);
+
+					if (Lang.isNumber(time) && time > 0) {
+						time /= 1000;
+
+						BUFFER_TIME[0] = instance._formatNumber(time / 3600);
+
+						time %= 3600;
+
+						BUFFER_TIME[1] = instance._formatNumber(time / 60);
+
+						time %= 60;
+
+						BUFFER_TIME[2] = instance._formatNumber(time);
+
+						time = BUFFER_TIME.join(':');
+					} else {
+						time = 0;
+					}
+
+					return time;
+				},
+
+				_getBanner() {
+					var instance = this;
+
+					var banner = instance._banner;
+
+					if (!banner) {
+						banner = new Liferay.Notification({
+							closeable: true,
+							delay: {
+								hide: 0,
+								show: 0
+							},
+							duration: 500,
+							message: instance._warningText,
+							on: {
+								click(event) {
+									if (
+										event.domEvent.target.test(
+											'.alert-link'
+										)
+									) {
+										event.domEvent.preventDefault();
+										instance._host.extend();
+									} else if (
+										event.domEvent.target.test('.close')
+									) {
+										instance._destroyBanner();
+										instance._alertClosed = true;
+									}
+								}
+							},
+							title: Liferay.Language.get('warning'),
+							type: 'warning'
+						}).render('body');
+
+						instance._banner = banner;
+					}
+
+					return banner;
+				},
+
+				_onHostSessionStateChange(event) {
+					var instance = this;
+
+					if (event.newVal == 'warned') {
+						instance._beforeHostWarned(event);
+					}
+				},
+
+				_uiSetActivated() {
+					var instance = this;
+
+					DOC.title = instance.reset('pageTitle').get('pageTitle');
+
+					instance._host.unregisterInterval(instance._intervalId);
+
+					var banner = instance._getBanner();
+
+					if (banner) {
+						instance._destroyBanner();
+					}
+				},
+
+				_uiSetExpired() {
+					var instance = this;
+
+					var banner = instance._getBanner();
+
+					banner.setAttrs({
+						message: instance._expiredText,
+						title: Liferay.Language.get('danger'),
+						type: 'danger'
+					});
+
+					DOC.title = instance.get('pageTitle');
+				},
+
+				_uiSetRemainingTime(remainingTime) {
+					var instance = this;
+
+					remainingTime = instance._formatTime(remainingTime);
+
+					if (!instance._alertClosed) {
+						var banner = instance._getBanner();
+
+						banner.set(
+							'message',
+							Lang.sub(instance._warningText, [remainingTime])
+						);
+					}
+
+					DOC.title =
+						Lang.sub(Liferay.Language.get('session-expires-in-x'), [
+							remainingTime
+						]) +
+						' | ' +
+						instance.get('pageTitle');
+				},
+
+				destructor() {
+					var instance = this;
+
+					if (instance._banner) {
+						instance._destroyBanner();
+					}
+				},
+
+				initializer() {
 					var instance = this;
 
 					var host = instance.get('host');
@@ -503,241 +706,6 @@ AUI.add(
 					} else {
 						host.unplug(instance);
 					}
-				},
-
-				destructor: function() {
-					var instance = this;
-
-					if (instance._banner) {
-						instance._destroyBanner();
-					}
-				},
-
-				_afterDefActivatedFn: function(event) {
-					var instance = this;
-
-					instance._uiSetActivated();
-				},
-
-				_afterDefExpiredFn: function(event) {
-					var instance = this;
-
-					instance._host.unregisterInterval(instance._intervalId);
-
-					instance._uiSetExpired();
-				},
-
-				_beforeHostWarned: function(event) {
-					var instance = this;
-
-					var host = instance._host;
-
-					var sessionLength = host.get('sessionLength');
-					var timestamp = host.get('timestamp');
-					var warningLength = host.get('warningLength');
-
-					var elapsed = sessionLength;
-
-					if (Lang.toInt(timestamp)) {
-						elapsed =
-							Math.floor((Date.now() - timestamp) / 1000) * 1000;
-					}
-
-					var remainingTime = sessionLength - elapsed;
-
-					if (remainingTime > warningLength) {
-						remainingTime = warningLength;
-					}
-
-					var banner = instance._getBanner();
-
-					var counterTextNode = banner.one('.countdown-timer');
-
-					instance._uiSetRemainingTime(
-						remainingTime,
-						counterTextNode
-					);
-
-					banner.show();
-
-					instance._intervalId = host.registerInterval(function(
-						elapsed,
-						interval,
-						hasWarned,
-						hasExpired,
-						warningMoment,
-						expirationMoment
-					) {
-						if (!hasWarned) {
-							instance._uiSetActivated();
-						} else if (!hasExpired) {
-							if (warningMoment) {
-								if (remainingTime <= 0) {
-									remainingTime = warningLength;
-								}
-
-								banner.show();
-							}
-
-							elapsed =
-								Math.floor((Date.now() - timestamp) / 1000) *
-								1000;
-
-							remainingTime = sessionLength - elapsed;
-
-							instance._uiSetRemainingTime(
-								remainingTime,
-								counterTextNode
-							);
-						}
-
-						remainingTime -= interval;
-					});
-				},
-
-				_destroyBanner: function() {
-					var instance = this;
-
-					instance._banner = false;
-
-					var notificationContainer = A.one(
-						'.lfr-notification-container'
-					);
-
-					if (notificationContainer) {
-						notificationContainer.remove();
-					}
-				},
-
-				_formatNumber: function(value) {
-					var instance = this;
-
-					return Lang.String.padNumber(Math.floor(value), 2);
-				},
-
-				_formatTime: function(time) {
-					var instance = this;
-
-					time = Number(time);
-
-					if (Lang.isNumber(time) && time > 0) {
-						time /= 1000;
-
-						BUFFER_TIME[0] = instance._formatNumber(time / 3600);
-
-						time %= 3600;
-
-						BUFFER_TIME[1] = instance._formatNumber(time / 60);
-
-						time %= 60;
-
-						BUFFER_TIME[2] = instance._formatNumber(time);
-
-						time = BUFFER_TIME.join(':');
-					} else {
-						time = 0;
-					}
-
-					return time;
-				},
-
-				_getBanner: function() {
-					var instance = this;
-
-					var banner = instance._banner;
-
-					if (!banner) {
-						banner = new Liferay.Notification({
-							closeable: true,
-							delay: {
-								hide: 0,
-								show: 0
-							},
-							duration: 500,
-							message: instance._warningText,
-							on: {
-								click: function(event) {
-									if (
-										event.domEvent.target.test(
-											'.alert-link'
-										)
-									) {
-										event.domEvent.preventDefault();
-										instance._host.extend();
-									} else if (
-										event.domEvent.target.test('.close')
-									) {
-										instance._destroyBanner();
-										instance._alertClosed = true;
-									}
-								}
-							},
-							title: Liferay.Language.get('warning'),
-							type: 'warning'
-						}).render('body');
-
-						instance._banner = banner;
-					}
-
-					return banner;
-				},
-
-				_onHostSessionStateChange: function(event) {
-					var instance = this;
-
-					if (event.newVal == 'warned') {
-						instance._beforeHostWarned(event);
-					}
-				},
-
-				_uiSetActivated: function() {
-					var instance = this;
-
-					DOC.title = instance.reset('pageTitle').get('pageTitle');
-
-					instance._host.unregisterInterval(instance._intervalId);
-
-					var banner = instance._getBanner();
-
-					if (banner) {
-						instance._destroyBanner();
-					}
-				},
-
-				_uiSetExpired: function() {
-					var instance = this;
-
-					var banner = instance._getBanner();
-
-					banner.setAttrs({
-						message: instance._expiredText,
-						title: Liferay.Language.get('danger'),
-						type: 'danger'
-					});
-
-					DOC.title = instance.get('pageTitle');
-				},
-
-				_uiSetRemainingTime: function(remainingTime) {
-					var instance = this;
-
-					remainingTime = instance._formatTime(remainingTime);
-
-					if (!instance._alertClosed) {
-						var banner = instance._getBanner();
-
-						banner.set(
-							'message',
-							Lang.sub(instance._warningText, [remainingTime])
-						);
-					}
-
-					DOC.title =
-						Lang.sub(Liferay.Language.get('session-expires-in-x'), [
-							remainingTime
-						]) +
-						' | ' +
-						instance.get('pageTitle');
 				}
 			}
 		});
@@ -747,11 +715,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: [
-			'aui-io-request',
-			'aui-timer',
-			'cookie',
-			'liferay-notification'
-		]
+		requires: ['aui-timer', 'cookie', 'liferay-notification']
 	}
 );

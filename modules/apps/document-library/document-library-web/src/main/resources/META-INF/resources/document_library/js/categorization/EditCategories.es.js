@@ -12,15 +12,15 @@
  * details.
  */
 
-/* eslint no-unused-vars: "warn" */
-
+import 'asset-taglib/asset_categories_selector/AssetCategoriesSelector.es';
 import 'clay-multi-select';
 import 'clay-radio';
+import 'frontend-js-web/liferay/compat/modal/Modal.es';
+import {fetch} from 'frontend-js-web';
 import Component from 'metal-component';
-import {Config} from 'metal-state';
 import Soy from 'metal-soy';
-import {Modal} from 'frontend-js-web';
-import 'asset-taglib/asset_categories_selector/AssetCategoriesSelector.es';
+import {Config} from 'metal-state';
+
 import templates from './EditCategories.soy';
 
 /**
@@ -129,22 +129,17 @@ class EditCategories extends Component {
 	 * @param {Function} callback Callback function
 	 */
 	_fetchCategoriesRequest(url, method, bodyData) {
-		const body = JSON.stringify(bodyData);
-
-		const headers = new Headers();
-		headers.append('Content-Type', 'application/json');
-		headers.append('X-CSRF-Token', Liferay.authToken);
-
-		const request = {
-			body,
-			credentials: 'include',
-			headers,
+		const init = {
+			body: JSON.stringify(bodyData),
+			headers: {
+				'content-type': 'application/json'
+			},
 			method
 		};
 
-		return fetch(this.pathModule + url, request)
+		return fetch(this.pathModule + url, init)
 			.then(response => response.json())
-			.catch(xhr => {
+			.catch(() => {
 				this.close();
 			});
 	}
@@ -168,7 +163,7 @@ class EditCategories extends Component {
 			if (responseCategories && responseSelection) {
 				this.loading = false;
 				this.description = this._getDescription(responseSelection.size);
-				this.multiple = this.fileEntries.length > 1 || this.selectAll;
+				this.multiple = this.selectAll || this.fileEntries.length > 1;
 				this.vocabularies = this._parseVocabularies(
 					responseCategories.items || []
 				);
@@ -305,7 +300,7 @@ class EditCategories extends Component {
 					taxonomyCategoryIdsToAdd: addedCategories,
 					taxonomyCategoryIdsToRemove: removedCategories
 				}
-			).then(response => {
+			).then(() => {
 				instance.close();
 
 				if (instance._bulkStatusComponent) {

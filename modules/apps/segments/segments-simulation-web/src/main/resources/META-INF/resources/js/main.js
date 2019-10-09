@@ -39,19 +39,7 @@ AUI.add(
 			NAME: 'segmentsSimulation',
 
 			prototype: {
-				initializer: function() {
-					var instance = this;
-
-					instance._bindUI();
-				},
-
-				destructor: function() {
-					var instance = this;
-
-					new A.EventHandle(instance._eventHandles).detach();
-				},
-
-				_bindUI: function() {
+				_bindUI() {
 					var instance = this;
 
 					instance._eventHandles = [];
@@ -80,49 +68,56 @@ AUI.add(
 					);
 				},
 
-				_deactivateSimulation: function() {
+				_deactivateSimulation() {
 					var instance = this;
 
 					var form = instance.get('form');
 
-					A.io.request(instance.get('deactivateSimulationUrl'), {
-						form: form,
-						method: 'post',
-						after: {
-							success: function(event, id, obj) {
-								A.all('#' + form.id + ' input').set(
-									'checked',
-									false
-								);
+					Liferay.Util.fetch(
+						instance.get('deactivateSimulationUrl'),
+						{
+							body: new FormData(form),
+							method: 'POST'
+						}
+					).then(() => {
+						A.all('#' + form.id + ' input').set('checked', false);
+					});
+				},
+
+				_simulateSegmentsEntries() {
+					var instance = this;
+
+					Liferay.Util.fetch(
+						instance.get('simulateSegmentsEntriesUrl'),
+						{
+							body: new FormData(instance.get('form')),
+							method: 'POST'
+						}
+					).then(() => {
+						const iframe = A.one('#simulationDeviceIframe');
+
+						if (iframe) {
+							const iframeWindow = A.Node.getDOMNode(
+								iframe.get('contentWindow')
+							);
+
+							if (iframeWindow) {
+								iframeWindow.location.reload();
 							}
 						}
 					});
 				},
 
-				_simulateSegmentsEntries: function() {
+				destructor() {
 					var instance = this;
 
-					A.io.request(instance.get('simulateSegmentsEntriesUrl'), {
-						form: {
-							id: instance.get('form')
-						},
-						method: 'POST',
-						after: {
-							success: function(event, id, obj) {
-								var iframe = A.one('#simulationDeviceIframe');
+					new A.EventHandle(instance._eventHandles).detach();
+				},
 
-								if (iframe) {
-									var iframeWindow = A.Node.getDOMNode(
-										iframe.get('contentWindow')
-									);
+				initializer() {
+					var instance = this;
 
-									if (iframeWindow) {
-										iframeWindow.location.reload();
-									}
-								}
-							}
-						}
-					});
+					instance._bindUI();
 				}
 			}
 		});
@@ -131,6 +126,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-base', 'aui-io-request', 'liferay-portlet-base']
+		requires: ['aui-base', 'liferay-portlet-base']
 	}
 );

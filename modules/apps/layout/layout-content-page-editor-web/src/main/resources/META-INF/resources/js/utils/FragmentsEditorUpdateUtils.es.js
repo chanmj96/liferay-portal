@@ -113,19 +113,28 @@ function addRow(
  * @review
  */
 function deleteIn(object, keyPath) {
-	const lastKey = keyPath.slice(-1);
+	const [lastKey] = keyPath.slice(-1);
 	const newKeyPath = keyPath.slice(0, keyPath.length - 1);
 
-	return updateIn(object, newKeyPath, lastItem => {
-		const newLastItem =
-			lastItem instanceof Array
-				? [...lastItem]
-				: Object.assign({}, lastItem);
+	let newObject =
+		object instanceof Array ? [...object] : Object.assign({}, object);
 
-		delete newLastItem[lastKey];
+	if (keyPath.length === 1) {
+		delete newObject[lastKey];
+	} else {
+		newObject = updateIn(object, newKeyPath, lastItem => {
+			const newLastItem =
+				lastItem instanceof Array
+					? [...lastItem]
+					: Object.assign({}, lastItem);
 
-		return newLastItem;
-	});
+			delete newLastItem[lastKey];
+
+			return newLastItem;
+		});
+	}
+
+	return newObject;
 }
 
 /**
@@ -196,14 +205,10 @@ function remove(array, position) {
  * @param {!Object} removeItemPayload Data that is passed to the reducer
  * @review
  */
-function removeItem(store, removeItemAction, removeItemPayload) {
+function removeItem(store, removeAction) {
 	store
 		.dispatch(enableSavingChangesStatusAction())
-		.dispatch(
-			Object.assign({}, removeItemPayload, {
-				type: removeItemAction
-			})
-		)
+		.dispatch(removeAction)
 		.dispatch(updateLastSaveDateAction())
 		.dispatch(disableSavingChangesStatusAction());
 }
@@ -301,23 +306,34 @@ function updateIn(object, keyPath, updater, defaultValue) {
 }
 
 /**
- * Updates row
- * @param {!Object} store Store instance that dispatches the actions
- * @param {string} updateAction Update action name
- * @param {object} payload Row payload
- * @private
+ * Sets used widgets based on the portletIds array
+ * @param {!Array} widgets
+ * @param {{!Array} portletIds
+ * @return {Array}
  * @review
  */
-function updateRow(store, updateAction, payload) {
-	store
-		.dispatch(enableSavingChangesStatusAction())
-		.dispatch(
-			Object.assign({}, payload, {
-				type: updateAction
-			})
-		)
-		.dispatch(updateLastSaveDateAction())
-		.dispatch(disableSavingChangesStatusAction());
+function updateUsedWidgets(widgets, portletIds) {
+	const filteredWidgets = [...widgets];
+
+	filteredWidgets.forEach(widgetCategory => {
+		const {categories = [], portlets = []} = widgetCategory;
+
+		widgetCategory.categories = updateUsedWidgets(categories, portletIds);
+		widgetCategory.portlets = portlets.map(portlet => {
+			if (
+				portletIds.indexOf(portlet.portletId) !== -1 &&
+				!portlet.instanceable
+			) {
+				portlet.used = true;
+			} else {
+				portlet.used = false;
+			}
+
+			return portlet;
+		});
+	});
+
+	return filteredWidgets;
 }
 
 /**
@@ -325,24 +341,30 @@ function updateRow(store, updateAction, payload) {
  * @param {Object[]} state.fragmentEntryLinks
  * @param {Object[]} state.widgets
  * @param {string} fragmentEntryLinkId
- * @return {Object} Next state
+ * @return {Object}
  */
-function updateWidgets(state, fragmentEntryLinkId) {
-	const fragmentEntryLink = state.fragmentEntryLinks[fragmentEntryLinkId];
+function updateWidgets(state, fragmentEntryLinkIds = []) {
 	let nextState = state;
 
-	if (fragmentEntryLink.portletId) {
-		const widget = getWidget(state.widgets, fragmentEntryLink.portletId);
+	fragmentEntryLinkIds.forEach(fragmentEntryLinkId => {
+		const fragmentEntryLink = state.fragmentEntryLinks[fragmentEntryLinkId];
 
-		if (!widget.instanceable && widget.used) {
-			const widgetPath = getWidgetPath(
+		if (fragmentEntryLink.portletId) {
+			const widget = getWidget(
 				state.widgets,
 				fragmentEntryLink.portletId
 			);
 
-			nextState = setIn(state, [...widgetPath, 'used'], false);
+			if (!widget.instanceable && widget.used) {
+				const widgetPath = getWidgetPath(
+					state.widgets,
+					fragmentEntryLink.portletId
+				);
+
+				nextState = setIn(state, [...widgetPath, 'used'], false);
+			}
 		}
-	}
+	});
 
 	return nextState;
 }
@@ -358,6 +380,6 @@ export {
 	setDraggingItemPosition,
 	setIn,
 	updateIn,
-	updateRow,
+	updateUsedWidgets,
 	updateWidgets
 };

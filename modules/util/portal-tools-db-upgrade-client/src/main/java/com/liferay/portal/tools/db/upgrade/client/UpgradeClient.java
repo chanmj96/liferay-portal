@@ -90,14 +90,20 @@ public class UpgradeClient {
 						"y,suspend=y");
 			}
 
+			File logDir = new File(_jarDir, "logs");
+
+			if ((logDir != null) && !logDir.exists()) {
+				logDir.mkdirs();
+			}
+
 			File logFile = null;
 
 			if (commandLine.hasOption("log-file")) {
 				logFile = new File(
-					_jarDir, commandLine.getOptionValue("log-file"));
+					logDir, commandLine.getOptionValue("log-file"));
 			}
 			else {
-				logFile = new File(_jarDir, "upgrade.log");
+				logFile = new File(logDir, "upgrade.log");
 			}
 
 			if (logFile.exists()) {
@@ -105,9 +111,9 @@ public class UpgradeClient {
 
 				logFile.renameTo(
 					new File(
-						_jarDir, logFileName + "." + logFile.lastModified()));
+						logDir, logFileName + "." + logFile.lastModified()));
 
-				logFile = new File(_jarDir, logFileName);
+				logFile = new File(logDir, logFileName);
 			}
 
 			boolean shell = false;
@@ -144,6 +150,8 @@ public class UpgradeClient {
 
 		_appServerProperties = _readProperties(_appServerPropertiesFile);
 
+		_fileOutputStream = new FileOutputStream(_logFile);
+
 		_portalUpgradeDatabasePropertiesFile = new File(
 			_jarDir, "portal-upgrade-database.properties");
 
@@ -160,8 +168,7 @@ public class UpgradeClient {
 	public void upgrade() throws IOException {
 		verifyProperties();
 
-		System.setOut(
-			new TeePrintStream(new FileOutputStream(_logFile), System.out));
+		System.setOut(new TeePrintStream(_fileOutputStream, System.out));
 
 		ProcessBuilder processBuilder = new ProcessBuilder();
 
@@ -233,7 +240,7 @@ public class UpgradeClient {
 
 				_printHelp();
 
-				_consoleReader.setPrompt("g! ");
+				_consoleReader.setPrompt(_GOGO_SHELL_PREFIX);
 
 				String line = _consoleReader.readLine();
 
@@ -394,11 +401,29 @@ public class UpgradeClient {
 			GogoShellClient gogoShellClient, String command)
 		throws IOException {
 
+		if (command.equals("")) {
+			return true;
+		}
+
+		String line = _GOGO_SHELL_PREFIX + command + System.lineSeparator();
+
+		_fileOutputStream.write(line.getBytes());
+
 		if (command.equals("exit") || command.equals("quit")) {
 			return false;
 		}
 
-		System.out.println(gogoShellClient.send(command));
+		String output = gogoShellClient.send(command);
+
+		int index = output.indexOf(System.lineSeparator());
+
+		if (index == -1) {
+			return true;
+		}
+
+		output = output.substring(index + 1);
+
+		System.out.println(output);
 
 		return true;
 	}
@@ -681,6 +706,8 @@ public class UpgradeClient {
 			"liferay.home", liferayHome.getCanonicalPath());
 	}
 
+	private static final String _GOGO_SHELL_PREFIX = "g! ";
+
 	private static final String _JAVA_HOME = System.getenv("JAVA_HOME");
 
 	private static final Map<String, AppServer> _appServers =
@@ -732,6 +759,7 @@ public class UpgradeClient {
 	private final Properties _appServerProperties;
 	private final File _appServerPropertiesFile;
 	private final ConsoleReader _consoleReader = new ConsoleReader();
+	private final FileOutputStream _fileOutputStream;
 	private final String _jvmOpts;
 	private final File _logFile;
 	private final Properties _portalUpgradeDatabaseProperties;

@@ -16,7 +16,7 @@ package com.liferay.talend.connection;
 
 import com.liferay.talend.LiferayBaseComponentDefinition;
 import com.liferay.talend.common.util.URIUtil;
-import com.liferay.talend.runtime.ValidatedSoSSandboxRuntime;
+import com.liferay.talend.source.LiferayOASSource;
 import com.liferay.talend.tliferayconnection.TLiferayConnectionDefinition;
 import com.liferay.talend.ui.UIKeys;
 
@@ -36,7 +36,6 @@ import org.talend.daikon.i18n.I18nMessages;
 import org.talend.daikon.properties.PresentationItem;
 import org.talend.daikon.properties.Properties;
 import org.talend.daikon.properties.ValidationResult;
-import org.talend.daikon.properties.ValidationResultMutable;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
 import org.talend.daikon.properties.property.Property;
@@ -52,6 +51,10 @@ public class LiferayConnectionProperties
 
 	public LiferayConnectionProperties(String name) {
 		super(name);
+
+		if (_logger.isTraceEnabled()) {
+			_logger.trace("Instantiated " + System.identityHashCode(this));
+		}
 	}
 
 	public void afterLoginType() {
@@ -80,6 +83,14 @@ public class LiferayConnectionProperties
 		return serverHref.concat(jaxRSAppBase);
 	}
 
+	public int getConnectTimeout() {
+		return _getValue(connectTimeout);
+	}
+
+	public int getItemsPerPage() {
+		return _getValue(itemsPerPage);
+	}
+
 	@Override
 	public LiferayConnectionProperties getLiferayConnectionProperties() {
 		return this;
@@ -95,6 +106,10 @@ public class LiferayConnectionProperties
 
 	public String getPassword() {
 		return _getValue(basicAuthorizationProperties.password);
+	}
+
+	public int getReadTimeout() {
+		return _getValue(readTimeout);
 	}
 
 	public String getReferencedComponentId() {
@@ -129,12 +144,31 @@ public class LiferayConnectionProperties
 		return _getValue(basicAuthorizationProperties.userId);
 	}
 
+	@Override
+	public Properties init() {
+		Properties properties = super.init();
+
+		if (_logger.isTraceEnabled()) {
+			_logger.trace("Initialized " + System.identityHashCode(this));
+		}
+
+		return properties;
+	}
+
 	public boolean isBasicAuthorization() {
 		if (loginType.getValue() == LoginType.BASIC) {
 			return true;
 		}
 
 		return false;
+	}
+
+	public boolean isFollowRedirects() {
+		return _getValue(followRedirects);
+	}
+
+	public boolean isForceHttps() {
+		return _getValue(forceHttps);
 	}
 
 	public boolean isOAuth2Authorization() {
@@ -196,6 +230,10 @@ public class LiferayConnectionProperties
 			basicAuthorizationPropertiesForm.setVisible(true);
 			oAuthAuthorizationPropertiesForm.setVisible(false);
 		}
+
+		if (_logger.isTraceEnabled()) {
+			_logger.trace("Refreshed " + System.identityHashCode(this));
+		}
 	}
 
 	@Override
@@ -239,6 +277,10 @@ public class LiferayConnectionProperties
 			_createAdvancedForm(
 				this, connectTimeout, readTimeout, itemsPerPage,
 				followRedirects, forceHttps));
+
+		if (_logger.isTraceEnabled()) {
+			_logger.trace("Layout set " + System.identityHashCode(this));
+		}
 	}
 
 	@Override
@@ -249,27 +291,29 @@ public class LiferayConnectionProperties
 		followRedirects.setValue(true);
 		forceHttps.setValue(false);
 		loginType.setValue(LoginType.BASIC);
+
+		if (_logger.isTraceEnabled()) {
+			_logger.trace("Properties set " + System.identityHashCode(this));
+		}
 	}
 
 	public ValidationResult validateTestConnection() {
-		ValidatedSoSSandboxRuntime sandboxRuntime =
-			LiferayBaseComponentDefinition.initializeSandboxedRuntime(
+		LiferayOASSource liferayOASSource =
+			LiferayBaseComponentDefinition.getLiferayOASSource(
 				getReferencedConnectionProperties());
-
-		ValidationResultMutable validationResultMutable =
-			sandboxRuntime.getValidationResultMutable();
 
 		Form form = getForm(UIKeys.FORM_WIZARD);
 
-		if (validationResultMutable.getStatus() == ValidationResult.Result.OK) {
-			form.setAllowFinish(true);
-			form.setAllowForward(true);
-		}
-		else {
+		if (!liferayOASSource.isValid()) {
 			form.setAllowForward(false);
+
+			return liferayOASSource.getValidationResult();
 		}
 
-		return validationResultMutable;
+		form.setAllowFinish(true);
+		form.setAllowForward(true);
+
+		return liferayOASSource.getValidationResult();
 	}
 
 	public PresentationItem advanced = new PresentationItem("advanced");

@@ -20,11 +20,14 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.LabelItemList;
+import com.liferay.layout.admin.web.internal.security.permission.resource.LayoutPageTemplatePermission;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateActionKeys;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.permission.LayoutPrototypePermissionUtil;
 import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
@@ -130,13 +133,43 @@ public class LayoutPrototypeManagementToolbarDisplayContext
 				if (active != null) {
 					if (active) {
 						add(
-							labelItem -> labelItem.setLabel(
-								LanguageUtil.get(request, "active")));
+							labelItem -> {
+								PortletURL removeLabelURL =
+									PortletURLUtil.clone(
+										currentURLObj, liferayPortletResponse);
+
+								removeLabelURL.setParameter(
+									"navigation", (String)null);
+
+								labelItem.putData(
+									"removeLabelURL",
+									removeLabelURL.toString());
+
+								labelItem.setCloseable(true);
+
+								labelItem.setLabel(
+									LanguageUtil.get(request, "active"));
+							});
 					}
 					else {
 						add(
-							labelItem -> labelItem.setLabel(
-								LanguageUtil.get(request, "inactive")));
+							labelItem -> {
+								PortletURL removeLabelURL =
+									PortletURLUtil.clone(
+										currentURLObj, liferayPortletResponse);
+
+								removeLabelURL.setParameter(
+									"navigation", (String)null);
+
+								labelItem.putData(
+									"removeLabelURL",
+									removeLabelURL.toString());
+
+								labelItem.setCloseable(true);
+
+								labelItem.setLabel(
+									LanguageUtil.get(request, "inactive"));
+							});
 					}
 				}
 			}
@@ -155,7 +188,11 @@ public class LayoutPrototypeManagementToolbarDisplayContext
 
 		if (PortalPermissionUtil.contains(
 				themeDisplay.getPermissionChecker(),
-				ActionKeys.ADD_LAYOUT_PROTOTYPE)) {
+				ActionKeys.ADD_LAYOUT_PROTOTYPE) ||
+			LayoutPageTemplatePermission.contains(
+				themeDisplay.getPermissionChecker(),
+				themeDisplay.getScopeGroupId(),
+				LayoutPageTemplateActionKeys.ADD_LAYOUT_PAGE_TEMPLATE_ENTRY)) {
 
 			return true;
 		}

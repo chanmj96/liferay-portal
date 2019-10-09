@@ -25,6 +25,11 @@ import com.liferay.portal.vulcan.pagination.Pagination;
 
 import javax.annotation.Generated;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import javax.ws.rs.core.UriInfo;
+
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -38,6 +43,9 @@ import org.osgi.annotation.versioning.ProviderType;
 @Generated("")
 @ProviderType
 public interface DataDefinitionResource {
+
+	public String getDataDefinitionDataDefinitionFieldFieldType()
+		throws Exception;
 
 	public void deleteDataDefinition(Long dataDefinitionId) throws Exception;
 
@@ -75,6 +83,17 @@ public interface DataDefinitionResource {
 	}
 
 	public void setContextCompany(Company contextCompany);
+
+	public default void setContextHttpServletRequest(
+		HttpServletRequest contextHttpServletRequest) {
+	}
+
+	public default void setContextHttpServletResponse(
+		HttpServletResponse contextHttpServletResponse) {
+	}
+
+	public default void setContextUriInfo(UriInfo contextUriInfo) {
+	}
 
 	public void setContextUser(User contextUser);
 

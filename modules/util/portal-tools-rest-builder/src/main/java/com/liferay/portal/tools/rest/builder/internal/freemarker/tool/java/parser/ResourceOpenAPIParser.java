@@ -77,18 +77,16 @@ public class ResourceOpenAPIParser {
 				operation -> {
 					String returnType = _getReturnType(
 						javaDataTypeMap, operation);
-					List<String> tags = operation.getTags();
 
 					if (!_isSchemaMethod(
-							javaDataTypeMap, returnType, schemaName, tags)) {
+							javaDataTypeMap, returnType, schemaName,
+							operation.getTags())) {
 
 						return;
 					}
 
-					RequestBody requestBody = operation.getRequestBody();
-
 					_visitRequestBodyMediaTypes(
-						requestBody,
+						operation.getRequestBody(),
 						requestBodyMediaTypes -> {
 							List<JavaMethodParameter> javaMethodParameters =
 								_getJavaMethodParameters(
@@ -163,9 +161,10 @@ public class ResourceOpenAPIParser {
 
 		methodAnnotations.add("@Path(\"" + path + "\")");
 
-		String httpMethod = OpenAPIParserUtil.getHTTPMethod(operation);
+		String annotationString = StringUtil.toUpperCase(
+			OpenAPIParserUtil.getHTTPMethod(operation));
 
-		methodAnnotations.add("@" + StringUtil.toUpperCase(httpMethod));
+		methodAnnotations.add("@" + annotationString);
 
 		String methodAnnotation = _getMethodAnnotationConsumes(
 			javaMethodSignature.getRequestBodyMediaTypes());
@@ -284,8 +283,6 @@ public class ResourceOpenAPIParser {
 		}
 
 		List<JavaMethodParameter> javaMethodParameters = new ArrayList<>();
-		Map<String, JavaMethodParameter> sortedJavaMethodParameters =
-			new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 		List<Parameter> parameters = operation.getParameters();
 
@@ -313,21 +310,12 @@ public class ResourceOpenAPIParser {
 				continue;
 			}
 
-			JavaMethodParameter javaMethodParameter = new JavaMethodParameter(
-				CamelCaseUtil.toCamelCase(parameterName),
-				OpenAPIParserUtil.getJavaDataType(
-					javaDataTypeMap, parameter.getSchema()));
-
-			if (Objects.equals(parameter.getIn(), "path")) {
-				javaMethodParameters.add(javaMethodParameter);
-			}
-			else {
-				sortedJavaMethodParameters.put(
-					parameterName, javaMethodParameter);
-			}
+			javaMethodParameters.add(
+				new JavaMethodParameter(
+					CamelCaseUtil.toCamelCase(parameterName),
+					OpenAPIParserUtil.getJavaDataType(
+						javaDataTypeMap, parameter.getSchema())));
 		}
-
-		javaMethodParameters.addAll(sortedJavaMethodParameters.values());
 
 		if (parameterNames.contains("filter")) {
 			JavaMethodParameter javaMethodParameter = new JavaMethodParameter(
@@ -478,9 +466,7 @@ public class ResourceOpenAPIParser {
 
 		List<String> methodNameSegments = new ArrayList<>();
 
-		String httpMethod = OpenAPIParserUtil.getHTTPMethod(operation);
-
-		methodNameSegments.add(httpMethod);
+		methodNameSegments.add(OpenAPIParserUtil.getHTTPMethod(operation));
 
 		String[] pathSegments = path.split("/");
 		String pluralSchemaName = TextFormatter.formatPlural(schemaName);
@@ -505,19 +491,8 @@ public class ResourceOpenAPIParser {
 				pathName = StringUtil.upperCaseFirstLetter(pathName);
 			}
 
-			if (pathSegment.contains("{")) {
-				String previousMethodNameSegment = methodNameSegments.get(
-					methodNameSegments.size() - 1);
-
-				if (!previousMethodNameSegment.endsWith(pathName) &&
-					!previousMethodNameSegment.endsWith(schemaName)) {
-
-					methodNameSegments.add(pathName);
-				}
-			}
-			else if ((i == (pathSegments.length - 1)) &&
-					 StringUtil.startsWith(
-						 returnType, Page.class.getName() + "<")) {
+			if ((i == (pathSegments.length - 1)) &&
+				StringUtil.startsWith(returnType, Page.class.getName() + "<")) {
 
 				String previousMethodNameSegment = methodNameSegments.get(
 					methodNameSegments.size() - 1);
@@ -543,6 +518,16 @@ public class ResourceOpenAPIParser {
 				}
 
 				methodNameSegments.add(pathName + "Page");
+			}
+			else if (pathSegment.contains("{")) {
+				String previousMethodNameSegment = methodNameSegments.get(
+					methodNameSegments.size() - 1);
+
+				if (!previousMethodNameSegment.endsWith(pathName) &&
+					!previousMethodNameSegment.endsWith(schemaName)) {
+
+					methodNameSegments.add(pathName);
+				}
 			}
 			else if (Objects.equals(pathName, schemaName)) {
 				methodNameSegments.add(pathName);

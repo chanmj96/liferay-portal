@@ -500,13 +500,12 @@ public class PDFProcessorImpl
 			_generateImagesGS(fileVersion, file, false);
 
 			if (_log.isInfoEnabled()) {
-				int previewFileCount = getPreviewFileCount(fileVersion);
-
 				_log.info(
 					StringBundler.concat(
-						"Ghostscript generated ", previewFileCount,
-						" preview pages for ", fileVersion.getTitle(), " in ",
-						stopWatch.getTime(), " ms"));
+						"Ghostscript generated ",
+						getPreviewFileCount(fileVersion), " preview pages for ",
+						fileVersion.getTitle(), " in ", stopWatch.getTime(),
+						" ms"));
 			}
 		}
 
@@ -1070,11 +1069,9 @@ public class PDFProcessorImpl
 
 			Class<?> clazz = getClass();
 
-			ClassLoader classLoader = clazz.getClassLoader();
-
 			Log4JUtil.initLog4J(
-				_serverId, _liferayHome, classLoader, new Log4jLogFactoryImpl(),
-				_customLogSettings);
+				_serverId, _liferayHome, clazz.getClassLoader(),
+				new Log4jLogFactoryImpl(), _customLogSettings);
 
 			try {
 				LiferayPDFBoxConverter liferayConverter =

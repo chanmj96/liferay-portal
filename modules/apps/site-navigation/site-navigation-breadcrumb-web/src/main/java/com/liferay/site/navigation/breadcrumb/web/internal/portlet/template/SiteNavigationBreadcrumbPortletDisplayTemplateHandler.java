@@ -57,7 +57,7 @@ public class SiteNavigationBreadcrumbPortletDisplayTemplateHandler
 
 	@Override
 	public Map<String, Object> getCustomContextObjects() {
-		Map<String, Object> customContextObjects = new HashMap<>(1);
+		Map<String, Object> customContextObjects = new HashMap<>();
 
 		customContextObjects.put("breadcrumbUtil", BreadcrumbUtil.class);
 
@@ -92,10 +92,9 @@ public class SiteNavigationBreadcrumbPortletDisplayTemplateHandler
 		Map<String, TemplateVariableGroup> templateVariableGroups =
 			super.getTemplateVariableGroups(classPK, language, locale);
 
-		String[] restrictedVariables = getRestrictedVariables(language);
-
 		TemplateVariableGroup breadcrumbUtilTemplateVariableGroup =
-			new TemplateVariableGroup("breadcrumb-util", restrictedVariables);
+			new TemplateVariableGroup(
+				"breadcrumb-util", getRestrictedVariables(language));
 
 		breadcrumbUtilTemplateVariableGroup.addVariable(
 			"breadcrumb-util", BreadcrumbUtil.class, "breadcrumbUtil");

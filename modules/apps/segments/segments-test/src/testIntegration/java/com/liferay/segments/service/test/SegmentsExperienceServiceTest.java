@@ -15,6 +15,7 @@
 package com.liferay.segments.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -43,7 +44,6 @@ import com.liferay.portal.service.test.ServiceTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
 import com.liferay.segments.constants.SegmentsActionKeys;
 import com.liferay.segments.model.SegmentsEntry;
 import com.liferay.segments.model.SegmentsExperience;
@@ -168,8 +168,25 @@ public class SegmentsExperienceServiceTest {
 		}
 	}
 
+	@Test(expected = PrincipalException.MustHavePermission.class)
+	public void testDeleteSegmentsExperienceWithoutDeletePermission()
+		throws Exception {
+
+		SegmentsExperience segmentsExperience =
+			SegmentsTestUtil.addSegmentsExperience(
+				_classNameId, _classPK,
+				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
+
+		try (ContextUserReplace contextUserReplace = new ContextUserReplace(
+				_user, PermissionCheckerFactoryUtil.create(_user))) {
+
+			_segmentsExperienceService.deleteSegmentsExperience(
+				segmentsExperience.getSegmentsExperienceId());
+		}
+	}
+
 	@Test
-	public void testDeleteSegmentsExperienceWithDeletePermissionAndWithUpdateLayoutPermission()
+	public void testDeleteSegmentsExperienceWithoutDeletePermissionAndWithUpdateLayoutPermission()
 		throws Exception {
 
 		SegmentsExperience segmentsExperience =
@@ -181,23 +198,6 @@ public class SegmentsExperienceServiceTest {
 			_group.getCompanyId(), Layout.class.getName(),
 			ResourceConstants.SCOPE_GROUP, String.valueOf(_group.getGroupId()),
 			_role.getRoleId(), ActionKeys.UPDATE);
-
-		try (ContextUserReplace contextUserReplace = new ContextUserReplace(
-				_user, PermissionCheckerFactoryUtil.create(_user))) {
-
-			_segmentsExperienceService.deleteSegmentsExperience(
-				segmentsExperience.getSegmentsExperienceId());
-		}
-	}
-
-	@Test(expected = PrincipalException.MustHavePermission.class)
-	public void testDeleteSegmentsExperienceWithoutDeletePermission()
-		throws Exception {
-
-		SegmentsExperience segmentsExperience =
-			SegmentsTestUtil.addSegmentsExperience(
-				_classNameId, _classPK,
-				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		try (ContextUserReplace contextUserReplace = new ContextUserReplace(
 				_user, PermissionCheckerFactoryUtil.create(_user))) {

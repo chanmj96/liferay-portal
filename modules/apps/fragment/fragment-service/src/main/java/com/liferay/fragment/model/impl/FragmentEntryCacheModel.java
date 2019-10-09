@@ -18,6 +18,7 @@ import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,17 +27,14 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing FragmentEntry in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class FragmentEntryCacheModel
-	implements CacheModel<FragmentEntry>, Externalizable {
+	implements CacheModel<FragmentEntry>, Externalizable, MVCCModel {
 
 	@Override
 	public boolean equals(Object obj) {
@@ -51,7 +49,9 @@ public class FragmentEntryCacheModel
 		FragmentEntryCacheModel fragmentEntryCacheModel =
 			(FragmentEntryCacheModel)obj;
 
-		if (fragmentEntryId == fragmentEntryCacheModel.fragmentEntryId) {
+		if ((fragmentEntryId == fragmentEntryCacheModel.fragmentEntryId) &&
+			(mvccVersion == fragmentEntryCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -60,14 +60,28 @@ public class FragmentEntryCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, fragmentEntryId);
+		int hashCode = HashUtil.hash(0, fragmentEntryId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(45);
+		StringBundler sb = new StringBundler(47);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", fragmentEntryId=");
 		sb.append(fragmentEntryId);
@@ -119,6 +133,8 @@ public class FragmentEntryCacheModel
 	@Override
 	public FragmentEntry toEntityModel() {
 		FragmentEntryImpl fragmentEntryImpl = new FragmentEntryImpl();
+
+		fragmentEntryImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			fragmentEntryImpl.setUuid("");
@@ -231,6 +247,7 @@ public class FragmentEntryCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		fragmentEntryId = objectInput.readLong();
@@ -266,6 +283,8 @@ public class FragmentEntryCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -354,6 +373,7 @@ public class FragmentEntryCacheModel
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long fragmentEntryId;
 	public long groupId;

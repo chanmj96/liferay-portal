@@ -24,6 +24,7 @@ import com.liferay.dynamic.data.mapping.form.renderer.internal.util.DDMFormTempl
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldOptions;
 import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidation;
+import com.liferay.dynamic.data.mapping.model.DDMFormFieldValidationExpression;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.model.Value;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
@@ -149,8 +150,7 @@ public class DDMFormFieldTemplateContextFactory {
 
 		if (_ddmFormRenderingContext.isReturnFullContext()) {
 			setProperties(
-				ddmFormFieldTemplateContext, ddmFormField, ddmFormFieldValue,
-				index, ddmFormFieldParameterName);
+				ddmFormFieldTemplateContext, ddmFormField, ddmFormFieldValue);
 		}
 
 		setPropertiesChangeableByRule(
@@ -563,28 +563,63 @@ public class DDMFormFieldTemplateContextFactory {
 			return;
 		}
 
-		Map<String, String> validation = new HashMap<>();
+		LocalizedValue errorMessageLocalizedValue =
+			ddmFormFieldValidation.getErrorMessageLocalizedValue();
+
+		String errorMessage = StringPool.BLANK;
+
+		if (errorMessageLocalizedValue != null) {
+			errorMessage = GetterUtil.getString(
+				errorMessageLocalizedValue.getString(_locale));
+		}
+
+		LocalizedValue parameterLocalizedValue =
+			ddmFormFieldValidation.getParameterLocalizedValue();
+
+		String parameter = StringPool.BLANK;
+
+		if (parameterLocalizedValue != null) {
+			parameter = GetterUtil.getString(
+				parameterLocalizedValue.getString(_locale));
+		}
+
+		Map<String, Object> validation = new HashMap<>();
 
 		validation.put(
 			"dataType",
 			GetterUtil.getString(
 				changedProperties.get("validationDataType"),
 				MapUtil.getString(changedProperties, "dataType")));
-		validation.put(
-			"errorMessage",
-			GetterUtil.getString(ddmFormFieldValidation.getErrorMessage()));
+		validation.put("errorMessage", errorMessage);
+
+		DDMFormFieldValidationExpression ddmFormFieldValidationExpression =
+			ddmFormFieldValidation.getDDMFormFieldValidationExpression();
+
 		validation.put(
 			"expression",
-			GetterUtil.getString(ddmFormFieldValidation.getExpression()));
+			new HashMap() {
+				{
+					put(
+						"name",
+						GetterUtil.getString(
+							ddmFormFieldValidationExpression.getName()));
+					put(
+						"value",
+						GetterUtil.getString(
+							ddmFormFieldValidationExpression.getValue()));
+				}
+			});
+
 		validation.put(
 			"fieldName",
 			GetterUtil.getString(changedProperties.get("validationFieldName")));
+		validation.put("parameter", parameter);
 
 		ddmFormFieldTemplateContext.put("validation", validation);
 	}
 
 	protected void setDDMFormFieldTemplateContextValue(
-		DDMFormField ddmFormField, Map<String, Object> changedProperties,
+		Map<String, Object> changedProperties,
 		Map<String, Object> ddmFormFieldTemplateContext, Value value) {
 
 		if (changedProperties.get("value") != null) {
@@ -672,8 +707,7 @@ public class DDMFormFieldTemplateContextFactory {
 
 	protected void setProperties(
 		Map<String, Object> ddmFormFieldTemplateContext,
-		DDMFormField ddmFormField, DDMFormFieldValue ddmFormFieldValue,
-		int index, String ddmFormFieldParameterName) {
+		DDMFormField ddmFormField, DDMFormFieldValue ddmFormFieldValue) {
 
 		setDDMFormFieldTemplateContextDataType(
 			ddmFormFieldTemplateContext, ddmFormField.getDataType());
@@ -720,7 +754,7 @@ public class DDMFormFieldTemplateContextFactory {
 		setDDMFormFieldTemplateContextValid(
 			changedProperties, ddmFormFieldTemplateContext, true);
 		setDDMFormFieldTemplateContextValue(
-			ddmFormField, changedProperties, ddmFormFieldTemplateContext,
+			changedProperties, ddmFormFieldTemplateContext,
 			ddmFormFieldValue.getValue());
 		setDDMFormFieldTemplateContextValueLocalizableValue(
 			ddmFormFieldTemplateContext, ddmFormFieldValue);

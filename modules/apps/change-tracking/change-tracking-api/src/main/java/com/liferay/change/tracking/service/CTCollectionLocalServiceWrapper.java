@@ -16,8 +16,6 @@ package com.liferay.change.tracking.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link CTCollectionLocalService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see CTCollectionLocalService
  * @generated
  */
-@ProviderType
 public class CTCollectionLocalServiceWrapper
 	implements CTCollectionLocalService,
 			   ServiceWrapper<CTCollectionLocalService> {
@@ -51,12 +48,11 @@ public class CTCollectionLocalServiceWrapper
 
 	@Override
 	public com.liferay.change.tracking.model.CTCollection addCTCollection(
-			long userId, String name, String description,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+			long userId, String name, String description)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ctCollectionLocalService.addCTCollection(
-			userId, name, description, serviceContext);
+			userId, name, description);
 	}
 
 	/**
@@ -84,12 +80,10 @@ public class CTCollectionLocalServiceWrapper
 	 *
 	 * @param ctCollection the ct collection
 	 * @return the ct collection that was removed
-	 * @throws PortalException
 	 */
 	@Override
 	public com.liferay.change.tracking.model.CTCollection deleteCTCollection(
-			com.liferay.change.tracking.model.CTCollection ctCollection)
-		throws com.liferay.portal.kernel.exception.PortalException {
+		com.liferay.change.tracking.model.CTCollection ctCollection) {
 
 		return _ctCollectionLocalService.deleteCTCollection(ctCollection);
 	}
@@ -267,6 +261,18 @@ public class CTCollectionLocalServiceWrapper
 	@Override
 	public java.util.List<com.liferay.change.tracking.model.CTCollection>
 		getCTCollections(
+			long companyId, int status, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.change.tracking.model.CTCollection>
+					orderByComparator) {
+
+		return _ctCollectionLocalService.getCTCollections(
+			companyId, status, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<com.liferay.change.tracking.model.CTCollection>
+		getCTCollections(
 			long companyId,
 			com.liferay.portal.kernel.dao.orm.QueryDefinition
 				<com.liferay.change.tracking.model.CTCollection>
@@ -339,24 +345,22 @@ public class CTCollectionLocalServiceWrapper
 
 	@Override
 	public com.liferay.change.tracking.model.CTCollection updateCTCollection(
-			long userId, long ctCollectionId, String name, String description,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+			long userId, long ctCollectionId, String name, String description)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ctCollectionLocalService.updateCTCollection(
-			userId, ctCollectionId, name, description, serviceContext);
+			userId, ctCollectionId, name, description);
 	}
 
 	@Override
 	public com.liferay.change.tracking.model.CTCollection updateStatus(
 			long userId,
 			com.liferay.change.tracking.model.CTCollection ctCollection,
-			int status,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+			int status)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _ctCollectionLocalService.updateStatus(
-			userId, ctCollection, status, serviceContext);
+			userId, ctCollection, status);
 	}
 
 	@Override

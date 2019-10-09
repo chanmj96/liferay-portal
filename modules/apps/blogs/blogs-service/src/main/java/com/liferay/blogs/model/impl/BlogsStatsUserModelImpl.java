@@ -44,8 +44,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the BlogsStatsUser service. Represents a row in the &quot;BlogsStatsUser&quot; database table, with each column mapped to a property of this class.
  *
@@ -57,11 +55,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see BlogsStatsUserImpl
  * @generated
  */
-@ProviderType
 public class BlogsStatsUserModelImpl
 	extends BaseModelImpl<BlogsStatsUser> implements BlogsStatsUserModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a blogs stats user model instance should use the <code>BlogsStatsUser</code> interface instead.
@@ -69,9 +66,10 @@ public class BlogsStatsUserModelImpl
 	public static final String TABLE_NAME = "BlogsStatsUser";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"statsUserId", Types.BIGINT}, {"groupId", Types.BIGINT},
-		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
-		{"entryCount", Types.INTEGER}, {"lastPostDate", Types.TIMESTAMP},
+		{"mvccVersion", Types.BIGINT}, {"statsUserId", Types.BIGINT},
+		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
+		{"userId", Types.BIGINT}, {"entryCount", Types.INTEGER},
+		{"lastPostDate", Types.TIMESTAMP},
 		{"ratingsTotalEntries", Types.INTEGER},
 		{"ratingsTotalScore", Types.DOUBLE},
 		{"ratingsAverageScore", Types.DOUBLE}
@@ -81,6 +79,7 @@ public class BlogsStatsUserModelImpl
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("statsUserId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("companyId", Types.BIGINT);
@@ -93,7 +92,7 @@ public class BlogsStatsUserModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table BlogsStatsUser (statsUserId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,entryCount INTEGER,lastPostDate DATE null,ratingsTotalEntries INTEGER,ratingsTotalScore DOUBLE,ratingsAverageScore DOUBLE)";
+		"create table BlogsStatsUser (mvccVersion LONG default 0 not null,statsUserId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,entryCount INTEGER,lastPostDate DATE null,ratingsTotalEntries INTEGER,ratingsTotalScore DOUBLE,ratingsAverageScore DOUBLE)";
 
 	public static final String TABLE_SQL_DROP = "drop table BlogsStatsUser";
 
@@ -253,6 +252,11 @@ public class BlogsStatsUserModelImpl
 			new LinkedHashMap<String, BiConsumer<BlogsStatsUser, ?>>();
 
 		attributeGetterFunctions.put(
+			"mvccVersion", BlogsStatsUser::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<BlogsStatsUser, Long>)BlogsStatsUser::setMvccVersion);
+		attributeGetterFunctions.put(
 			"statsUserId", BlogsStatsUser::getStatsUserId);
 		attributeSetterBiConsumers.put(
 			"statsUserId",
@@ -302,6 +306,16 @@ public class BlogsStatsUserModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@Override
@@ -520,6 +534,7 @@ public class BlogsStatsUserModelImpl
 	public Object clone() {
 		BlogsStatsUserImpl blogsStatsUserImpl = new BlogsStatsUserImpl();
 
+		blogsStatsUserImpl.setMvccVersion(getMvccVersion());
 		blogsStatsUserImpl.setStatsUserId(getStatsUserId());
 		blogsStatsUserImpl.setGroupId(getGroupId());
 		blogsStatsUserImpl.setCompanyId(getCompanyId());
@@ -630,6 +645,8 @@ public class BlogsStatsUserModelImpl
 		BlogsStatsUserCacheModel blogsStatsUserCacheModel =
 			new BlogsStatsUserCacheModel();
 
+		blogsStatsUserCacheModel.mvccVersion = getMvccVersion();
+
 		blogsStatsUserCacheModel.statsUserId = getStatsUserId();
 
 		blogsStatsUserCacheModel.groupId = getGroupId();
@@ -731,6 +748,7 @@ public class BlogsStatsUserModelImpl
 	private static boolean _entityCacheEnabled;
 	private static boolean _finderCacheEnabled;
 
+	private long _mvccVersion;
 	private long _statsUserId;
 	private long _groupId;
 	private long _originalGroupId;

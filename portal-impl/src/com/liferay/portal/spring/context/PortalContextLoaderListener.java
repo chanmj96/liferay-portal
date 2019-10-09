@@ -67,6 +67,10 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Field;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.FutureTask;
@@ -218,6 +222,17 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		PropsValues.LIFERAY_WEB_PORTAL_CONTEXT_TEMPDIR =
 			tempDir.getAbsolutePath();
 
+		Path tempDirPath = Paths.get(System.getProperty("java.io.tmpdir"));
+
+		if (!Files.exists(tempDirPath)) {
+			try {
+				Files.createDirectories(tempDirPath);
+			}
+			catch (IOException ioe) {
+				_log.error("Unable to create " + tempDirPath, ioe);
+			}
+		}
+
 		try {
 			ModuleFrameworkUtilAdapter.initFramework();
 
@@ -322,10 +337,8 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			classLoader = classLoader.getParent();
 		}
 
-		AutowireCapableBeanFactory autowireCapableBeanFactory =
-			applicationContext.getAutowireCapableBeanFactory();
-
-		clearFilteredPropertyDescriptorsCache(autowireCapableBeanFactory);
+		clearFilteredPropertyDescriptorsCache(
+			applicationContext.getAutowireCapableBeanFactory());
 
 		DynamicProxyCreator dynamicProxyCreator =
 			DynamicProxyCreator.getDynamicProxyCreator();

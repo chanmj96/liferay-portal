@@ -54,7 +54,7 @@ public class UserBagFactoryImpl implements UserBagFactory {
 
 			Collection<Organization> userOrgs = getUserOrgs(userId);
 
-			Set<Long> userOrgGroupIds = new HashSet<>(userOrgs.size());
+			Set<Long> userOrgGroupIds = new HashSet<>();
 
 			for (Organization organization : userOrgs) {
 				userOrgGroupIds.add(organization.getGroupId());
@@ -81,6 +81,10 @@ public class UserBagFactoryImpl implements UserBagFactory {
 
 			if (userOrgs.isEmpty() && userUserGroups.isEmpty()) {
 				userGroupIds = UserLocalServiceUtil.getGroupPrimaryKeys(userId);
+
+				for (long userGroupId : userGroupIds) {
+					allGroupIds.add(userGroupId);
+				}
 			}
 			else {
 				List<Group> userGroups = GroupLocalServiceUtil.getUserGroups(

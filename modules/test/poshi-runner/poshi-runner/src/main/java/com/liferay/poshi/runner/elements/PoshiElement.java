@@ -98,9 +98,7 @@ public abstract class PoshiElement
 		int poshiScriptLineNumber = PoshiNode.super.getPoshiScriptLineNumber();
 
 		if (!includeAnnotation) {
-			String poshiScript = getPoshiScript();
-
-			String blockName = getBlockName(poshiScript);
+			String blockName = getBlockName(getPoshiScript());
 
 			poshiScriptLineNumber += StringUtil.count(blockName, "\n");
 		}
@@ -112,6 +110,33 @@ public abstract class PoshiElement
 		Matcher matcher = _poshiScriptCommentPattern.matcher(poshiScript);
 
 		return matcher.find();
+	}
+
+	public boolean isValidPoshiScript() throws PoshiScriptParserException {
+		for (PoshiElementAttribute poshiElementAttribute :
+				toPoshiElementAttributes(attributeList())) {
+
+			poshiElementAttribute.validatePoshiScript();
+		}
+
+		String originalPoshiScript = getPoshiScript();
+		String generatedPoshiScript = toPoshiScript();
+
+		originalPoshiScript = originalPoshiScript.replaceAll("\\s+", "");
+
+		generatedPoshiScript = generatedPoshiScript.replaceAll("\\s+", "");
+
+		if ((elements().size() == 0) &&
+			!originalPoshiScript.equals(generatedPoshiScript)) {
+
+			return false;
+		}
+
+		if (originalPoshiScript.length() != generatedPoshiScript.length()) {
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override
@@ -172,33 +197,9 @@ public abstract class PoshiElement
 	}
 
 	public void validatePoshiScript() throws PoshiScriptParserException {
-		for (PoshiElementAttribute poshiElementAttribute :
-				toPoshiElementAttributes(attributeList())) {
-
-			poshiElementAttribute.validatePoshiScript();
-		}
-
-		String originalPoshiScript = getPoshiScript();
-		String generatedPoshiScript = toPoshiScript();
-
-		originalPoshiScript = originalPoshiScript.replaceAll("\\s+", "");
-
-		generatedPoshiScript = generatedPoshiScript.replaceAll("\\s+", "");
-
-		if ((elements().size() == 0) &&
-			!originalPoshiScript.equals(generatedPoshiScript)) {
-
-			PoshiScriptParserException pspe = new PoshiScriptParserException(
+		if (!isValidPoshiScript() && !isValidPoshiXML()) {
+			throw new PoshiScriptParserException(
 				PoshiScriptParserException.TRANSLATION_LOSS_MESSAGE, this);
-
-			throw pspe;
-		}
-
-		if (originalPoshiScript.length() != generatedPoshiScript.length()) {
-			PoshiScriptParserException pspe = new PoshiScriptParserException(
-				PoshiScriptParserException.TRANSLATION_LOSS_MESSAGE, this);
-
-			throw pspe;
 		}
 	}
 
@@ -262,12 +263,16 @@ public abstract class PoshiElement
 		try {
 			parsePoshiScript(poshiScript.trim());
 
-			if (PropsValues.TEST_POSHI_SCRIPT_VALIDATION) {
+			if (PropsValues.TEST_POSHI_SCRIPT_VALIDATION &&
+				PoshiNodeFactory.getValidatePoshiScript()) {
+
 				validatePoshiScript();
 			}
 		}
 		catch (PoshiScriptParserException pspe) {
-			System.out.println(pspe.getMessage());
+			if (PoshiNodeFactory.getValidatePoshiScript()) {
+				System.out.println(pspe.getMessage());
+			}
 		}
 
 		detach();
@@ -659,6 +664,10 @@ public abstract class PoshiElement
 				continue;
 			}
 
+			if (trimmedPoshiScriptSnippet.startsWith("var") && (c != ';')) {
+				continue;
+			}
+
 			if (isBalancedPoshiScript(poshiScriptSnippet)) {
 				if (splitElseBlocks &&
 					(isValidPoshiScriptBlock(
@@ -811,6 +820,21 @@ public abstract class PoshiElement
 	protected boolean isElementType(String name, Element element) {
 		if (name.equals(element.getName())) {
 			return true;
+		}
+
+		return false;
+	}
+
+	protected boolean isNestedCondition(String poshiScript) {
+		Matcher matcher = _nestedConditionPattern.matcher(poshiScript);
+
+		if (matcher.find()) {
+			List<String> nestedConditions = getNestedConditions(
+				poshiScript, matcher.group(0));
+
+			if (nestedConditions.size() > 1) {
+				return true;
+			}
 		}
 
 		return false;
@@ -1086,6 +1110,8 @@ public abstract class PoshiElement
 				put('[', ']');
 			}
 		};
+	private static final Pattern _nestedConditionPattern = Pattern.compile(
+		"(\\|{2}|\\&{2})");
 	private static final Pattern _poshiScriptCommentPattern = Pattern.compile(
 		"^[\\s]*(\\/\\/.*?(\\n|$)|\\/\\*.*?\\*\\/)", Pattern.DOTALL);
 	private static final Pattern _varInvocationAssignmentStatementPattern;

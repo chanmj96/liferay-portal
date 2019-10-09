@@ -4,10 +4,10 @@
 
 <plugin>
 	<name>com.liferay.portal.tools.rest.builder</name>
-	<description/>
+	<description></description>
 	<groupId>com.liferay</groupId>
 	<artifactId>com.liferay.portal.tools.rest.builder</artifactId>
-	<version>1.0.22</version>
+	<version>1.0.28</version>
 	<goalPrefix>rest-builder</goalPrefix>
 	<isolatedRealm>false</isolatedRealm>
 	<inheritedByDefault>true</inheritedByDefault>
@@ -32,21 +32,21 @@
 					<type>java.io.File</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>baseDir</name>
 					<type>java.io.File</type>
 					<required>false</required>
 					<editable>false</editable>
-					<description/>
+					<description></description>
 				</parameter>
 				<parameter>
 					<name>copyrightFile</name>
 					<type>java.io.File</type>
 					<required>false</required>
 					<editable>true</editable>
-					<description/>
+					<description></description>
 				</parameter>
 			</parameters>
 			<configuration>

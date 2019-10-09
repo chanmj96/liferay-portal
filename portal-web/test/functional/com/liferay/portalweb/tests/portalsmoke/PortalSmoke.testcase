@@ -38,6 +38,8 @@ definition {
 		property portal.upstream = "false";
 		property test.run.environment = "EE";
 
+		Pause(locator1 = "60000");
+
 		ProductMenu.gotoPortlet(
 			category = "Configuration",
 			panel = "Control Panel",
@@ -50,6 +52,10 @@ definition {
 		AssertElementPresent(locator1 = "LCSClient#PROJECT_HOME_LINK");
 		AssertElementPresent(locator1 = "LCSClient#ENVIRONMENT_LINK");
 		AssertElementPresent(locator1 = "LCSClient#SERVER_DASHBOARD_LINK");
+
+		Portlet.shutdownServer();
+
+		LCSServer.unregisterOfflineInstance();
 	}
 
 	@description = "Ensure that the super admin can add pages, add portlets, navigate to the product menu, use the WYSIWYG editor, and view alert messages."

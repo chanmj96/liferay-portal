@@ -16,6 +16,7 @@ package com.liferay.data.engine.rest.internal.field.type.v1_0;
 
 import com.liferay.data.engine.field.type.BaseFieldType;
 import com.liferay.data.engine.field.type.FieldType;
+import com.liferay.data.engine.field.type.FieldTypeTracker;
 import com.liferay.data.engine.rest.internal.field.type.v1_0.util.CustomPropertiesUtil;
 import com.liferay.data.engine.spi.dto.SPIDataDefinitionField;
 import com.liferay.document.library.kernel.service.DLAppService;
@@ -60,9 +61,9 @@ import org.osgi.service.component.annotations.Reference;
 	property = {
 		"data.engine.field.type.description=document-library-field-type-description",
 		"data.engine.field.type.display.order:Integer=9",
-		"data.engine.field.type.group=customized",
+		"data.engine.field.type.group=basic",
 		"data.engine.field.type.icon=upload",
-		"data.engine.field.type.js.module=dynamic-data-mapping-form-field-type/metal/DocumentLibrary/DocumentLibrary.es",
+		"data.engine.field.type.js.module=dynamic-data-mapping-form-field-type/DocumentLibrary/DocumentLibrary.es",
 		"data.engine.field.type.label=document-library-field-type-label"
 	},
 	service = FieldType.class
@@ -70,11 +71,12 @@ import org.osgi.service.component.annotations.Reference;
 public class DocumentLibraryFieldType extends BaseFieldType {
 
 	@Override
-	public SPIDataDefinitionField deserialize(JSONObject jsonObject)
+	public SPIDataDefinitionField deserialize(
+			FieldTypeTracker fieldTypeTracker, JSONObject jsonObject)
 		throws Exception {
 
 		SPIDataDefinitionField spiDataDefinitionField = super.deserialize(
-			jsonObject);
+			fieldTypeTracker, jsonObject);
 
 		Map<String, Object> customProperties =
 			spiDataDefinitionField.getCustomProperties();
@@ -99,10 +101,12 @@ public class DocumentLibraryFieldType extends BaseFieldType {
 
 	@Override
 	public JSONObject toJSONObject(
+			FieldTypeTracker fieldTypeTracker,
 			SPIDataDefinitionField spiDataDefinitionField)
 		throws Exception {
 
-		JSONObject jsonObject = super.toJSONObject(spiDataDefinitionField);
+		JSONObject jsonObject = super.toJSONObject(
+			fieldTypeTracker, spiDataDefinitionField);
 
 		return jsonObject.put(
 			"groupId",

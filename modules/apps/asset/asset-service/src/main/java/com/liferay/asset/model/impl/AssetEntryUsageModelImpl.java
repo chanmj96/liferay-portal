@@ -42,8 +42,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the AssetEntryUsage service. Represents a row in the &quot;AssetEntryUsage&quot; database table, with each column mapped to a property of this class.
  *
@@ -55,11 +53,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetEntryUsageImpl
  * @generated
  */
-@ProviderType
 public class AssetEntryUsageModelImpl
 	extends BaseModelImpl<AssetEntryUsage> implements AssetEntryUsageModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a asset entry usage model instance should use the <code>AssetEntryUsage</code> interface instead.
@@ -67,18 +64,19 @@ public class AssetEntryUsageModelImpl
 	public static final String TABLE_NAME = "AssetEntryUsage";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"assetEntryUsageId", Types.BIGINT},
-		{"groupId", Types.BIGINT}, {"createDate", Types.TIMESTAMP},
-		{"modifiedDate", Types.TIMESTAMP}, {"assetEntryId", Types.BIGINT},
-		{"containerType", Types.BIGINT}, {"containerKey", Types.VARCHAR},
-		{"plid", Types.BIGINT}, {"type_", Types.INTEGER},
-		{"lastPublishDate", Types.TIMESTAMP}
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"assetEntryUsageId", Types.BIGINT}, {"groupId", Types.BIGINT},
+		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
+		{"assetEntryId", Types.BIGINT}, {"containerType", Types.BIGINT},
+		{"containerKey", Types.VARCHAR}, {"plid", Types.BIGINT},
+		{"type_", Types.INTEGER}, {"lastPublishDate", Types.TIMESTAMP}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("assetEntryUsageId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -93,7 +91,7 @@ public class AssetEntryUsageModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table AssetEntryUsage (uuid_ VARCHAR(75) null,assetEntryUsageId LONG not null primary key,groupId LONG,createDate DATE null,modifiedDate DATE null,assetEntryId LONG,containerType LONG,containerKey VARCHAR(200) null,plid LONG,type_ INTEGER,lastPublishDate DATE null)";
+		"create table AssetEntryUsage (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,assetEntryUsageId LONG not null primary key,groupId LONG,createDate DATE null,modifiedDate DATE null,assetEntryId LONG,containerType LONG,containerKey VARCHAR(200) null,plid LONG,type_ INTEGER,lastPublishDate DATE null)";
 
 	public static final String TABLE_SQL_DROP = "drop table AssetEntryUsage";
 
@@ -259,6 +257,11 @@ public class AssetEntryUsageModelImpl
 		Map<String, BiConsumer<AssetEntryUsage, ?>> attributeSetterBiConsumers =
 			new LinkedHashMap<String, BiConsumer<AssetEntryUsage, ?>>();
 
+		attributeGetterFunctions.put(
+			"mvccVersion", AssetEntryUsage::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<AssetEntryUsage, Long>)AssetEntryUsage::setMvccVersion);
 		attributeGetterFunctions.put("uuid", AssetEntryUsage::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid",
@@ -321,6 +324,16 @@ public class AssetEntryUsageModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@Override
@@ -565,6 +578,7 @@ public class AssetEntryUsageModelImpl
 	public Object clone() {
 		AssetEntryUsageImpl assetEntryUsageImpl = new AssetEntryUsageImpl();
 
+		assetEntryUsageImpl.setMvccVersion(getMvccVersion());
 		assetEntryUsageImpl.setUuid(getUuid());
 		assetEntryUsageImpl.setAssetEntryUsageId(getAssetEntryUsageId());
 		assetEntryUsageImpl.setGroupId(getGroupId());
@@ -675,6 +689,8 @@ public class AssetEntryUsageModelImpl
 	public CacheModel<AssetEntryUsage> toCacheModel() {
 		AssetEntryUsageCacheModel assetEntryUsageCacheModel =
 			new AssetEntryUsageCacheModel();
+
+		assetEntryUsageCacheModel.mvccVersion = getMvccVersion();
 
 		assetEntryUsageCacheModel.uuid = getUuid();
 
@@ -808,6 +824,7 @@ public class AssetEntryUsageModelImpl
 	private static boolean _entityCacheEnabled;
 	private static boolean _finderCacheEnabled;
 
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _assetEntryUsageId;

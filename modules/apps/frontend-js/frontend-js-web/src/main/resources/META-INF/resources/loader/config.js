@@ -19,7 +19,7 @@
 
 	window.__CONFIG__ = {
 		basePath: '',
-		combine: combine,
+		combine,
 		reportMismatchedAnonymousModules: 'warn',
 		url: combine
 			? LiferayAUI.getComboPath()
@@ -45,6 +45,8 @@
 	__CONFIG__.explainResolutions = Liferay.EXPLAIN_RESOLUTIONS;
 
 	__CONFIG__.exposeGlobal = Liferay.EXPOSE_GLOBAL;
+
+	__CONFIG__.logLevel = Liferay.LOG_LEVEL;
 
 	__CONFIG__.waitTimeout = Liferay.WAIT_TIMEOUT;
 })();

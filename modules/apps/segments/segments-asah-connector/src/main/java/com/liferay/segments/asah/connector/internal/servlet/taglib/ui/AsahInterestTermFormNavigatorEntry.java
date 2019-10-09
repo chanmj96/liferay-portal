@@ -29,7 +29,8 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
-import com.liferay.segments.constants.SegmentsConstants;
+import com.liferay.segments.asah.connector.internal.util.AsahUtil;
+import com.liferay.segments.constants.SegmentsEntryConstants;
 
 import java.io.IOException;
 
@@ -94,7 +95,7 @@ public class AsahInterestTermFormNavigatorEntry
 
 				long segmentsEntryId = ParamUtil.getLong(
 					httpServletRequest, "segmentsEntryId",
-					SegmentsConstants.SEGMENTS_ENTRY_ID_DEFAULT);
+					SegmentsEntryConstants.ID_DEFAULT);
 
 				properties.load(
 					assetListEntry.getTypeSettings(segmentsEntryId));
@@ -117,13 +118,17 @@ public class AsahInterestTermFormNavigatorEntry
 
 	@Override
 	public boolean isVisible(User user, AssetListEntry assetListEntry) {
-		if (assetListEntry.getType() ==
-				AssetListEntryTypeConstants.TYPE_DYNAMIC) {
-
-			return true;
+		if (!AsahUtil.isAnalyticsEnabled(user.getCompanyId())) {
+			return false;
 		}
 
-		return false;
+		if (assetListEntry.getType() !=
+				AssetListEntryTypeConstants.TYPE_DYNAMIC) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override

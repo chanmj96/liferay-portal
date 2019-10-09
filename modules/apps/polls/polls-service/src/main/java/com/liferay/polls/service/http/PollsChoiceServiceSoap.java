@@ -14,8 +14,6 @@
 
 package com.liferay.polls.service.http;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>com.liferay.polls.service.PollsChoiceServiceUtil</code> service
@@ -55,6 +53,5 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see PollsChoiceServiceHttp
  * @generated
  */
-@ProviderType
 public class PollsChoiceServiceSoap {
 }

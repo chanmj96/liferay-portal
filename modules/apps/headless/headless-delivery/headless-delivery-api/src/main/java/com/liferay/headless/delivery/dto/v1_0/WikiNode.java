@@ -38,6 +38,8 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -50,6 +52,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "WikiNode")
 public class WikiNode {
 
+	@GraphQLName("ViewableBy")
 	public static enum ViewableBy {
 
 		ANYONE("Anyone"), MEMBERS("Members"), OWNER("Owner");
@@ -84,6 +87,7 @@ public class WikiNode {
 	}
 
 	@Schema(description = "The wiki node's creator.")
+	@Valid
 	public Creator getCreator() {
 		return creator;
 	}
@@ -249,6 +253,34 @@ public class WikiNode {
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String name;
 
+	@Schema(description = "The number of child wiki page on this wiki node.")
+	public Integer getNumberOfWikiPages() {
+		return numberOfWikiPages;
+	}
+
+	public void setNumberOfWikiPages(Integer numberOfWikiPages) {
+		this.numberOfWikiPages = numberOfWikiPages;
+	}
+
+	@JsonIgnore
+	public void setNumberOfWikiPages(
+		UnsafeSupplier<Integer, Exception> numberOfWikiPagesUnsafeSupplier) {
+
+		try {
+			numberOfWikiPages = numberOfWikiPagesUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Integer numberOfWikiPages;
+
 	@Schema(
 		description = "The ID of the site to which this wiki node is scoped."
 	)
@@ -282,6 +314,7 @@ public class WikiNode {
 	@Schema(
 		description = "A write-only property that specifies the default permissions."
 	)
+	@Valid
 	public ViewableBy getViewableBy() {
 		return viewableBy;
 	}
@@ -422,6 +455,16 @@ public class WikiNode {
 			sb.append(_escape(name));
 
 			sb.append("\"");
+		}
+
+		if (numberOfWikiPages != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"numberOfWikiPages\": ");
+
+			sb.append(numberOfWikiPages);
 		}
 
 		if (siteId != null) {

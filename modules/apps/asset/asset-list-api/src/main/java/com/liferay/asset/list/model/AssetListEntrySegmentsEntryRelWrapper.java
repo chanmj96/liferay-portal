@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AssetListEntrySegmentsEntryRel}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetListEntrySegmentsEntryRel
  * @generated
  */
-@ProviderType
 public class AssetListEntrySegmentsEntryRelWrapper
 	extends BaseModelWrapper<AssetListEntrySegmentsEntryRel>
 	implements AssetListEntrySegmentsEntryRel,
@@ -49,6 +46,7 @@ public class AssetListEntrySegmentsEntryRelWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put(
 			"assetListEntrySegmentsEntryRelId",
@@ -69,6 +67,12 @@ public class AssetListEntrySegmentsEntryRelWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -215,6 +219,16 @@ public class AssetListEntrySegmentsEntryRelWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this asset list entry segments entry rel.
+	 *
+	 * @return the mvcc version of this asset list entry segments entry rel
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this asset list entry segments entry rel.
 	 *
 	 * @return the primary key of this asset list entry segments entry rel
@@ -284,6 +298,11 @@ public class AssetListEntrySegmentsEntryRelWrapper
 		return model.getUuid();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a asset list entry segments entry rel model instance should use the <code>AssetListEntrySegmentsEntryRel</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -360,6 +379,16 @@ public class AssetListEntrySegmentsEntryRelWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset list entry segments entry rel.
+	 *
+	 * @param mvccVersion the mvcc version of this asset list entry segments entry rel
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

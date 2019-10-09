@@ -12,9 +12,9 @@
  * details.
  */
 
-import ClayToggle from 'components/shared/ClayToggle.es';
+import {cleanup, render} from '@testing-library/react';
+import ClayToggle from '../../../../src/main/resources/META-INF/resources/js/components/shared/ClayToggle.es';
 import React from 'react';
-import {cleanup, render} from 'react-testing-library';
 
 describe('ClayToggle', () => {
 	afterEach(cleanup);

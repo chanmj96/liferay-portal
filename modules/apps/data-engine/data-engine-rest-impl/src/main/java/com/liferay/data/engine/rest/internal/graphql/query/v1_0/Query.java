@@ -17,10 +17,12 @@ package com.liferay.data.engine.rest.internal.graphql.query.v1_0;
 import com.liferay.data.engine.rest.dto.v1_0.DataDefinition;
 import com.liferay.data.engine.rest.dto.v1_0.DataLayout;
 import com.liferay.data.engine.rest.dto.v1_0.DataLayoutPage;
+import com.liferay.data.engine.rest.dto.v1_0.DataListView;
 import com.liferay.data.engine.rest.dto.v1_0.DataRecord;
 import com.liferay.data.engine.rest.dto.v1_0.DataRecordCollection;
 import com.liferay.data.engine.rest.resource.v1_0.DataDefinitionResource;
 import com.liferay.data.engine.rest.resource.v1_0.DataLayoutResource;
+import com.liferay.data.engine.rest.resource.v1_0.DataListViewResource;
 import com.liferay.data.engine.rest.resource.v1_0.DataRecordCollectionResource;
 import com.liferay.data.engine.rest.resource.v1_0.DataRecordResource;
 import com.liferay.petra.function.UnsafeConsumer;
@@ -32,12 +34,18 @@ import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.graphql.annotation.GraphQLTypeExtension;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 
 import java.util.function.BiFunction;
 
 import javax.annotation.Generated;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import javax.ws.rs.core.UriInfo;
 
 import org.osgi.service.component.ComponentServiceObjects;
 
@@ -64,6 +72,14 @@ public class Query {
 			dataLayoutResourceComponentServiceObjects;
 	}
 
+	public static void setDataListViewResourceComponentServiceObjects(
+		ComponentServiceObjects<DataListViewResource>
+			dataListViewResourceComponentServiceObjects) {
+
+		_dataListViewResourceComponentServiceObjects =
+			dataListViewResourceComponentServiceObjects;
+	}
+
 	public static void setDataRecordResourceComponentServiceObjects(
 		ComponentServiceObjects<DataRecordResource>
 			dataRecordResourceComponentServiceObjects) {
@@ -80,8 +96,30 @@ public class Query {
 			dataRecordCollectionResourceComponentServiceObjects;
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataDefinitionDataDefinitionFieldFieldType{}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataDefinition getDataDefinition(
+	public String dataDefinitionDataDefinitionFieldFieldType()
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_dataDefinitionResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			dataDefinitionResource ->
+				dataDefinitionResource.
+					getDataDefinitionDataDefinitionFieldFieldType());
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataDefinition(dataDefinitionId: ___){availableLanguageIds, dataDefinitionFields, dataDefinitionKey, dataDefinitionRules, dateCreated, dateModified, defaultLanguageId, description, id, name, siteId, storageType, userId}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public DataDefinition dataDefinition(
 			@GraphQLName("dataDefinitionId") Long dataDefinitionId)
 		throws Exception {
 
@@ -92,13 +130,19 @@ public class Query {
 				dataDefinitionId));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataDefinitions(keywords: ___, page: ___, pageSize: ___, siteId: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataDefinitionPage getSiteDataDefinitionsPage(
+	public DataDefinitionPage dataDefinitions(
 			@GraphQLName("siteId") Long siteId,
+			@GraphQLName("siteKey") String siteKey,
 			@GraphQLName("keywords") String keywords,
 			@GraphQLName("pageSize") int pageSize,
 			@GraphQLName("page") int page,
-			@GraphQLName("sorts") String sortsString)
+			@GraphQLName("sort") String sortsString)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -111,9 +155,15 @@ public class Query {
 						dataDefinitionResource, sortsString))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteDataDefinition(dataDefinitionKey: ___, siteId: ___){availableLanguageIds, dataDefinitionFields, dataDefinitionKey, dataDefinitionRules, dateCreated, dateModified, defaultLanguageId, description, id, name, siteId, storageType, userId}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataDefinition getSiteDataDefinition(
+	public DataDefinition siteDataDefinition(
 			@GraphQLName("siteId") Long siteId,
+			@GraphQLName("siteKey") String siteKey,
 			@GraphQLName("dataDefinitionKey") String dataDefinitionKey)
 		throws Exception {
 
@@ -125,12 +175,18 @@ public class Query {
 					siteId, dataDefinitionKey));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataDefinitionDataLayouts(dataDefinitionId: ___, keywords: ___, page: ___, pageSize: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataLayoutPage getDataDefinitionDataLayoutsPage(
+	public DataLayoutPage dataDefinitionDataLayouts(
 			@GraphQLName("dataDefinitionId") Long dataDefinitionId,
 			@GraphQLName("keywords") String keywords,
 			@GraphQLName("pageSize") int pageSize,
-			@GraphQLName("page") int page)
+			@GraphQLName("page") int page,
+			@GraphQLName("sort") String sortsString)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -138,13 +194,17 @@ public class Query {
 			this::_populateResourceContext,
 			dataLayoutResource -> new DataLayoutPage(
 				dataLayoutResource.getDataDefinitionDataLayoutsPage(
-					dataDefinitionId, keywords,
-					Pagination.of(page, pageSize))));
+					dataDefinitionId, keywords, Pagination.of(page, pageSize),
+					_sortsBiFunction.apply(dataLayoutResource, sortsString))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataLayout(dataLayoutId: ___){dataDefinitionId, dataLayoutKey, dataLayoutPages, dateCreated, dateModified, description, id, name, paginationMode, siteId, userId}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataLayout getDataLayout(
-			@GraphQLName("dataLayoutId") Long dataLayoutId)
+	public DataLayout dataLayout(@GraphQLName("dataLayoutId") Long dataLayoutId)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -154,25 +214,39 @@ public class Query {
 				dataLayoutId));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataLayouts(keywords: ___, page: ___, pageSize: ___, siteId: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataLayoutPage getSiteDataLayoutPage(
+	public DataLayoutPage dataLayouts(
 			@GraphQLName("siteId") Long siteId,
+			@GraphQLName("siteKey") String siteKey,
 			@GraphQLName("keywords") String keywords,
 			@GraphQLName("pageSize") int pageSize,
-			@GraphQLName("page") int page)
+			@GraphQLName("page") int page,
+			@GraphQLName("sort") String sortsString)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
 			_dataLayoutResourceComponentServiceObjects,
 			this::_populateResourceContext,
 			dataLayoutResource -> new DataLayoutPage(
-				dataLayoutResource.getSiteDataLayoutPage(
-					siteId, keywords, Pagination.of(page, pageSize))));
+				dataLayoutResource.getSiteDataLayoutsPage(
+					siteId, keywords, Pagination.of(page, pageSize),
+					_sortsBiFunction.apply(dataLayoutResource, sortsString))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteDataLayout(dataLayoutKey: ___, siteId: ___){dataDefinitionId, dataLayoutKey, dataLayoutPages, dateCreated, dateModified, description, id, name, paginationMode, siteId, userId}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataLayout getSiteDataLayout(
+	public DataLayout siteDataLayout(
 			@GraphQLName("siteId") Long siteId,
+			@GraphQLName("siteKey") String siteKey,
 			@GraphQLName("dataLayoutKey") String dataLayoutKey)
 		throws Exception {
 
@@ -183,8 +257,54 @@ public class Query {
 				siteId, dataLayoutKey));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataDefinitionDataListViews(dataDefinitionId: ___, keywords: ___, page: ___, pageSize: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataRecordPage getDataDefinitionDataRecordsPage(
+	public DataListViewPage dataDefinitionDataListViews(
+			@GraphQLName("dataDefinitionId") Long dataDefinitionId,
+			@GraphQLName("keywords") String keywords,
+			@GraphQLName("pageSize") int pageSize,
+			@GraphQLName("page") int page,
+			@GraphQLName("sort") String sortsString)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_dataListViewResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			dataListViewResource -> new DataListViewPage(
+				dataListViewResource.getDataDefinitionDataListViewsPage(
+					dataDefinitionId, keywords, Pagination.of(page, pageSize),
+					_sortsBiFunction.apply(
+						dataListViewResource, sortsString))));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataListView(dataListViewId: ___){appliedFilters, dataDefinitionId, dateCreated, dateModified, fieldNames, id, name, siteId, sortField, userId}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public DataListView dataListView(
+			@GraphQLName("dataListViewId") Long dataListViewId)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_dataListViewResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			dataListViewResource -> dataListViewResource.getDataListView(
+				dataListViewId));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataDefinitionDataRecords(dataDefinitionId: ___, page: ___, pageSize: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public DataRecordPage dataDefinitionDataRecords(
 			@GraphQLName("dataDefinitionId") Long dataDefinitionId,
 			@GraphQLName("pageSize") int pageSize,
 			@GraphQLName("page") int page)
@@ -198,8 +318,13 @@ public class Query {
 					dataDefinitionId, Pagination.of(page, pageSize))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataRecordCollectionDataRecords(dataRecordCollectionId: ___, page: ___, pageSize: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataRecordPage getDataRecordCollectionDataRecordsPage(
+	public DataRecordPage dataRecordCollectionDataRecords(
 			@GraphQLName("dataRecordCollectionId") Long dataRecordCollectionId,
 			@GraphQLName("pageSize") int pageSize,
 			@GraphQLName("page") int page)
@@ -213,8 +338,13 @@ public class Query {
 					dataRecordCollectionId, Pagination.of(page, pageSize))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataRecordCollectionDataRecordExport(dataRecordCollectionId: ___, page: ___, pageSize: ___){}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public String getDataRecordCollectionDataRecordExport(
+	public String dataRecordCollectionDataRecordExport(
 			@GraphQLName("dataRecordCollectionId") Long dataRecordCollectionId,
 			@GraphQLName("pageSize") int pageSize,
 			@GraphQLName("page") int page)
@@ -228,9 +358,13 @@ public class Query {
 					dataRecordCollectionId, Pagination.of(page, pageSize)));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataRecord(dataRecordId: ___){dataRecordCollectionId, dataRecordValues, id}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataRecord getDataRecord(
-			@GraphQLName("dataRecordId") Long dataRecordId)
+	public DataRecord dataRecord(@GraphQLName("dataRecordId") Long dataRecordId)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -240,8 +374,13 @@ public class Query {
 				dataRecordId));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataDefinitionDataRecordCollections(dataDefinitionId: ___, keywords: ___, page: ___, pageSize: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataRecordCollectionPage getDataDefinitionDataRecordCollectionsPage(
+	public DataRecordCollectionPage dataDefinitionDataRecordCollections(
 			@GraphQLName("dataDefinitionId") Long dataDefinitionId,
 			@GraphQLName("keywords") String keywords,
 			@GraphQLName("pageSize") int pageSize,
@@ -258,8 +397,13 @@ public class Query {
 						Pagination.of(page, pageSize))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataRecordCollection(dataRecordCollectionId: ___){dataDefinitionId, dataRecordCollectionKey, description, id, name, siteId}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataRecordCollection getDataRecordCollection(
+	public DataRecordCollection dataRecordCollection(
 			@GraphQLName("dataRecordCollectionId") Long dataRecordCollectionId)
 		throws Exception {
 
@@ -271,9 +415,15 @@ public class Query {
 					dataRecordCollectionId));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {dataRecordCollections(keywords: ___, page: ___, pageSize: ___, siteId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataRecordCollectionPage getSiteDataRecordCollectionsPage(
+	public DataRecordCollectionPage dataRecordCollections(
 			@GraphQLName("siteId") Long siteId,
+			@GraphQLName("siteKey") String siteKey,
 			@GraphQLName("keywords") String keywords,
 			@GraphQLName("pageSize") int pageSize,
 			@GraphQLName("page") int page)
@@ -287,9 +437,15 @@ public class Query {
 					siteId, keywords, Pagination.of(page, pageSize))));
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteDataRecordCollection(dataRecordCollectionKey: ___, siteId: ___){dataDefinitionId, dataRecordCollectionKey, description, id, name, siteId}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public DataRecordCollection getSiteDataRecordCollection(
+	public DataRecordCollection siteDataRecordCollection(
 			@GraphQLName("siteId") Long siteId,
+			@GraphQLName("siteKey") String siteKey,
 			@GraphQLName("dataRecordCollectionKey") String
 				dataRecordCollectionKey)
 		throws Exception {
@@ -300,6 +456,228 @@ public class Query {
 			dataRecordCollectionResource ->
 				dataRecordCollectionResource.getSiteDataRecordCollection(
 					siteId, dataRecordCollectionKey));
+	}
+
+	@GraphQLTypeExtension(DataRecordCollection.class)
+	public class GetDataDefinitionTypeExtension {
+
+		public GetDataDefinitionTypeExtension(
+			DataRecordCollection dataRecordCollection) {
+
+			_dataRecordCollection = dataRecordCollection;
+		}
+
+		@GraphQLField
+		public DataDefinition dataDefinition() throws Exception {
+			return _applyComponentServiceObjects(
+				_dataDefinitionResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				dataDefinitionResource ->
+					dataDefinitionResource.getDataDefinition(
+						_dataRecordCollection.getDataDefinitionId()));
+		}
+
+		private DataRecordCollection _dataRecordCollection;
+
+	}
+
+	@GraphQLTypeExtension(DataDefinition.class)
+	public class GetDataDefinitionDataListViewsPageTypeExtension {
+
+		public GetDataDefinitionDataListViewsPageTypeExtension(
+			DataDefinition dataDefinition) {
+
+			_dataDefinition = dataDefinition;
+		}
+
+		@GraphQLField
+		public DataListViewPage dataListViews(
+				@GraphQLName("keywords") String keywords,
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page,
+				@GraphQLName("sort") String sortsString)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_dataListViewResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				dataListViewResource -> new DataListViewPage(
+					dataListViewResource.getDataDefinitionDataListViewsPage(
+						_dataDefinition.getId(), keywords,
+						Pagination.of(page, pageSize),
+						_sortsBiFunction.apply(
+							dataListViewResource, sortsString))));
+		}
+
+		private DataDefinition _dataDefinition;
+
+	}
+
+	@GraphQLTypeExtension(DataDefinition.class)
+	public class GetDataDefinitionDataRecordsPageTypeExtension {
+
+		public GetDataDefinitionDataRecordsPageTypeExtension(
+			DataDefinition dataDefinition) {
+
+			_dataDefinition = dataDefinition;
+		}
+
+		@GraphQLField
+		public DataRecordPage dataRecords(
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_dataRecordResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				dataRecordResource -> new DataRecordPage(
+					dataRecordResource.getDataDefinitionDataRecordsPage(
+						_dataDefinition.getId(),
+						Pagination.of(page, pageSize))));
+		}
+
+		private DataDefinition _dataDefinition;
+
+	}
+
+	@GraphQLTypeExtension(DataDefinition.class)
+	public class GetDataDefinitionDataRecordCollectionsPageTypeExtension {
+
+		public GetDataDefinitionDataRecordCollectionsPageTypeExtension(
+			DataDefinition dataDefinition) {
+
+			_dataDefinition = dataDefinition;
+		}
+
+		@GraphQLField
+		public DataRecordCollectionPage dataRecordCollections(
+				@GraphQLName("keywords") String keywords,
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_dataRecordCollectionResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				dataRecordCollectionResource -> new DataRecordCollectionPage(
+					dataRecordCollectionResource.
+						getDataDefinitionDataRecordCollectionsPage(
+							_dataDefinition.getId(), keywords,
+							Pagination.of(page, pageSize))));
+		}
+
+		private DataDefinition _dataDefinition;
+
+	}
+
+	@GraphQLTypeExtension(DataDefinition.class)
+	public class GetDataDefinitionDataLayoutsPageTypeExtension {
+
+		public GetDataDefinitionDataLayoutsPageTypeExtension(
+			DataDefinition dataDefinition) {
+
+			_dataDefinition = dataDefinition;
+		}
+
+		@GraphQLField
+		public DataLayoutPage dataLayouts(
+				@GraphQLName("keywords") String keywords,
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page,
+				@GraphQLName("sort") String sortsString)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_dataLayoutResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				dataLayoutResource -> new DataLayoutPage(
+					dataLayoutResource.getDataDefinitionDataLayoutsPage(
+						_dataDefinition.getId(), keywords,
+						Pagination.of(page, pageSize),
+						_sortsBiFunction.apply(
+							dataLayoutResource, sortsString))));
+		}
+
+		private DataDefinition _dataDefinition;
+
+	}
+
+	@GraphQLTypeExtension(DataRecordCollection.class)
+	public class GetDataRecordCollectionDataRecordsPageTypeExtension {
+
+		public GetDataRecordCollectionDataRecordsPageTypeExtension(
+			DataRecordCollection dataRecordCollection) {
+
+			_dataRecordCollection = dataRecordCollection;
+		}
+
+		@GraphQLField
+		public DataRecordPage dataRecords(
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_dataRecordResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				dataRecordResource -> new DataRecordPage(
+					dataRecordResource.getDataRecordCollectionDataRecordsPage(
+						_dataRecordCollection.getId(),
+						Pagination.of(page, pageSize))));
+		}
+
+		private DataRecordCollection _dataRecordCollection;
+
+	}
+
+	@GraphQLTypeExtension(DataRecord.class)
+	public class GetDataRecordCollectionTypeExtension {
+
+		public GetDataRecordCollectionTypeExtension(DataRecord dataRecord) {
+			_dataRecord = dataRecord;
+		}
+
+		@GraphQLField
+		public DataRecordCollection collection() throws Exception {
+			return _applyComponentServiceObjects(
+				_dataRecordCollectionResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				dataRecordCollectionResource ->
+					dataRecordCollectionResource.getDataRecordCollection(
+						_dataRecord.getId()));
+		}
+
+		private DataRecord _dataRecord;
+
+	}
+
+	@GraphQLTypeExtension(DataRecordCollection.class)
+	public class GetDataRecordCollectionDataRecordExportTypeExtension {
+
+		public GetDataRecordCollectionDataRecordExportTypeExtension(
+			DataRecordCollection dataRecordCollection) {
+
+			_dataRecordCollection = dataRecordCollection;
+		}
+
+		@GraphQLField
+		public String dataRecordExport(
+				@GraphQLName("pageSize") int pageSize,
+				@GraphQLName("page") int page)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_dataRecordResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				dataRecordResource ->
+					dataRecordResource.getDataRecordCollectionDataRecordExport(
+						_dataRecordCollection.getId(),
+						Pagination.of(page, pageSize)));
+		}
+
+		private DataRecordCollection _dataRecordCollection;
+
 	}
 
 	@GraphQLName("DataDefinitionPage")
@@ -338,6 +716,30 @@ public class Query {
 
 		@GraphQLField
 		protected java.util.Collection<DataLayout> items;
+
+		@GraphQLField
+		protected long page;
+
+		@GraphQLField
+		protected long pageSize;
+
+		@GraphQLField
+		protected long totalCount;
+
+	}
+
+	@GraphQLName("DataListViewPage")
+	public class DataListViewPage {
+
+		public DataListViewPage(Page dataListViewPage) {
+			items = dataListViewPage.getItems();
+			page = dataListViewPage.getPage();
+			pageSize = dataListViewPage.getPageSize();
+			totalCount = dataListViewPage.getTotalCount();
+		}
+
+		@GraphQLField
+		protected java.util.Collection<DataListView> items;
 
 		@GraphQLField
 		protected long page;
@@ -423,6 +825,11 @@ public class Query {
 
 		dataDefinitionResource.setContextAcceptLanguage(_acceptLanguage);
 		dataDefinitionResource.setContextCompany(_company);
+		dataDefinitionResource.setContextHttpServletRequest(
+			_httpServletRequest);
+		dataDefinitionResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		dataDefinitionResource.setContextUriInfo(_uriInfo);
 		dataDefinitionResource.setContextUser(_user);
 	}
 
@@ -431,7 +838,23 @@ public class Query {
 
 		dataLayoutResource.setContextAcceptLanguage(_acceptLanguage);
 		dataLayoutResource.setContextCompany(_company);
+		dataLayoutResource.setContextHttpServletRequest(_httpServletRequest);
+		dataLayoutResource.setContextHttpServletResponse(_httpServletResponse);
+		dataLayoutResource.setContextUriInfo(_uriInfo);
 		dataLayoutResource.setContextUser(_user);
+	}
+
+	private void _populateResourceContext(
+			DataListViewResource dataListViewResource)
+		throws Exception {
+
+		dataListViewResource.setContextAcceptLanguage(_acceptLanguage);
+		dataListViewResource.setContextCompany(_company);
+		dataListViewResource.setContextHttpServletRequest(_httpServletRequest);
+		dataListViewResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		dataListViewResource.setContextUriInfo(_uriInfo);
+		dataListViewResource.setContextUser(_user);
 	}
 
 	private void _populateResourceContext(DataRecordResource dataRecordResource)
@@ -439,6 +862,9 @@ public class Query {
 
 		dataRecordResource.setContextAcceptLanguage(_acceptLanguage);
 		dataRecordResource.setContextCompany(_company);
+		dataRecordResource.setContextHttpServletRequest(_httpServletRequest);
+		dataRecordResource.setContextHttpServletResponse(_httpServletResponse);
+		dataRecordResource.setContextUriInfo(_uriInfo);
 		dataRecordResource.setContextUser(_user);
 	}
 
@@ -448,6 +874,11 @@ public class Query {
 
 		dataRecordCollectionResource.setContextAcceptLanguage(_acceptLanguage);
 		dataRecordCollectionResource.setContextCompany(_company);
+		dataRecordCollectionResource.setContextHttpServletRequest(
+			_httpServletRequest);
+		dataRecordCollectionResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		dataRecordCollectionResource.setContextUriInfo(_uriInfo);
 		dataRecordCollectionResource.setContextUser(_user);
 	}
 
@@ -455,6 +886,8 @@ public class Query {
 		_dataDefinitionResourceComponentServiceObjects;
 	private static ComponentServiceObjects<DataLayoutResource>
 		_dataLayoutResourceComponentServiceObjects;
+	private static ComponentServiceObjects<DataListViewResource>
+		_dataListViewResourceComponentServiceObjects;
 	private static ComponentServiceObjects<DataRecordResource>
 		_dataRecordResourceComponentServiceObjects;
 	private static ComponentServiceObjects<DataRecordCollectionResource>
@@ -464,6 +897,9 @@ public class Query {
 	private BiFunction<Object, String, Filter> _filterBiFunction;
 	private BiFunction<Object, String, Sort[]> _sortsBiFunction;
 	private Company _company;
+	private HttpServletRequest _httpServletRequest;
+	private HttpServletResponse _httpServletResponse;
+	private UriInfo _uriInfo;
 	private User _user;
 
 }

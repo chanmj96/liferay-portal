@@ -15,7 +15,6 @@
 package com.liferay.asset.auto.tagger.google.cloud.natural.language.internal;
 
 import com.liferay.asset.auto.tagger.AssetAutoTagProvider;
-import com.liferay.asset.auto.tagger.google.cloud.natural.language.api.GCloudNaturalLanguageDocumentAssetAutoTagger;
 import com.liferay.asset.auto.tagger.google.cloud.natural.language.internal.configuration.GCloudNaturalLanguageAssetAutoTaggerCompanyConfiguration;
 import com.liferay.asset.auto.tagger.text.extractor.TextExtractor;
 import com.liferay.asset.auto.tagger.text.extractor.TextExtractorTracker;
@@ -26,7 +25,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.util.Collection;
@@ -51,19 +49,19 @@ public class GCloudNaturalLanguageDocumentAssetAutoTagProvider
 		try {
 			if (_isEnabled(assetEntry)) {
 				TextExtractor textExtractor =
-					_infoTextExtractorTracker.getTextExtractor(
+					_textExtractorTracker.getTextExtractor(
 						assetEntry.getClassName());
 
 				if (textExtractor != null) {
 					Locale locale = LocaleUtil.fromLanguageId(
 						assetEntry.getDefaultLanguageId());
 
-					return _gCloudNaturalLanguageDocumentAssetAutoTagger.
+					return _gCloudNaturalLanguageDocumentAssetAutoTaggerImpl.
 						getTagNames(
 							assetEntry.getCompanyId(),
-							textExtractor.extract(
+							() -> textExtractor.extract(
 								_getAssetObject(assetEntry), locale),
-							locale, ContentTypes.TEXT_PLAIN);
+							locale, assetEntry.getMimeType());
 				}
 			}
 		}
@@ -103,10 +101,10 @@ public class GCloudNaturalLanguageDocumentAssetAutoTagProvider
 	private ConfigurationProvider _configurationProvider;
 
 	@Reference
-	private GCloudNaturalLanguageDocumentAssetAutoTagger
-		_gCloudNaturalLanguageDocumentAssetAutoTagger;
+	private GCloudNaturalLanguageDocumentAssetAutoTaggerImpl
+		_gCloudNaturalLanguageDocumentAssetAutoTaggerImpl;
 
 	@Reference
-	private TextExtractorTracker _infoTextExtractorTracker;
+	private TextExtractorTracker _textExtractorTracker;
 
 }

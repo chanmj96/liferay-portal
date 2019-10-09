@@ -28,7 +28,12 @@ import com.liferay.data.engine.rest.client.pagination.Page;
 import com.liferay.data.engine.rest.client.pagination.Pagination;
 import com.liferay.data.engine.rest.client.resource.v1_0.DataLayoutResource;
 import com.liferay.data.engine.rest.client.serdes.v1_0.DataLayoutSerDes;
+import com.liferay.petra.function.UnsafeTriConsumer;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -39,17 +44,25 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.entity.EntityField;
 import com.liferay.portal.odata.entity.EntityModel;
+import com.liferay.portal.test.log.CaptureAppender;
+import com.liferay.portal.test.log.Log4JLoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import java.text.DateFormat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,8 +73,10 @@ import javax.annotation.Generated;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang.time.DateUtils;
+import org.apache.log4j.Level;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -172,7 +187,6 @@ public abstract class BaseDataLayoutResourceTestCase {
 		DataLayout dataLayout = randomDataLayout();
 
 		dataLayout.setDataLayoutKey(regex);
-		dataLayout.setDefaultLanguageId(regex);
 		dataLayout.setPaginationMode(regex);
 
 		String json = DataLayoutSerDes.toJSON(dataLayout);
@@ -182,7 +196,6 @@ public abstract class BaseDataLayoutResourceTestCase {
 		dataLayout = DataLayoutSerDes.toDTO(json);
 
 		Assert.assertEquals(regex, dataLayout.getDataLayoutKey());
-		Assert.assertEquals(regex, dataLayout.getDefaultLanguageId());
 		Assert.assertEquals(regex, dataLayout.getPaginationMode());
 	}
 
@@ -191,7 +204,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 		Page<DataLayout> page =
 			dataLayoutResource.getDataDefinitionDataLayoutsPage(
 				testGetDataDefinitionDataLayoutsPage_getDataDefinitionId(),
-				RandomTestUtil.randomString(), Pagination.of(1, 2));
+				RandomTestUtil.randomString(), Pagination.of(1, 2), null);
 
 		Assert.assertEquals(0, page.getTotalCount());
 
@@ -206,7 +219,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 					irrelevantDataDefinitionId, randomIrrelevantDataLayout());
 
 			page = dataLayoutResource.getDataDefinitionDataLayoutsPage(
-				irrelevantDataDefinitionId, null, Pagination.of(1, 2));
+				irrelevantDataDefinitionId, null, Pagination.of(1, 2), null);
 
 			Assert.assertEquals(1, page.getTotalCount());
 
@@ -225,7 +238,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 				dataDefinitionId, randomDataLayout());
 
 		page = dataLayoutResource.getDataDefinitionDataLayoutsPage(
-			dataDefinitionId, null, Pagination.of(1, 2));
+			dataDefinitionId, null, Pagination.of(1, 2), null);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -233,6 +246,10 @@ public abstract class BaseDataLayoutResourceTestCase {
 			Arrays.asList(dataLayout1, dataLayout2),
 			(List<DataLayout>)page.getItems());
 		assertValid(page);
+
+		dataLayoutResource.deleteDataLayout(dataLayout1.getId());
+
+		dataLayoutResource.deleteDataLayout(dataLayout2.getId());
 	}
 
 	@Test
@@ -256,7 +273,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 
 		Page<DataLayout> page1 =
 			dataLayoutResource.getDataDefinitionDataLayoutsPage(
-				dataDefinitionId, null, Pagination.of(1, 2));
+				dataDefinitionId, null, Pagination.of(1, 2), null);
 
 		List<DataLayout> dataLayouts1 = (List<DataLayout>)page1.getItems();
 
@@ -264,7 +281,7 @@ public abstract class BaseDataLayoutResourceTestCase {
 
 		Page<DataLayout> page2 =
 			dataLayoutResource.getDataDefinitionDataLayoutsPage(
-				dataDefinitionId, null, Pagination.of(2, 2));
+				dataDefinitionId, null, Pagination.of(2, 2), null);
 
 		Assert.assertEquals(3, page2.getTotalCount());
 
@@ -274,11 +291,117 @@ public abstract class BaseDataLayoutResourceTestCase {
 
 		Page<DataLayout> page3 =
 			dataLayoutResource.getDataDefinitionDataLayoutsPage(
-				dataDefinitionId, null, Pagination.of(1, 3));
+				dataDefinitionId, null, Pagination.of(1, 3), null);
 
 		assertEqualsIgnoringOrder(
 			Arrays.asList(dataLayout1, dataLayout2, dataLayout3),
 			(List<DataLayout>)page3.getItems());
+	}
+
+	@Test
+	public void testGetDataDefinitionDataLayoutsPageWithSortDateTime()
+		throws Exception {
+
+		testGetDataDefinitionDataLayoutsPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, dataLayout1, dataLayout2) -> {
+				BeanUtils.setProperty(
+					dataLayout1, entityField.getName(),
+					DateUtils.addMinutes(new Date(), -2));
+			});
+	}
+
+	@Test
+	public void testGetDataDefinitionDataLayoutsPageWithSortInteger()
+		throws Exception {
+
+		testGetDataDefinitionDataLayoutsPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, dataLayout1, dataLayout2) -> {
+				BeanUtils.setProperty(dataLayout1, entityField.getName(), 0);
+				BeanUtils.setProperty(dataLayout2, entityField.getName(), 1);
+			});
+	}
+
+	@Test
+	public void testGetDataDefinitionDataLayoutsPageWithSortString()
+		throws Exception {
+
+		testGetDataDefinitionDataLayoutsPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, dataLayout1, dataLayout2) -> {
+				Class<?> clazz = dataLayout1.getClass();
+
+				Method method = clazz.getMethod(
+					"get" +
+						StringUtil.upperCaseFirstLetter(entityField.getName()));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanUtils.setProperty(
+						dataLayout1, entityField.getName(),
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanUtils.setProperty(
+						dataLayout2, entityField.getName(),
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else {
+					BeanUtils.setProperty(
+						dataLayout1, entityField.getName(), "Aaa");
+					BeanUtils.setProperty(
+						dataLayout2, entityField.getName(), "Bbb");
+				}
+			});
+	}
+
+	protected void testGetDataDefinitionDataLayoutsPageWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer<EntityField, DataLayout, DataLayout, Exception>
+				unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Long dataDefinitionId =
+			testGetDataDefinitionDataLayoutsPage_getDataDefinitionId();
+
+		DataLayout dataLayout1 = randomDataLayout();
+		DataLayout dataLayout2 = randomDataLayout();
+
+		for (EntityField entityField : entityFields) {
+			unsafeTriConsumer.accept(entityField, dataLayout1, dataLayout2);
+		}
+
+		dataLayout1 = testGetDataDefinitionDataLayoutsPage_addDataLayout(
+			dataDefinitionId, dataLayout1);
+
+		dataLayout2 = testGetDataDefinitionDataLayoutsPage_addDataLayout(
+			dataDefinitionId, dataLayout2);
+
+		for (EntityField entityField : entityFields) {
+			Page<DataLayout> ascPage =
+				dataLayoutResource.getDataDefinitionDataLayoutsPage(
+					dataDefinitionId, null, Pagination.of(1, 2),
+					entityField.getName() + ":asc");
+
+			assertEquals(
+				Arrays.asList(dataLayout1, dataLayout2),
+				(List<DataLayout>)ascPage.getItems());
+
+			Page<DataLayout> descPage =
+				dataLayoutResource.getDataDefinitionDataLayoutsPage(
+					dataDefinitionId, null, Pagination.of(1, 2),
+					entityField.getName() + ":desc");
+
+			assertEquals(
+				Arrays.asList(dataLayout2, dataLayout1),
+				(List<DataLayout>)descPage.getItems());
+		}
 	}
 
 	protected DataLayout testGetDataDefinitionDataLayoutsPage_addDataLayout(
@@ -324,11 +447,6 @@ public abstract class BaseDataLayoutResourceTestCase {
 	}
 
 	@Test
-	public void testPostDataLayoutDataLayoutPermission() throws Exception {
-		Assert.assertTrue(true);
-	}
-
-	@Test
 	public void testDeleteDataLayout() throws Exception {
 		DataLayout dataLayout = testDeleteDataLayout_addDataLayout();
 
@@ -351,6 +469,52 @@ public abstract class BaseDataLayoutResourceTestCase {
 	}
 
 	@Test
+	public void testGraphQLDeleteDataLayout() throws Exception {
+		DataLayout dataLayout = testGraphQLDataLayout_addDataLayout();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"mutation",
+			new GraphQLField(
+				"deleteDataLayout",
+				new HashMap<String, Object>() {
+					{
+						put("dataLayoutId", dataLayout.getId());
+					}
+				}));
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			invoke(graphQLField.toString()));
+
+		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
+
+		Assert.assertTrue(dataJSONObject.getBoolean("deleteDataLayout"));
+
+		try (CaptureAppender captureAppender =
+				Log4JLoggerTestUtil.configureLog4JLogger(
+					"graphql.execution.SimpleDataFetcherExceptionHandler",
+					Level.WARN)) {
+
+			graphQLField = new GraphQLField(
+				"query",
+				new GraphQLField(
+					"dataLayout",
+					new HashMap<String, Object>() {
+						{
+							put("dataLayoutId", dataLayout.getId());
+						}
+					},
+					new GraphQLField("id")));
+
+			jsonObject = JSONFactoryUtil.createJSONObject(
+				invoke(graphQLField.toString()));
+
+			JSONArray errorsJSONArray = jsonObject.getJSONArray("errors");
+
+			Assert.assertTrue(errorsJSONArray.length() > 0);
+		}
+	}
+
+	@Test
 	public void testGetDataLayout() throws Exception {
 		DataLayout postDataLayout = testGetDataLayout_addDataLayout();
 
@@ -364,6 +528,33 @@ public abstract class BaseDataLayoutResourceTestCase {
 	protected DataLayout testGetDataLayout_addDataLayout() throws Exception {
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetDataLayout() throws Exception {
+		DataLayout dataLayout = testGraphQLDataLayout_addDataLayout();
+
+		List<GraphQLField> graphQLFields = getGraphQLFields();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"query",
+			new GraphQLField(
+				"dataLayout",
+				new HashMap<String, Object>() {
+					{
+						put("dataLayoutId", dataLayout.getId());
+					}
+				},
+				graphQLFields.toArray(new GraphQLField[0])));
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			invoke(graphQLField.toString()));
+
+		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
+
+		Assert.assertTrue(
+			equalsJSONObject(
+				dataLayout, dataJSONObject.getJSONObject("dataLayout")));
 	}
 
 	@Test
@@ -391,23 +582,34 @@ public abstract class BaseDataLayoutResourceTestCase {
 	}
 
 	@Test
-	public void testGetSiteDataLayoutPage() throws Exception {
-		Page<DataLayout> page = dataLayoutResource.getSiteDataLayoutPage(
-			testGetSiteDataLayoutPage_getSiteId(),
-			RandomTestUtil.randomString(), Pagination.of(1, 2));
+	public void testPostDataLayoutDataLayoutPermission() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
+	public void testPostSiteDataLayoutPermission() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
+	public void testGetSiteDataLayoutsPage() throws Exception {
+		Page<DataLayout> page = dataLayoutResource.getSiteDataLayoutsPage(
+			testGetSiteDataLayoutsPage_getSiteId(),
+			RandomTestUtil.randomString(), Pagination.of(1, 2), null);
 
 		Assert.assertEquals(0, page.getTotalCount());
 
-		Long siteId = testGetSiteDataLayoutPage_getSiteId();
-		Long irrelevantSiteId = testGetSiteDataLayoutPage_getIrrelevantSiteId();
+		Long siteId = testGetSiteDataLayoutsPage_getSiteId();
+		Long irrelevantSiteId =
+			testGetSiteDataLayoutsPage_getIrrelevantSiteId();
 
 		if ((irrelevantSiteId != null)) {
 			DataLayout irrelevantDataLayout =
-				testGetSiteDataLayoutPage_addDataLayout(
+				testGetSiteDataLayoutsPage_addDataLayout(
 					irrelevantSiteId, randomIrrelevantDataLayout());
 
-			page = dataLayoutResource.getSiteDataLayoutPage(
-				irrelevantSiteId, null, Pagination.of(1, 2));
+			page = dataLayoutResource.getSiteDataLayoutsPage(
+				irrelevantSiteId, null, Pagination.of(1, 2), null);
 
 			Assert.assertEquals(1, page.getTotalCount());
 
@@ -417,14 +619,14 @@ public abstract class BaseDataLayoutResourceTestCase {
 			assertValid(page);
 		}
 
-		DataLayout dataLayout1 = testGetSiteDataLayoutPage_addDataLayout(
+		DataLayout dataLayout1 = testGetSiteDataLayoutsPage_addDataLayout(
 			siteId, randomDataLayout());
 
-		DataLayout dataLayout2 = testGetSiteDataLayoutPage_addDataLayout(
+		DataLayout dataLayout2 = testGetSiteDataLayoutsPage_addDataLayout(
 			siteId, randomDataLayout());
 
-		page = dataLayoutResource.getSiteDataLayoutPage(
-			siteId, null, Pagination.of(1, 2));
+		page = dataLayoutResource.getSiteDataLayoutsPage(
+			siteId, null, Pagination.of(1, 2), null);
 
 		Assert.assertEquals(2, page.getTotalCount());
 
@@ -432,30 +634,34 @@ public abstract class BaseDataLayoutResourceTestCase {
 			Arrays.asList(dataLayout1, dataLayout2),
 			(List<DataLayout>)page.getItems());
 		assertValid(page);
+
+		dataLayoutResource.deleteDataLayout(dataLayout1.getId());
+
+		dataLayoutResource.deleteDataLayout(dataLayout2.getId());
 	}
 
 	@Test
-	public void testGetSiteDataLayoutPageWithPagination() throws Exception {
-		Long siteId = testGetSiteDataLayoutPage_getSiteId();
+	public void testGetSiteDataLayoutsPageWithPagination() throws Exception {
+		Long siteId = testGetSiteDataLayoutsPage_getSiteId();
 
-		DataLayout dataLayout1 = testGetSiteDataLayoutPage_addDataLayout(
+		DataLayout dataLayout1 = testGetSiteDataLayoutsPage_addDataLayout(
 			siteId, randomDataLayout());
 
-		DataLayout dataLayout2 = testGetSiteDataLayoutPage_addDataLayout(
+		DataLayout dataLayout2 = testGetSiteDataLayoutsPage_addDataLayout(
 			siteId, randomDataLayout());
 
-		DataLayout dataLayout3 = testGetSiteDataLayoutPage_addDataLayout(
+		DataLayout dataLayout3 = testGetSiteDataLayoutsPage_addDataLayout(
 			siteId, randomDataLayout());
 
-		Page<DataLayout> page1 = dataLayoutResource.getSiteDataLayoutPage(
-			siteId, null, Pagination.of(1, 2));
+		Page<DataLayout> page1 = dataLayoutResource.getSiteDataLayoutsPage(
+			siteId, null, Pagination.of(1, 2), null);
 
 		List<DataLayout> dataLayouts1 = (List<DataLayout>)page1.getItems();
 
 		Assert.assertEquals(dataLayouts1.toString(), 2, dataLayouts1.size());
 
-		Page<DataLayout> page2 = dataLayoutResource.getSiteDataLayoutPage(
-			siteId, null, Pagination.of(2, 2));
+		Page<DataLayout> page2 = dataLayoutResource.getSiteDataLayoutsPage(
+			siteId, null, Pagination.of(2, 2), null);
 
 		Assert.assertEquals(3, page2.getTotalCount());
 
@@ -463,15 +669,114 @@ public abstract class BaseDataLayoutResourceTestCase {
 
 		Assert.assertEquals(dataLayouts2.toString(), 1, dataLayouts2.size());
 
-		Page<DataLayout> page3 = dataLayoutResource.getSiteDataLayoutPage(
-			siteId, null, Pagination.of(1, 3));
+		Page<DataLayout> page3 = dataLayoutResource.getSiteDataLayoutsPage(
+			siteId, null, Pagination.of(1, 3), null);
 
 		assertEqualsIgnoringOrder(
 			Arrays.asList(dataLayout1, dataLayout2, dataLayout3),
 			(List<DataLayout>)page3.getItems());
 	}
 
-	protected DataLayout testGetSiteDataLayoutPage_addDataLayout(
+	@Test
+	public void testGetSiteDataLayoutsPageWithSortDateTime() throws Exception {
+		testGetSiteDataLayoutsPageWithSort(
+			EntityField.Type.DATE_TIME,
+			(entityField, dataLayout1, dataLayout2) -> {
+				BeanUtils.setProperty(
+					dataLayout1, entityField.getName(),
+					DateUtils.addMinutes(new Date(), -2));
+			});
+	}
+
+	@Test
+	public void testGetSiteDataLayoutsPageWithSortInteger() throws Exception {
+		testGetSiteDataLayoutsPageWithSort(
+			EntityField.Type.INTEGER,
+			(entityField, dataLayout1, dataLayout2) -> {
+				BeanUtils.setProperty(dataLayout1, entityField.getName(), 0);
+				BeanUtils.setProperty(dataLayout2, entityField.getName(), 1);
+			});
+	}
+
+	@Test
+	public void testGetSiteDataLayoutsPageWithSortString() throws Exception {
+		testGetSiteDataLayoutsPageWithSort(
+			EntityField.Type.STRING,
+			(entityField, dataLayout1, dataLayout2) -> {
+				Class<?> clazz = dataLayout1.getClass();
+
+				Method method = clazz.getMethod(
+					"get" +
+						StringUtil.upperCaseFirstLetter(entityField.getName()));
+
+				Class<?> returnType = method.getReturnType();
+
+				if (returnType.isAssignableFrom(Map.class)) {
+					BeanUtils.setProperty(
+						dataLayout1, entityField.getName(),
+						Collections.singletonMap("Aaa", "Aaa"));
+					BeanUtils.setProperty(
+						dataLayout2, entityField.getName(),
+						Collections.singletonMap("Bbb", "Bbb"));
+				}
+				else {
+					BeanUtils.setProperty(
+						dataLayout1, entityField.getName(), "Aaa");
+					BeanUtils.setProperty(
+						dataLayout2, entityField.getName(), "Bbb");
+				}
+			});
+	}
+
+	protected void testGetSiteDataLayoutsPageWithSort(
+			EntityField.Type type,
+			UnsafeTriConsumer<EntityField, DataLayout, DataLayout, Exception>
+				unsafeTriConsumer)
+		throws Exception {
+
+		List<EntityField> entityFields = getEntityFields(type);
+
+		if (entityFields.isEmpty()) {
+			return;
+		}
+
+		Long siteId = testGetSiteDataLayoutsPage_getSiteId();
+
+		DataLayout dataLayout1 = randomDataLayout();
+		DataLayout dataLayout2 = randomDataLayout();
+
+		for (EntityField entityField : entityFields) {
+			unsafeTriConsumer.accept(entityField, dataLayout1, dataLayout2);
+		}
+
+		dataLayout1 = testGetSiteDataLayoutsPage_addDataLayout(
+			siteId, dataLayout1);
+
+		dataLayout2 = testGetSiteDataLayoutsPage_addDataLayout(
+			siteId, dataLayout2);
+
+		for (EntityField entityField : entityFields) {
+			Page<DataLayout> ascPage =
+				dataLayoutResource.getSiteDataLayoutsPage(
+					siteId, null, Pagination.of(1, 2),
+					entityField.getName() + ":asc");
+
+			assertEquals(
+				Arrays.asList(dataLayout1, dataLayout2),
+				(List<DataLayout>)ascPage.getItems());
+
+			Page<DataLayout> descPage =
+				dataLayoutResource.getSiteDataLayoutsPage(
+					siteId, null, Pagination.of(1, 2),
+					entityField.getName() + ":desc");
+
+			assertEquals(
+				Arrays.asList(dataLayout2, dataLayout1),
+				(List<DataLayout>)descPage.getItems());
+		}
+	}
+
+	protected DataLayout testGetSiteDataLayoutsPage_addDataLayout(
 			Long siteId, DataLayout dataLayout)
 		throws Exception {
 
@@ -479,19 +784,67 @@ public abstract class BaseDataLayoutResourceTestCase {
 			"This method needs to be implemented");
 	}
 
-	protected Long testGetSiteDataLayoutPage_getSiteId() throws Exception {
+	protected Long testGetSiteDataLayoutsPage_getSiteId() throws Exception {
 		return testGroup.getGroupId();
 	}
 
-	protected Long testGetSiteDataLayoutPage_getIrrelevantSiteId()
+	protected Long testGetSiteDataLayoutsPage_getIrrelevantSiteId()
 		throws Exception {
 
 		return irrelevantGroup.getGroupId();
 	}
 
 	@Test
-	public void testPostSiteDataLayoutPermission() throws Exception {
-		Assert.assertTrue(true);
+	public void testGraphQLGetSiteDataLayoutsPage() throws Exception {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		List<GraphQLField> itemsGraphQLFields = getGraphQLFields();
+
+		graphQLFields.add(
+			new GraphQLField(
+				"items", itemsGraphQLFields.toArray(new GraphQLField[0])));
+
+		graphQLFields.add(new GraphQLField("page"));
+		graphQLFields.add(new GraphQLField("totalCount"));
+
+		GraphQLField graphQLField = new GraphQLField(
+			"query",
+			new GraphQLField(
+				"dataLayouts",
+				new HashMap<String, Object>() {
+					{
+						put("page", 1);
+						put("pageSize", 2);
+						put("siteId", testGroup.getGroupId());
+					}
+				},
+				graphQLFields.toArray(new GraphQLField[0])));
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			invoke(graphQLField.toString()));
+
+		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
+
+		JSONObject dataLayoutsJSONObject = dataJSONObject.getJSONObject(
+			"dataLayouts");
+
+		Assert.assertEquals(0, dataLayoutsJSONObject.get("totalCount"));
+
+		DataLayout dataLayout1 = testGraphQLDataLayout_addDataLayout();
+		DataLayout dataLayout2 = testGraphQLDataLayout_addDataLayout();
+
+		jsonObject = JSONFactoryUtil.createJSONObject(
+			invoke(graphQLField.toString()));
+
+		dataJSONObject = jsonObject.getJSONObject("data");
+
+		dataLayoutsJSONObject = dataJSONObject.getJSONObject("dataLayouts");
+
+		Assert.assertEquals(2, dataLayoutsJSONObject.get("totalCount"));
+
+		assertEqualsJSONArray(
+			Arrays.asList(dataLayout1, dataLayout2),
+			dataLayoutsJSONObject.getJSONArray("items"));
 	}
 
 	@Test
@@ -506,6 +859,41 @@ public abstract class BaseDataLayoutResourceTestCase {
 	}
 
 	protected DataLayout testGetSiteDataLayout_addDataLayout()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGraphQLGetSiteDataLayout() throws Exception {
+		DataLayout dataLayout = testGraphQLDataLayout_addDataLayout();
+
+		List<GraphQLField> graphQLFields = getGraphQLFields();
+
+		GraphQLField graphQLField = new GraphQLField(
+			"query",
+			new GraphQLField(
+				"siteDataLayout",
+				new HashMap<String, Object>() {
+					{
+						put("siteId", dataLayout.getSiteId());
+						put("dataLayoutKey", dataLayout.getDataLayoutKey());
+					}
+				},
+				graphQLFields.toArray(new GraphQLField[0])));
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+			invoke(graphQLField.toString()));
+
+		JSONObject dataJSONObject = jsonObject.getJSONObject("data");
+
+		Assert.assertTrue(
+			equalsJSONObject(
+				dataLayout, dataJSONObject.getJSONObject("siteDataLayout")));
+	}
+
+	protected DataLayout testGraphQLDataLayout_addDataLayout()
 		throws Exception {
 
 		throw new UnsupportedOperationException(
@@ -562,6 +950,25 @@ public abstract class BaseDataLayoutResourceTestCase {
 		}
 	}
 
+	protected void assertEqualsJSONArray(
+		List<DataLayout> dataLayouts, JSONArray jsonArray) {
+
+		for (DataLayout dataLayout : dataLayouts) {
+			boolean contains = false;
+
+			for (Object object : jsonArray) {
+				if (equalsJSONObject(dataLayout, (JSONObject)object)) {
+					contains = true;
+
+					break;
+				}
+			}
+
+			Assert.assertTrue(
+				jsonArray + " does not contain " + dataLayout, contains);
+		}
+	}
+
 	protected void assertValid(DataLayout dataLayout) {
 		boolean valid = true;
 
@@ -602,16 +1009,6 @@ public abstract class BaseDataLayoutResourceTestCase {
 
 			if (Objects.equals("dataLayoutPages", additionalAssertFieldName)) {
 				if (dataLayout.getDataLayoutPages() == null) {
-					valid = false;
-				}
-
-				continue;
-			}
-
-			if (Objects.equals(
-					"defaultLanguageId", additionalAssertFieldName)) {
-
-				if (dataLayout.getDefaultLanguageId() == null) {
 					valid = false;
 				}
 
@@ -677,6 +1074,18 @@ public abstract class BaseDataLayoutResourceTestCase {
 
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[0];
+	}
+
+	protected List<GraphQLField> getGraphQLFields() {
+		List<GraphQLField> graphQLFields = new ArrayList<>();
+
+		for (String additionalAssertFieldName :
+				getAdditionalAssertFieldNames()) {
+
+			graphQLFields.add(new GraphQLField(additionalAssertFieldName));
+		}
+
+		return graphQLFields;
 	}
 
 	protected String[] getIgnoredEntityFieldNames() {
@@ -750,19 +1159,6 @@ public abstract class BaseDataLayoutResourceTestCase {
 				continue;
 			}
 
-			if (Objects.equals(
-					"defaultLanguageId", additionalAssertFieldName)) {
-
-				if (!Objects.deepEquals(
-						dataLayout1.getDefaultLanguageId(),
-						dataLayout2.getDefaultLanguageId())) {
-
-					return false;
-				}
-
-				continue;
-			}
-
 			if (Objects.equals("description", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						dataLayout1.getDescription(),
@@ -818,6 +1214,70 @@ public abstract class BaseDataLayoutResourceTestCase {
 			throw new IllegalArgumentException(
 				"Invalid additional assert field name " +
 					additionalAssertFieldName);
+		}
+
+		return true;
+	}
+
+	protected boolean equalsJSONObject(
+		DataLayout dataLayout, JSONObject jsonObject) {
+
+		for (String fieldName : getAdditionalAssertFieldNames()) {
+			if (Objects.equals("dataDefinitionId", fieldName)) {
+				if (!Objects.deepEquals(
+						dataLayout.getDataDefinitionId(),
+						jsonObject.getLong("dataDefinitionId"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("dataLayoutKey", fieldName)) {
+				if (!Objects.deepEquals(
+						dataLayout.getDataLayoutKey(),
+						jsonObject.getString("dataLayoutKey"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("id", fieldName)) {
+				if (!Objects.deepEquals(
+						dataLayout.getId(), jsonObject.getLong("id"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("paginationMode", fieldName)) {
+				if (!Objects.deepEquals(
+						dataLayout.getPaginationMode(),
+						jsonObject.getString("paginationMode"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("userId", fieldName)) {
+				if (!Objects.deepEquals(
+						dataLayout.getUserId(), jsonObject.getLong("userId"))) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			throw new IllegalArgumentException(
+				"Invalid field name " + fieldName);
 		}
 
 		return true;
@@ -954,14 +1414,6 @@ public abstract class BaseDataLayoutResourceTestCase {
 			return sb.toString();
 		}
 
-		if (entityFieldName.equals("defaultLanguageId")) {
-			sb.append("'");
-			sb.append(String.valueOf(dataLayout.getDefaultLanguageId()));
-			sb.append("'");
-
-			return sb.toString();
-		}
-
 		if (entityFieldName.equals("description")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -999,6 +1451,23 @@ public abstract class BaseDataLayoutResourceTestCase {
 			"Invalid entity field " + entityFieldName);
 	}
 
+	protected String invoke(String query) throws Exception {
+		HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+		httpInvoker.body(
+			JSONUtil.put(
+				"query", query
+			).toString(),
+			"application/json");
+		httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+		httpInvoker.path("http://localhost:8080/o/graphql");
+		httpInvoker.userNameAndPassword("test@liferay.com:test");
+
+		HttpInvoker.HttpResponse httpResponse = httpInvoker.invoke();
+
+		return httpResponse.getContent();
+	}
+
 	protected DataLayout randomDataLayout() throws Exception {
 		return new DataLayout() {
 			{
@@ -1006,7 +1475,6 @@ public abstract class BaseDataLayoutResourceTestCase {
 				dataLayoutKey = RandomTestUtil.randomString();
 				dateCreated = RandomTestUtil.nextDate();
 				dateModified = RandomTestUtil.nextDate();
-				defaultLanguageId = RandomTestUtil.randomString();
 				id = RandomTestUtil.randomLong();
 				paginationMode = RandomTestUtil.randomString();
 				siteId = testGroup.getGroupId();
@@ -1031,6 +1499,64 @@ public abstract class BaseDataLayoutResourceTestCase {
 	protected Group irrelevantGroup;
 	protected Company testCompany;
 	protected Group testGroup;
+
+	protected class GraphQLField {
+
+		public GraphQLField(String key, GraphQLField... graphQLFields) {
+			this(key, new HashMap<>(), graphQLFields);
+		}
+
+		public GraphQLField(
+			String key, Map<String, Object> parameterMap,
+			GraphQLField... graphQLFields) {
+
+			_key = key;
+			_parameterMap = parameterMap;
+			_graphQLFields = graphQLFields;
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(_key);
+
+			if (!_parameterMap.isEmpty()) {
+				sb.append("(");
+
+				for (Map.Entry<String, Object> entry :
+						_parameterMap.entrySet()) {
+
+					sb.append(entry.getKey());
+					sb.append(":");
+					sb.append(entry.getValue());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append(")");
+			}
+
+			if (_graphQLFields.length > 0) {
+				sb.append("{");
+
+				for (GraphQLField graphQLField : _graphQLFields) {
+					sb.append(graphQLField.toString());
+					sb.append(",");
+				}
+
+				sb.setLength(sb.length() - 1);
+
+				sb.append("}");
+			}
+
+			return sb.toString();
+		}
+
+		private final GraphQLField[] _graphQLFields;
+		private final String _key;
+		private final Map<String, Object> _parameterMap;
+
+	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		BaseDataLayoutResourceTestCase.class);

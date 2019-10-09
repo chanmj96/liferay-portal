@@ -104,11 +104,6 @@ public class FragmentCollectionLocalServiceImpl
 
 		fragmentCollectionPersistence.update(fragmentCollection);
 
-		// Resources
-
-		resourceLocalService.addModelResources(
-			fragmentCollection, serviceContext);
-
 		return fragmentCollection;
 	}
 
@@ -153,11 +148,8 @@ public class FragmentCollectionLocalServiceImpl
 			long fragmentCollectionId)
 		throws PortalException {
 
-		FragmentCollection fragmentCollection = getFragmentCollection(
-			fragmentCollectionId);
-
 		return fragmentCollectionLocalService.deleteFragmentCollection(
-			fragmentCollection);
+			getFragmentCollection(fragmentCollectionId));
 	}
 
 	@Override

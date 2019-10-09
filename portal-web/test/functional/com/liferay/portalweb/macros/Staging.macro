@@ -136,17 +136,17 @@ definition {
 
 		Click(locator1 = "StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION");
 
-		Click(locator1 = "StagingPublishToLive#DATE_SCHEDULE_RADIO");
-
 		Type(
 			locator1 = "StagingPublishToLive#DATE_SCHEDULE_TITLE_FIELD",
 			value1 = "${scheduleTitleName}");
 
+		Click(locator1 = "StagingPublishToLive#DATE_SCHEDULE_RADIO");
+
 		Check(locator1 = "StagingPublishToLive#DATE_SCHEDULE_END_DATE_NO_END_DATE_RADIO");
 
-		Check(
-			key_frequency = "Daily",
-			locator1 = "StagingPublishToLive#DATE_SCHEDULE_REPEAT_RADIO");
+		Select(
+			locator1 = "StagingPublishToLive#DATE_SCHEDULE_REPEAT_DROPDOWN",
+			value1 = "Daily");
 
 		AssertClick(
 			locator1 = "StagingPublishToLive#ADD_EVENT_BUTTON",
@@ -312,6 +312,10 @@ definition {
 
 		if ("${contentDeletion}" == "true") {
 			ContentConfiguration.contentDeletion();
+		}
+
+		if ("${pageDeletion}" == "true") {
+			ContentConfiguration.pageDeletion();
 		}
 
 		if (isSet(checkContentNameList)) {
@@ -934,11 +938,8 @@ definition {
 				password = "test",
 				userEmailAddress = "test@liferay.com");
 		}
-		else {
-			Navigator.openURL();
-		}
 
-		ProductMenu.gotoSite(site = "${siteName}");
+		SitePages.openPagesAdmin(siteURLKey = "${siteName}");
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
@@ -1038,9 +1039,9 @@ definition {
 		}
 
 		if (isSet(frequency)) {
-			Check(
-				key_frequency = "${frequency}",
-				locator1 = "StagingPublishToLive#DATE_SCHEDULE_REPEAT_RADIO");
+			Select(
+				locator1 = "StagingPublishToLive#DATE_SCHEDULE_REPEAT_DROPDOWN",
+				value1 = "${frequency}");
 		}
 
 		if (isSet(checkContentNameList)) {
@@ -1219,6 +1220,68 @@ definition {
 		SelectFrame(locator1 = "IFrame#DIALOG");
 
 		AssertElementPresent(locator1 = "Staging#PROCESS_SUMMARY_PAGES_TITLE");
+
+		if (isSet(content)) {
+			for (var content : list "${contentList}") {
+				var key_content = "${content}";
+
+				AssertTextPresent(
+					locator1 = "Staging#PUBLICATION_CONTENT",
+					value1 = "${content}");
+			}
+		}
+
+		if (isSet(deletions)) {
+			AssertElementPresent(locator1 = "Staging#PUBLICATION_DELETIONS");
+		}
+
+		if (isSet(lookAndFeelList)) {
+			for (var lookAndFeel : list "${lookAndFeelList}") {
+				var key_lookAndFeel = "${lookAndFeel}";
+
+				AssertTextPresent(
+					locator1 = "Staging#PUBLICATION_LOOK_AND_FEEL",
+					value1 = "${lookAndFeel}");
+			}
+		}
+
+		if ("${dateRestrictionOption}" == "All") {
+			var key_dateRestrictionOption = "Without Restriction";
+
+			AssertTextPresent(
+				locator1 = "Staging#PUBLICATION_DATE",
+				value1 = "${key_dateRestrictionOption}");
+		}
+
+		if ("${dateRestrictionOption}" == "From Last Publish Date") {
+			AssertTextPresent(
+				locator1 = "Staging#PUBLICATION_DATE",
+				value1 = "${dateRestrictionOption}");
+		}
+
+		if ("${dateRestrictionOption}" == "Date Range") {
+			var key_dateRestrictionOption = "Modified or Created Between";
+
+			AssertTextPresent(
+				locator1 = "Staging#PUBLICATION_DATE",
+				value1 = "${key_dateRestrictionOption}");
+		}
+
+		if ("${dateRestrictionOption}" == "Last") {
+			AssertTextPresent(
+				locator1 = "Staging#PUBLICATION_DATE",
+				value1 = "${dateRestrictionOption}");
+		}
+
+		if (isSet(pagesOption)) {
+			AssertTextEquals(
+				locator1 = "Staging#PUBLICATION_PAGE_OPTION",
+				value1 = "${pagesOption}");
+		}
+
+		if (isSet(permissions)) {
+			AssertElementPresent(locator1 = "Staging#PUBLICATION_PERMISSION");
+		}
 
 		IFrame.closeFrame();
 	}

@@ -64,14 +64,15 @@ List groupNames = (List)objArray[8];
 	</span>
 
 	<%
-	String targetId = target.replace(".", "");
+	String targetId = StringUtil.replace(target, '.', "");
 	%>
 
 	<c:if test="<%= supportsFilterByGroup %>">
 		<liferay-ui:icon
-			iconCssClass="icon-cog"
+			icon="pencil"
 			id="<%= HtmlUtil.escapeAttribute(targetId) %>"
 			label="<%= true %>"
+			markupView="lexicon"
 			message="change"
 			url="javascript:;"
 		/>

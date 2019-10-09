@@ -21,14 +21,19 @@ import com.liferay.portal.kernel.exception.CompanyVirtualHostException;
 import com.liferay.portal.kernel.exception.CompanyWebIdException;
 import com.liferay.portal.kernel.exception.NoSuchCompanyException;
 import com.liferay.portal.kernel.exception.RequiredCompanyException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.CompanyService;
 import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
@@ -91,7 +96,21 @@ public class EditInstanceMVCActionCommand extends BaseMVCActionCommand {
 					 e instanceof CompanyVirtualHostException ||
 					 e instanceof CompanyWebIdException) {
 
+				long companyId = ParamUtil.getLong(actionRequest, "companyId");
+
+				Company company = _companyLocalService.fetchCompanyById(
+					companyId);
+
+				if (company != null) {
+					actionRequest.setAttribute(WebKeys.SEL_COMPANY, company);
+				}
+
 				SessionErrors.add(actionRequest, e.getClass());
+
+				SessionMessages.add(
+					actionRequest,
+					_portal.getPortletId(actionRequest) +
+						SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE);
 
 				mvcPath = "/edit_instance.jsp";
 			}
@@ -99,6 +118,8 @@ public class EditInstanceMVCActionCommand extends BaseMVCActionCommand {
 				SessionErrors.add(actionRequest, e.getClass());
 			}
 			else {
+				_log.error(e, e);
+
 				throw e;
 			}
 
@@ -147,8 +168,17 @@ public class EditInstanceMVCActionCommand extends BaseMVCActionCommand {
 		synchronizePortalInstances();
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		EditInstanceMVCActionCommand.class);
+
+	@Reference
+	private CompanyLocalService _companyLocalService;
+
 	@Reference
 	private CompanyService _companyService;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference
 	private PortalInstancesLocalService _portalInstancesLocalService;

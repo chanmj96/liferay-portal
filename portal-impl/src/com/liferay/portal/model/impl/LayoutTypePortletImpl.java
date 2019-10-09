@@ -274,10 +274,8 @@ public class LayoutTypePortletImpl
 		List<Portlet> staticPortlets = getStaticPortlets(
 			PropsKeys.LAYOUT_STATIC_PORTLETS_ALL);
 
-		List<Portlet> embeddedPortlets = getEmbeddedPortlets();
-
 		return addStaticPortlets(
-			explicitlyAddedPortlets, staticPortlets, embeddedPortlets);
+			explicitlyAddedPortlets, staticPortlets, getEmbeddedPortlets());
 	}
 
 	@Override
@@ -303,9 +301,7 @@ public class LayoutTypePortletImpl
 
 	@Override
 	public List<Portlet> getAllPortlets(String columnId) {
-		String columnValue = getColumnValue(columnId);
-
-		String[] portletIds = StringUtil.split(columnValue);
+		String[] portletIds = StringUtil.split(getColumnValue(columnId));
 
 		List<Portlet> portlets = new ArrayList<>(portletIds.length);
 
@@ -381,11 +377,9 @@ public class LayoutTypePortletImpl
 
 	@Override
 	public LayoutTemplate getLayoutTemplate() {
-		String themeId = getThemeId();
-
 		LayoutTemplate layoutTemplate =
 			LayoutTemplateLocalServiceUtil.getLayoutTemplate(
-				getLayoutTemplateId(), false, themeId);
+				getLayoutTemplateId(), false, getThemeId());
 
 		if (layoutTemplate == null) {
 			layoutTemplate = new LayoutTemplateImpl(
@@ -1014,11 +1008,9 @@ public class LayoutTypePortletImpl
 				return;
 			}
 
-			PermissionChecker permissionChecker =
-				PermissionThreadLocal.getPermissionChecker();
-
 			if (!LayoutPermissionUtil.contains(
-					permissionChecker, getLayout(), ActionKeys.UPDATE) &&
+					PermissionThreadLocal.getPermissionChecker(), getLayout(),
+					ActionKeys.UPDATE) &&
 				!isCustomizable()) {
 
 				return;
@@ -1207,11 +1199,9 @@ public class LayoutTypePortletImpl
 			return;
 		}
 
-		String themeId = getThemeId();
-
 		LayoutTemplate newLayoutTemplate =
 			LayoutTemplateLocalServiceUtil.getLayoutTemplate(
-				newLayoutTemplateId, false, themeId);
+				newLayoutTemplateId, false, getThemeId());
 
 		if (newLayoutTemplate == null) {
 			if (_log.isWarnEnabled()) {
@@ -1565,9 +1555,7 @@ public class LayoutTypePortletImpl
 		List<String> columnIds = getColumns();
 
 		for (String columnId : columnIds) {
-			String columnValue = getColumnValue(columnId);
-
-			String[] portletIds = StringUtil.split(columnValue);
+			String[] portletIds = StringUtil.split(getColumnValue(columnId));
 
 			for (String columnPortletId : portletIds) {
 				if (columnPortletId.equals(portletId)) {
@@ -1940,17 +1928,10 @@ public class LayoutTypePortletImpl
 	}
 
 	protected boolean hasNonstaticPortletId(String columnId, String portletId) {
-		String columnValue = getColumnValue(columnId);
-
-		String[] columnValues = StringUtil.split(columnValue);
+		String[] columnValues = StringUtil.split(getColumnValue(columnId));
 
 		for (String nonstaticPortletId : columnValues) {
-			String decodedNonStaticPortletName =
-				PortletIdCodec.decodePortletName(nonstaticPortletId);
-
-			if (nonstaticPortletId.equals(portletId) ||
-				decodedNonStaticPortletName.equals(portletId)) {
-
+			if (nonstaticPortletId.equals(portletId)) {
 				return true;
 			}
 		}
@@ -1963,12 +1944,7 @@ public class LayoutTypePortletImpl
 			PropsKeys.LAYOUT_STATIC_PORTLETS_START + columnId);
 
 		for (String staticPortletId : staticPortletIdsStart) {
-			String decodedStaticPortletName = PortletIdCodec.decodePortletName(
-				staticPortletId);
-
-			if (staticPortletId.equals(portletId) ||
-				decodedStaticPortletName.equals(portletId)) {
-
+			if (staticPortletId.equals(portletId)) {
 				return true;
 			}
 		}
@@ -1977,12 +1953,7 @@ public class LayoutTypePortletImpl
 			PropsKeys.LAYOUT_STATIC_PORTLETS_END + columnId);
 
 		for (String staticPortletId : staticPortletIdsEnd) {
-			String decodedStaticPortletName = PortletIdCodec.decodePortletName(
-				staticPortletId);
-
-			if (staticPortletId.equals(portletId) ||
-				decodedStaticPortletName.equals(portletId)) {
-
+			if (staticPortletId.equals(portletId)) {
 				return true;
 			}
 		}
@@ -2023,10 +1994,8 @@ public class LayoutTypePortletImpl
 			String rootPortletId = PortletIdCodec.decodePortletName(portletId);
 
 			if (rootPortletId.equals(PortletKeys.NESTED_PORTLETS)) {
-				String portletNamespace = PortalUtil.getPortletNamespace(
-					portletId);
-
-				_removeNestedColumns(portletNamespace, portletIdList);
+				_removeNestedColumns(
+					PortalUtil.getPortletNamespace(portletId), portletIdList);
 			}
 
 			Portlet portlet = PortletLocalServiceUtil.getPortletById(portletId);

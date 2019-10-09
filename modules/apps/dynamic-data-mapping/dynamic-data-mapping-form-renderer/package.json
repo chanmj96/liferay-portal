@@ -1,64 +1,20 @@
 {
-	"csfConfig": {
-		"path:**/*.js": {
-			"js": {
-				"lint": {
-					"env": {
-						"browser": true,
-						"jest": true
-					},
-					"extends": "liferay",
-					"globals": {
-						"AlloyEditor": true
-					},
-					"parser": "babel-eslint",
-					"parserOptions": {
-						"ecmaVersion": 7
-					},
-					"rules": {
-						"no-unknown-property": [
-							2,
-							{
-								"ignore": [
-									"class",
-									"xlink:href"
-								]
-							}
-						]
-					}
-				}
-			}
-		}
-	},
 	"dependencies": {
-		"frontend-js-web": "^4.0.0",
+		"frontend-js-web": "*",
 		"incremental-dom-string": "0.0.2",
 		"metal-component": "2.16.8",
 		"metal-soy": "2.16.8"
 	},
 	"jest": {
-		"moduleNameMapper": {
-			"(.*)\\.soy$": "$1.soy.js",
-			"mock/(.*)": "<rootDir>/test/js/__mock__/$1.js",
-			"source/(.*)": "<rootDir>/src/main/resources/META-INF/resources/js/$1.js"
-		},
 		"modulePathIgnorePatterns": [
-			"/__fixtures__/",
-			"/__mock__/",
-			"/classes/"
-		],
-		"setupFiles": [
-			"<rootDir>/jest-setup.config.js"
+			"/__mock__/"
 		],
 		"snapshotSerializers": [
 			"metal-jest-serializer"
 		],
 		"testPathIgnorePatterns": [
 			"FormRenderer"
-		],
-		"transform": {
-			".+": "./jest-workspaces-transform.js"
-		}
+		]
 	},
 	"main": "./",
 	"name": "dynamic-data-mapping-form-renderer",

@@ -105,6 +105,7 @@ import com.liferay.portal.kernel.portlet.PortletBagPool;
 import com.liferay.portal.kernel.portlet.PortletConfigFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletInstanceFactoryUtil;
+import com.liferay.portal.kernel.portlet.PortletModeFactory;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletQNameUtil;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
@@ -1217,9 +1218,8 @@ public class PortalImpl implements Portal {
 		throws PortalException {
 
 		String modelName = resourcePermission.getName();
-		String primKey = resourcePermission.getPrimKey();
 
-		return getBaseModel(modelName, primKey);
+		return getBaseModel(modelName, resourcePermission.getPrimKey());
 	}
 
 	@Override
@@ -3442,9 +3442,7 @@ public class PortalImpl implements Portal {
 
 		if ((layout != null) && !layout.isTypeControlPanel()) {
 			try {
-				long scopeGroupId = getScopeGroupId(httpServletRequest);
-
-				groupId = getSiteGroupId(scopeGroupId);
+				groupId = getSiteGroupId(getScopeGroupId(httpServletRequest));
 			}
 			catch (Exception e) {
 			}
@@ -4413,12 +4411,10 @@ public class PortalImpl implements Portal {
 
 					String publicRenderParameterIdentifier =
 						qName.getLocalPart();
-					String publicRenderParameterName =
-						PortletQNameUtil.getPublicRenderParameterName(qName);
 
 					prpIdentifiers.put(
 						publicRenderParameterIdentifier,
-						publicRenderParameterName);
+						PortletQNameUtil.getPublicRenderParameterName(qName));
 				}
 
 				FriendlyURLMapperThreadLocal.setPRPIdentifiers(prpIdentifiers);
@@ -4828,9 +4824,8 @@ public class PortalImpl implements Portal {
 	public long getScopeGroupId(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		String portletId = getPortletId(httpServletRequest);
-
-		return getScopeGroupId(httpServletRequest, portletId);
+		return getScopeGroupId(
+			httpServletRequest, getPortletId(httpServletRequest));
 	}
 
 	@Override
@@ -5553,11 +5548,8 @@ public class PortalImpl implements Portal {
 		HttpServletRequestWrapper requestWrapper =
 			(HttpServletRequestWrapper)dynamicRequest.getRequest();
 
-		UploadServletRequest uploadServletRequest = getUploadServletRequest(
-			requestWrapper);
-
 		return new UploadPortletRequestImpl(
-			uploadServletRequest, liferayPortletRequest,
+			getUploadServletRequest(requestWrapper), liferayPortletRequest,
 			getPortletNamespace(liferayPortletRequest.getPortletName()));
 	}
 
@@ -5987,9 +5979,7 @@ public class PortalImpl implements Portal {
 	public String getUserPassword(HttpServletRequest httpServletRequest) {
 		httpServletRequest = getOriginalServletRequest(httpServletRequest);
 
-		HttpSession session = httpServletRequest.getSession();
-
-		return getUserPassword(session);
+		return getUserPassword(httpServletRequest.getSession());
 	}
 
 	@Override
@@ -6415,9 +6405,7 @@ public class PortalImpl implements Portal {
 			return true;
 		}
 
-		long companyId = getCompanyId(httpServletRequest);
-
-		if (SSOUtil.isLoginRedirectRequired(companyId)) {
+		if (SSOUtil.isLoginRedirectRequired(getCompanyId(httpServletRequest))) {
 			return true;
 		}
 
@@ -6483,9 +6471,8 @@ public class PortalImpl implements Portal {
 
 	@Override
 	public boolean isRightToLeft(HttpServletRequest httpServletRequest) {
-		String languageId = LanguageUtil.getLanguageId(httpServletRequest);
-
-		Locale locale = LocaleUtil.fromLanguageId(languageId);
+		Locale locale = LocaleUtil.fromLanguageId(
+			LanguageUtil.getLanguageId(httpServletRequest));
 
 		String langDir = LanguageUtil.get(locale, LanguageConstants.KEY_DIR);
 
@@ -6880,12 +6867,9 @@ public class PortalImpl implements Portal {
 			PortletRequest portletRequest, PortletResponse portletResponse)
 		throws IOException, ServletException {
 
-		HttpServletRequest httpServletRequest = getHttpServletRequest(
-			portletRequest);
-		HttpServletResponse httpServletResponse = getHttpServletResponse(
-			portletResponse);
-
-		sendRSSFeedsDisabledError(httpServletRequest, httpServletResponse);
+		sendRSSFeedsDisabledError(
+			getHttpServletRequest(portletRequest),
+			getHttpServletResponse(portletResponse));
 	}
 
 	@Override
@@ -7132,15 +7116,21 @@ public class PortalImpl implements Portal {
 			return PortletMode.VIEW;
 		}
 
+		Portlet portlet = PortletLocalServiceUtil.getPortletById(
+			getCompanyId(httpServletRequest), portletId);
+
+		Set<String> allPortletModes = portlet.getAllPortletModes();
+
+		if (!allPortletModes.contains(portletMode.toString())) {
+			return PortletModeFactory.getPortletMode(null, 3);
+		}
+
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
 		PermissionChecker permissionChecker =
 			themeDisplay.getPermissionChecker();
-
-		Portlet portlet = PortletLocalServiceUtil.getPortletById(
-			getCompanyId(httpServletRequest), portletId);
 
 		boolean updateLayout = false;
 
@@ -7869,10 +7859,16 @@ public class PortalImpl implements Portal {
 			LayoutTypePortlet layoutTypePortlet =
 				(LayoutTypePortlet)layout.getLayoutType();
 
-			if (layoutTypePortlet.hasPortletId(portletId, true) &&
-				(getScopeGroupId(layout, portletId) == scopeGroupId)) {
+			if (getScopeGroupId(layout, portletId) != scopeGroupId) {
+				continue;
+			}
 
-				return layout.getPlid();
+			for (Portlet portlet : layoutTypePortlet.getAllPortlets()) {
+				if (portletId.equals(portlet.getPortletId()) ||
+					portletId.equals(portlet.getRootPortletId())) {
+
+					return layout.getPlid();
+				}
 			}
 		}
 
@@ -8137,9 +8133,7 @@ public class PortalImpl implements Portal {
 	}
 
 	protected boolean isValidPortalDomain(String domain) {
-		long companyId = CompanyThreadLocal.getCompanyId();
-
-		return isValidPortalDomain(companyId, domain);
+		return isValidPortalDomain(CompanyThreadLocal.getCompanyId(), domain);
 	}
 
 	protected boolean isValidVirtualHostname(String virtualHostname) {
@@ -8180,10 +8174,8 @@ public class PortalImpl implements Portal {
 	}
 
 	protected String removeRedirectParameter(String url) {
-		String queryString = HttpUtil.getQueryString(url);
-
 		Map<String, String[]> parameterMap = HttpUtil.getParameterMap(
-			queryString);
+			HttpUtil.getQueryString(url));
 
 		for (String parameter : parameterMap.keySet()) {
 			if (parameter.endsWith("redirect")) {

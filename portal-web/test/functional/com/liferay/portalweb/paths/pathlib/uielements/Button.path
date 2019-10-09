@@ -19,6 +19,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADD_ADDRESS</td>
+	<td>//a[contains(@class,'add-address')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ADD_ANNOUNCEMENT</td>
 	<td>//span[contains(.,'Add Announcement')]</td>
 	<td></td>
@@ -169,6 +174,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>COMMENT</td>
+	<td>//button/span[contains(.,'Comment')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>COMPARE_VERSIONS</td>
 	<td>//button[contains(@id,'compare')]</td>
 	<td></td>
@@ -211,6 +221,11 @@
 <tr>
 	<td>DELETE_ENTRY</td>
 	<td>//li[contains(@class,'nav-item navbar-breakpoint')]//a/*[name()='svg'][contains(@class,'lexicon-icon')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DELETE_FRAGMENT_COMMENT</td>
+	<td>//button[contains(@class,'fragments-editor')]/span[contains(.,'Delete')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -370,7 +385,7 @@
 </tr>
 <tr>
 	<td>MOVE_TO_RECYCLE_BIN</td>
-	<td>//a[contains(@class,'btn') and contains(.,'Move to Recycle Bin')] | //button[contains(.,'Move to Recycle Bin')]</td>
+	<td>//a[contains(@class,'btn') and contains(.,'Move to Recycle Bin')] | //button[contains(.,'Move to Recycle Bin')] | //*[contains(@class, 'icon-trash')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -386,6 +401,11 @@
 <tr>
 	<td>OK</td>
 	<td>//button[contains(.,'OK')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PALETTE_ITEM</td>
+	<td>//li[contains(@class,'palette-item')]//button[contains(@class,'bg-${key_paletteItem}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -406,6 +426,11 @@
 <tr>
 	<td>PLUS</td>
 	<td>//*[@data-qa-id='addButton'] | //a[contains(@class,'btn') and @aria-label='add'] | //a[contains(@class,'btn') and *[contains(@class,'icon-plus')]] | //button[*[contains(@class,'icon-plus')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PLUS_IE</td>
+	<td>//a[contains(@class,'nav-btn-monospaced')] | //button[@data-title='New' or @title='New']</td>
 	<td></td>
 </tr>
 <tr>
@@ -454,6 +479,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>REOPEN</td>
+	<td>//button/span[*[name()='svg'][contains(@class,'lexicon-icon-check-circle-full')]]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>REPLACE_CERTIFICATE</td>
 	<td>//button[contains(@onclick,'${key_certificateUsage}')]/span[contains(.,'Replace Certificate')]</td>
 	<td></td>
@@ -469,6 +499,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>REPLY_DISABLED</td>
+	<td>//button[contains(.,'Reply')][@disabled='']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>REPORT</td>
 	<td>//button[contains(.,'Report')]</td>
 	<td></td>
@@ -476,6 +511,16 @@
 <tr>
 	<td>RESET_CHANGES</td>
 	<td>//button[contains(.,'Reset Changes')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESET_VALUES</td>
+	<td>//button/span[contains(.,'Reset Values')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>RESOLVE</td>
+	<td>//button/span[*[name()='svg'][contains(@class,'lexicon-icon-check-circle')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -519,13 +564,13 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SHARE</td>
-	<td>//div[contains(@class,'btn-group-item')]/button[contains(@class,'btn') and contains(.,'Share')]</td>
+	<td>SEARCH</td>
+	<td>//*[@data-qa-id='searchButton'] | //button[contains(.,'Search')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>SEARCH</td>
-	<td>//*[@data-qa-id='searchButton'] | //button[contains(.,'Search')]</td>
+	<td>SEARCH_DISABLED</td>
+	<td>//button[contains(.,'Search')][@disabled='']</td>
 	<td></td>
 </tr>
 <tr>
@@ -576,6 +621,16 @@
 <tr>
 	<td>SEND_PASSWORD_RESET_LINK</td>
 	<td>//button[contains(.,'Send Password Reset Link')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHARE_SIDEBAR</td>
+	<td>//div[contains(@class,'btn-group-item')]/button[contains(@class,'btn') and contains(.,'Share')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SHARE_SIDENAV</td>
+	<td>//a[contains(@class,'btn')][contains(.,'Share')]</td>
 	<td></td>
 </tr>
 <tr>

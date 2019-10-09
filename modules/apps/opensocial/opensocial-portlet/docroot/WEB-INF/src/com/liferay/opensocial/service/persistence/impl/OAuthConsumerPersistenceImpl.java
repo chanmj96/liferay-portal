@@ -48,8 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The persistence implementation for the o auth consumer service.
  *
@@ -60,12 +58,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class OAuthConsumerPersistenceImpl
 	extends BasePersistenceImpl<OAuthConsumer>
 	implements OAuthConsumerPersistence {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Always use <code>OAuthConsumerUtil</code> to access the o auth consumer persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
@@ -149,14 +146,14 @@ public class OAuthConsumerPersistenceImpl
 	 * @param start the lower bound of the range of o auth consumers
 	 * @param end the upper bound of the range of o auth consumers (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching o auth consumers
 	 */
 	@Override
 	public List<OAuthConsumer> findByGadgetKey(
 		String gadgetKey, int start, int end,
 		OrderByComparator<OAuthConsumer> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		gadgetKey = Objects.toString(gadgetKey, "");
 
@@ -168,10 +165,13 @@ public class OAuthConsumerPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByGadgetKey;
-			finderArgs = new Object[] {gadgetKey};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByGadgetKey;
+				finderArgs = new Object[] {gadgetKey};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByGadgetKey;
 			finderArgs = new Object[] {
 				gadgetKey, start, end, orderByComparator
@@ -180,7 +180,7 @@ public class OAuthConsumerPersistenceImpl
 
 		List<OAuthConsumer> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<OAuthConsumer>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
@@ -257,10 +257,14 @@ public class OAuthConsumerPersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -693,21 +697,25 @@ public class OAuthConsumerPersistenceImpl
 	 *
 	 * @param gadgetKey the gadget key
 	 * @param serviceName the service name
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching o auth consumer, or <code>null</code> if a matching o auth consumer could not be found
 	 */
 	@Override
 	public OAuthConsumer fetchByG_S(
-		String gadgetKey, String serviceName, boolean retrieveFromCache) {
+		String gadgetKey, String serviceName, boolean useFinderCache) {
 
 		gadgetKey = Objects.toString(gadgetKey, "");
 		serviceName = Objects.toString(serviceName, "");
 
-		Object[] finderArgs = new Object[] {gadgetKey, serviceName};
+		Object[] finderArgs = null;
+
+		if (useFinderCache) {
+			finderArgs = new Object[] {gadgetKey, serviceName};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
 				_finderPathFetchByG_S, finderArgs, this);
 		}
@@ -771,14 +779,22 @@ public class OAuthConsumerPersistenceImpl
 				List<OAuthConsumer> list = q.list();
 
 				if (list.isEmpty()) {
-					FinderCacheUtil.putResult(
-						_finderPathFetchByG_S, finderArgs, list);
+					if (useFinderCache) {
+						FinderCacheUtil.putResult(
+							_finderPathFetchByG_S, finderArgs, list);
+					}
 				}
 				else {
 					if (list.size() > 1) {
 						Collections.sort(list, Collections.reverseOrder());
 
 						if (_log.isWarnEnabled()) {
+							if (!useFinderCache) {
+								finderArgs = new Object[] {
+									gadgetKey, serviceName
+								};
+							}
+
 							_log.warn(
 								"OAuthConsumerPersistenceImpl.fetchByG_S(String, String, boolean) with parameters (" +
 									StringUtil.merge(finderArgs) +
@@ -794,7 +810,10 @@ public class OAuthConsumerPersistenceImpl
 				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(_finderPathFetchByG_S, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(
+						_finderPathFetchByG_S, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -1394,13 +1413,13 @@ public class OAuthConsumerPersistenceImpl
 	 * @param start the lower bound of the range of o auth consumers
 	 * @param end the upper bound of the range of o auth consumers (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of o auth consumers
 	 */
 	@Override
 	public List<OAuthConsumer> findAll(
 		int start, int end, OrderByComparator<OAuthConsumer> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -1410,17 +1429,20 @@ public class OAuthConsumerPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<OAuthConsumer> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<OAuthConsumer>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 		}
@@ -1470,10 +1492,14 @@ public class OAuthConsumerPersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}

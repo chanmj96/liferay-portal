@@ -61,10 +61,8 @@ public class JSONSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testJSONDependencyVersions() throws Exception {
-		test(
-			"modules/apps/SFTest/package.testjson",
-			"Version for 'frontend-js-web' should start with '^'");
+	public void testIncorrectEmptyLines() throws Exception {
+		test("IncorrectEmptyLines.testjson");
 	}
 
 	@Test

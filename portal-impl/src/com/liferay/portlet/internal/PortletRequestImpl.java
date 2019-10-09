@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.internal;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ccpp.PortalProfileFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -28,6 +29,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletSession;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
+import com.liferay.portal.kernel.portlet.PortletModeFactory;
 import com.liferay.portal.kernel.portlet.PortletQName;
 import com.liferay.portal.kernel.portlet.PortletQNameUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
@@ -336,7 +338,7 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 
 	@Override
 	public PortletSession getPortletSession() {
-		return _session;
+		return _portletSessionImpl;
 	}
 
 	@Override
@@ -345,7 +347,7 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 			return null;
 		}
 
-		return _session;
+		return _portletSessionImpl;
 	}
 
 	@Override
@@ -525,8 +527,8 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 
 	@Override
 	public String getRequestedSessionId() {
-		if (_session != null) {
-			return _session.getId();
+		if (_portletSessionImpl != null) {
+			return _portletSessionImpl.getId();
 		}
 
 		HttpSession session = _httpServletRequest.getSession(false);
@@ -819,6 +821,17 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 
 		_processCheckbox(dynamicRequest);
 
+		if (!isPortletModeAllowed(portletMode)) {
+			portletMode = PortletModeFactory.getPortletMode(null, 3);
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unsupported portlet mode ", portletMode,
+						" for portlet ", portlet.getPortletName()));
+			}
+		}
+
 		_httpServletRequest = dynamicRequest;
 		_originalHttpServletRequest = httpServletRequest;
 		_portlet = portlet;
@@ -827,7 +840,7 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 		_windowState = windowState;
 		_portletMode = portletMode;
 		_preferences = preferences;
-		_session = new PortletSessionImpl(
+		_portletSessionImpl = new PortletSessionImpl(
 			_httpServletRequest.getSession(), _portletContext, _portletName,
 			plid);
 
@@ -1019,7 +1032,7 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 
 	@Override
 	public boolean isRequestedSessionIdValid() {
-		if (_session.isInvalidated() || _invalidSession) {
+		if (_portletSessionImpl.isInvalidated() || _invalidSession) {
 			return false;
 		}
 
@@ -1179,22 +1192,21 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 				PortletQNameUtil.getPublicRenderParameterName(
 					publicRenderParameter.getQName());
 
-			String ignoreKey = PublicRenderParameterConfiguration.getIgnoreKey(
-				publicRenderParameterName);
-
 			boolean ignoreValue = GetterUtil.getBoolean(
-				preferences.getValue(ignoreKey, null));
+				preferences.getValue(
+					PublicRenderParameterConfiguration.getIgnoreKey(
+						publicRenderParameterName),
+					null));
 
 			if (ignoreValue) {
 				continue;
 			}
 
-			String mappingKey =
-				PublicRenderParameterConfiguration.getMappingKey(
-					publicRenderParameterName);
-
 			String mappingValue = GetterUtil.getString(
-				preferences.getValue(mappingKey, null));
+				preferences.getValue(
+					PublicRenderParameterConfiguration.getMappingKey(
+						publicRenderParameterName),
+					null));
 
 			HttpServletRequest httpServletRequest =
 				(HttpServletRequest)dynamicRequest.getRequest();
@@ -1262,13 +1274,13 @@ public abstract class PortletRequestImpl implements LiferayPortletRequest {
 	private PortletMode _portletMode;
 	private String _portletName;
 	private HttpServletRequest _portletRequestDispatcherHttpServletRequest;
+	private PortletSessionImpl _portletSessionImpl;
 	private int _portletSpecMajorVersion;
 	private PortletPreferences _preferences;
 	private Profile _profile;
 	private String _remoteUser;
 	private long _remoteUserId;
 	private RenderParameters _renderParameters;
-	private PortletSessionImpl _session;
 	private boolean _triggeredByActionURL;
 	private Principal _userPrincipal;
 	private WindowState _windowState;

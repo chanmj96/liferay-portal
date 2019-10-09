@@ -16,8 +16,6 @@ package com.liferay.sync.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link SyncDLObjectService}.
  *
@@ -25,14 +23,18 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SyncDLObjectService
  * @generated
  */
-@ProviderType
 public class SyncDLObjectServiceWrapper
-	implements SyncDLObjectService, ServiceWrapper<SyncDLObjectService> {
+	implements ServiceWrapper<SyncDLObjectService>, SyncDLObjectService {
 
 	public SyncDLObjectServiceWrapper(SyncDLObjectService syncDLObjectService) {
 		_syncDLObjectService = syncDLObjectService;
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this interface directly. Always use {@link SyncDLObjectServiceUtil} to access the sync dl object remote service. Add custom service methods to <code>com.liferay.sync.service.impl.SyncDLObjectServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 */
 	@Override
 	public com.liferay.sync.model.SyncDLObject addFileEntry(
 			long repositoryId, long folderId, String sourceFileName,

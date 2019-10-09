@@ -12,8 +12,6 @@
  * details.
  */
 
-/* eslint no-unused-vars: "warn" */
-
 import MapBase from '../../src/main/resources/META-INF/resources/js/MapBase.es';
 
 describe('MapBase', () => {
@@ -32,7 +30,7 @@ describe('MapBase', () => {
 		}
 
 		_createMap(location, controlsConfig) {
-			return {name: 'map', location, controlsConfig};
+			return {controlsConfig, location, name: 'map'};
 		}
 
 		getBounds() {
@@ -52,11 +50,11 @@ describe('MapBase', () => {
 		};
 	});
 
-	const DialogImpl = jest.fn().mockImplementation(({map}) => {});
+	const DialogImpl = jest.fn().mockImplementation(() => {});
 
 	const geocoderImpl = {
 		reverse(location, cb) {
-			cb({data: {name: 'data', location}});
+			cb({data: {location, name: 'data'}});
 		}
 	};
 
@@ -66,7 +64,7 @@ describe('MapBase', () => {
 		on: jest.fn()
 	};
 
-	const GeoJSONImpl = jest.fn().mockImplementation(({map}) => geoJSONImpl);
+	const GeoJSONImpl = jest.fn().mockImplementation(() => geoJSONImpl);
 
 	beforeEach(() => {
 		window.Liferay = {
@@ -89,10 +87,10 @@ describe('MapBase', () => {
 		jest.spyOn(mapImpl, 'setCenter');
 
 		bounds = {
-			locations: [],
 			extend(location) {
 				this.locations.push(location);
-			}
+			},
+			locations: []
 		};
 	});
 
@@ -274,7 +272,7 @@ describe('MapBase', () => {
 		it('passes the existing map to the dialog constructor', () => {
 			mapImpl._map = Math.random();
 
-			const dialog = mapImpl._getDialog();
+			mapImpl._getDialog();
 
 			expect(MapImpl.DialogImpl.mock.calls[0][0].map).toBe(mapImpl._map);
 		});
@@ -494,7 +492,7 @@ describe('MapBase', () => {
 
 			mapImpl._handleGeoLocationMarkerDragended({location});
 
-			expect(mapImpl.position).toEqual({name: 'data', location});
+			expect(mapImpl.position).toEqual({location, name: 'data'});
 		});
 	});
 

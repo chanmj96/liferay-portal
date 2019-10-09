@@ -20,7 +20,7 @@
 
 <liferay-ui:success key="layoutPublished" message="the-page-was-published-succesfully" />
 
-<liferay-ui:error embed="<%= false %>" exception="<%= GroupInheritContentException.class %>" message="this-page-cannot-be-deleted-and-cannot-have-child-pages-because-it-is-associated-to-a-site-template" />
+<liferay-ui:error embed="<%= false %>" exception="<%= GroupInheritContentException.class %>" message="this-page-cannot-be-deleted-and-cannot-have-child-pages-because-it-is-associated-with-a-site-template" />
 
 <clay:navigation-bar
 	inverted="<%= true %>"
@@ -41,6 +41,8 @@
 		<liferay-ui:message arguments='<%= "layout.types." + lte.getLayoutType() %>' key="the-first-page-cannot-be-of-type-x" />
 	</c:if>
 </liferay-ui:error>
+
+<liferay-ui:error exception="<%= RequiredSegmentsExperienceException.MustNotDeleteSegmentsExperienceReferencedBySegmentsExperiments.class %>" message="this-page-cannot-be-deleted-because-it-has-ab-tests-in-progress" />
 
 <portlet:actionURL name="/layout/delete_layout" var="deleteLayoutURL">
 	<portlet:param name="redirect" value="<%= currentURL %>" />

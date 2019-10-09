@@ -29,7 +29,6 @@
 						path:
 							'control_menu/js/product_navigation_control_menu_add_application.js',
 						requires: [
-							'aui-io-request',
 							'event-key',
 							'event-mouseenter',
 							'liferay-panel-search',
@@ -57,12 +56,10 @@
 							'control_menu/js/product_navigation_control_menu_add_content.js',
 						requires: [
 							'aui-parse-content',
-							'aui-io-request',
 							'liferay-portlet-base',
 							'liferay-product-navigation-control-menu',
 							'liferay-product-navigation-control-menu-add-base',
-							'liferay-product-navigation-control-menu-add-content-search',
-							'liferay-store'
+							'liferay-product-navigation-control-menu-add-content-search'
 						]
 					},
 					'liferay-product-navigation-control-menu-add-content-drag-drop': {
@@ -90,7 +87,7 @@
 						condition: {
 							name:
 								'liferay-product-navigation-control-menu-portlet-dd',
-							test: function(A) {
+							test(A) {
 								return !A.UA.mobile;
 							},
 							trigger: [

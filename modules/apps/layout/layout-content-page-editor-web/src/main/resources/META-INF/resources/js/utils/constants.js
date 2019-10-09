@@ -40,6 +40,17 @@ export const COMPATIBLE_TYPES = {
 
 	image: ['ddm-image', 'image'],
 
+	link: [
+		'ddm-date',
+		'ddm-decimal',
+		'ddm-integer',
+		'ddm-number',
+		'ddm-text-html',
+		'text',
+		'textarea',
+		'url'
+	],
+
 	'rich-text': [
 		'ddm-date',
 		'ddm-decimal',
@@ -63,17 +74,22 @@ export const COMPATIBLE_TYPES = {
 };
 
 /**
- * Default language id key
+ * Event types for creating the text editor processor
  */
-export const DEFAULT_LANGUAGE_ID_KEY = 'defaultValue';
+export const CREATE_PROCESSOR_EVENT_TYPES = {
+	button: 'button',
+	editable: 'editable'
+};
 
 /**
  * Available editable field config keys
  */
 export const EDITABLE_FIELD_CONFIG_KEYS = {
+	alt: 'alt',
 	imageLink: 'imageLink',
 	imageSource: 'imageSource',
 	imageTarget: 'imageTarget',
+	imageTitle: 'imageTitle',
 	textAlignment: 'textAlignment',
 	textColor: 'textColor',
 	textStyle: 'textStyle'
@@ -91,11 +107,11 @@ export const FLOATING_TOOLBAR_BUTTONS = {
 		type: 'panel'
 	},
 
-	backgroundImage: {
-		icon: 'picture',
-		id: 'background_image',
-		panelId: 'background_image',
-		title: Liferay.Language.get('background-image'),
+	duplicateFragment: {
+		icon: 'paste',
+		id: 'duplicate_fragment',
+		panelId: 'duplicate_fragment',
+		title: Liferay.Language.get('duplicate-fragment'),
 		type: 'panel'
 	},
 
@@ -106,19 +122,19 @@ export const FLOATING_TOOLBAR_BUTTONS = {
 		type: 'editor'
 	},
 
-	fragmentConfiguration: {
-		icon: '',
-		id: 'fragment_configuration',
-		panelId: 'fragment_configuration',
-		title: '',
+	fragmentBackgroundImage: {
+		icon: 'pencil',
+		id: 'fragment_background_image',
+		panelId: 'fragment_background_image',
+		title: Liferay.Language.get('fragment-background-image'),
 		type: 'panel'
 	},
 
-	imageLink: {
-		icon: 'link',
-		id: 'image_properties',
-		panelId: 'image_properties',
-		title: Liferay.Language.get('image-properties'),
+	fragmentConfiguration: {
+		icon: 'cog',
+		id: 'fragment_configuration',
+		panelId: 'fragment_configuration',
+		title: Liferay.Language.get('fragment-configuration'),
 		type: 'panel'
 	},
 
@@ -127,6 +143,14 @@ export const FLOATING_TOOLBAR_BUTTONS = {
 		id: 'image_properties',
 		panelId: 'image_properties',
 		title: Liferay.Language.get('image-properties'),
+		type: 'panel'
+	},
+
+	layoutBackgroundImage: {
+		icon: 'picture',
+		id: 'layout_background_image',
+		panelId: 'layout_background_image',
+		title: Liferay.Language.get('layout-background-image'),
 		type: 'panel'
 	},
 
@@ -151,14 +175,6 @@ export const FLOATING_TOOLBAR_BUTTONS = {
 		id: 'spacing',
 		panelId: 'spacing',
 		title: Liferay.Language.get('spacing'),
-		type: 'panel'
-	},
-
-	textProperties: {
-		icon: 'pencil',
-		id: 'text_properties',
-		panelId: 'text_properties',
-		title: Liferay.Language.get('text-properties'),
 		type: 'panel'
 	}
 };
@@ -192,10 +208,12 @@ export const FRAGMENTS_EDITOR_ITEM_BORDERS = {
  * @type {!object}
  */
 export const FRAGMENTS_EDITOR_ITEM_TYPES = {
+	backgroundImageEditable: 'fragments-editor-background-image-editable',
 	column: 'fragments-editor-column',
 	editable: 'fragments-editor-editable-field',
 	fragment: 'fragments-editor-fragment',
 	fragmentList: 'fragments-editor-fragment-list',
+	mappedItem: 'fragments-editor-mapped-item',
 	row: 'fragments-editor-row'
 };
 
@@ -216,6 +234,14 @@ export const FREEMARKER_FRAGMENT_ENTRY_PROCESSOR =
 	'com.liferay.fragment.entry.processor.freemarker.FreeMarkerFragmentEntryProcessor';
 
 /**
+ * Available mapping source type ids
+ */
+export const MAPPING_SOURCE_TYPE_IDS = {
+	content: 'specific_content',
+	structure: 'structure'
+};
+
+/**
  * Available attributes for target config key
  */
 export const TARGET_TYPES = [
@@ -234,61 +260,5 @@ export const TARGET_TYPES = [
 	{
 		label: Liferay.Language.get('top'),
 		targetTypeId: '_top'
-	}
-];
-
-/**
- * Available values for textAlignmentOptions config key
- */
-export const TEXT_ALIGNMENT_OPTIONS = [
-	{
-		label: Liferay.Language.get('left'),
-		textAlignmentId: 'left'
-	},
-	{
-		label: Liferay.Language.get('center'),
-		textAlignmentId: 'center'
-	},
-	{
-		label: Liferay.Language.get('justify'),
-		textAlignmentId: 'justify'
-	},
-	{
-		label: Liferay.Language.get('right'),
-		textAlignmentId: 'right'
-	}
-];
-
-/**
- * Available values for textStyle config key
- */
-export const TEXT_STYLES = [
-	{
-		label: Liferay.Language.get('normal'),
-		textStyleId: ''
-	},
-	{
-		label: Liferay.Language.get('small'),
-		textStyleId: 'small'
-	},
-	{
-		label: Liferay.Language.get('lead'),
-		textStyleId: 'lead'
-	},
-	{
-		label: Liferay.Util.sub(Liferay.Language.get('heading-x'), '1'),
-		textStyleId: 'h1'
-	},
-	{
-		label: Liferay.Util.sub(Liferay.Language.get('heading-x'), '2'),
-		textStyleId: 'h2'
-	},
-	{
-		label: Liferay.Util.sub(Liferay.Language.get('heading-x'), '3'),
-		textStyleId: 'h3'
-	},
-	{
-		label: Liferay.Util.sub(Liferay.Language.get('heading-x'), '4'),
-		textStyleId: 'h4'
 	}
 ];

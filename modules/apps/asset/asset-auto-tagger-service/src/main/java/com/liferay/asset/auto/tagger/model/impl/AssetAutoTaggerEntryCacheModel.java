@@ -18,6 +18,7 @@ import com.liferay.asset.auto.tagger.model.AssetAutoTaggerEntry;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,17 +27,14 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing AssetAutoTaggerEntry in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AssetAutoTaggerEntryCacheModel
-	implements CacheModel<AssetAutoTaggerEntry>, Externalizable {
+	implements CacheModel<AssetAutoTaggerEntry>, Externalizable, MVCCModel {
 
 	@Override
 	public boolean equals(Object obj) {
@@ -51,8 +49,9 @@ public class AssetAutoTaggerEntryCacheModel
 		AssetAutoTaggerEntryCacheModel assetAutoTaggerEntryCacheModel =
 			(AssetAutoTaggerEntryCacheModel)obj;
 
-		if (assetAutoTaggerEntryId ==
-				assetAutoTaggerEntryCacheModel.assetAutoTaggerEntryId) {
+		if ((assetAutoTaggerEntryId ==
+				assetAutoTaggerEntryCacheModel.assetAutoTaggerEntryId) &&
+			(mvccVersion == assetAutoTaggerEntryCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -62,14 +61,28 @@ public class AssetAutoTaggerEntryCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, assetAutoTaggerEntryId);
+		int hashCode = HashUtil.hash(0, assetAutoTaggerEntryId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(15);
+		StringBundler sb = new StringBundler(17);
 
-		sb.append("{assetAutoTaggerEntryId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", assetAutoTaggerEntryId=");
 		sb.append(assetAutoTaggerEntryId);
 		sb.append(", groupId=");
 		sb.append(groupId);
@@ -93,6 +106,7 @@ public class AssetAutoTaggerEntryCacheModel
 		AssetAutoTaggerEntryImpl assetAutoTaggerEntryImpl =
 			new AssetAutoTaggerEntryImpl();
 
+		assetAutoTaggerEntryImpl.setMvccVersion(mvccVersion);
 		assetAutoTaggerEntryImpl.setAssetAutoTaggerEntryId(
 			assetAutoTaggerEntryId);
 		assetAutoTaggerEntryImpl.setGroupId(groupId);
@@ -122,6 +136,8 @@ public class AssetAutoTaggerEntryCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
 		assetAutoTaggerEntryId = objectInput.readLong();
 
 		groupId = objectInput.readLong();
@@ -137,6 +153,8 @@ public class AssetAutoTaggerEntryCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		objectOutput.writeLong(assetAutoTaggerEntryId);
 
 		objectOutput.writeLong(groupId);
@@ -150,6 +168,7 @@ public class AssetAutoTaggerEntryCacheModel
 		objectOutput.writeLong(assetTagId);
 	}
 
+	public long mvccVersion;
 	public long assetAutoTaggerEntryId;
 	public long groupId;
 	public long companyId;

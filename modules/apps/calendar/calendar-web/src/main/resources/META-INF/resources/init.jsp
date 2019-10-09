@@ -67,6 +67,7 @@ page import="com.liferay.calendar.web.internal.constants.CalendarWebKeys" %><%@
 page import="com.liferay.calendar.web.internal.display.context.CalendarDisplayContext" %><%@
 page import="com.liferay.calendar.web.internal.search.CalendarResourceDisplayTerms" %><%@
 page import="com.liferay.calendar.web.internal.search.CalendarResourceSearch" %><%@
+page import="com.liferay.calendar.web.internal.security.permission.resource.CalendarBookingPermission" %><%@
 page import="com.liferay.calendar.web.internal.security.permission.resource.CalendarPermission" %><%@
 page import="com.liferay.calendar.web.internal.security.permission.resource.CalendarPortletPermission" %><%@
 page import="com.liferay.calendar.web.internal.security.permission.resource.CalendarResourcePermission" %><%@
@@ -88,6 +89,7 @@ page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.model.Group" %><%@
 page import="com.liferay.portal.kernel.model.User" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
+page import="com.liferay.portal.kernel.portlet.PortletURLFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.security.permission.ActionKeys" %><%@
 page import="com.liferay.portal.kernel.security.permission.ResourceActionsUtil" %><%@
 page import="com.liferay.portal.kernel.service.ClassNameLocalServiceUtil" %><%@
@@ -130,7 +132,8 @@ page import="java.util.List" %><%@
 page import="java.util.Objects" %><%@
 page import="java.util.TimeZone" %>
 
-<%@ page import="javax.portlet.PortletURL" %>
+<%@ page import="javax.portlet.PortletRequest" %><%@
+page import="javax.portlet.PortletURL" %>
 
 <liferay-frontend:defineObjects />
 

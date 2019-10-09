@@ -16,6 +16,7 @@ package com.liferay.knowledge.base.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 
@@ -36,9 +37,9 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface KBFolderModel
-	extends BaseModel<KBFolder>, ShardedModel, StagedGroupedModel {
+	extends BaseModel<KBFolder>, MVCCModel, ShardedModel, StagedGroupedModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. All methods that expect a kb folder model instance should use the {@link KBFolder} interface instead.
@@ -57,6 +58,22 @@ public interface KBFolderModel
 	 * @param primaryKey the primary key of this kb folder
 	 */
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this kb folder.
+	 *
+	 * @return the mvcc version of this kb folder
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this kb folder.
+	 *
+	 * @param mvccVersion the mvcc version of this kb folder
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
 
 	/**
 	 * Returns the uuid of this kb folder.

@@ -75,11 +75,9 @@ public class KBArticleImporter {
 			ZipReader zipReader = ZipReaderFactoryUtil.getZipReader(
 				inputStream);
 
-			Map<String, String> metadata = getMetadata(zipReader);
-
 			return processKBArticleFiles(
 				userId, groupId, parentKBFolderId, prioritizeByNumericalPrefix,
-				zipReader, metadata, serviceContext);
+				zipReader, getMetadata(zipReader), serviceContext);
 		}
 		catch (IOException ioe) {
 			throw new KBArticleImportException(ioe);
@@ -214,7 +212,7 @@ public class KBArticleImporter {
 
 			properties.load(inputStream);
 
-			Map<String, String> metadata = new HashMap<>(properties.size());
+			Map<String, String> metadata = new HashMap<>();
 
 			for (Map.Entry<Object, Object> entry : properties.entrySet()) {
 				Object value = entry.getValue();

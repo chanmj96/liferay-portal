@@ -52,8 +52,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the KBTemplate service. Represents a row in the &quot;KBTemplate&quot; database table, with each column mapped to a property of this class.
  *
@@ -66,11 +64,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class KBTemplateModelImpl
 	extends BaseModelImpl<KBTemplate> implements KBTemplateModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a kb template model instance should use the <code>KBTemplate</code> interface instead.
@@ -78,18 +75,19 @@ public class KBTemplateModelImpl
 	public static final String TABLE_NAME = "KBTemplate";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"kbTemplateId", Types.BIGINT},
-		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
-		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
-		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
-		{"title", Types.VARCHAR}, {"content", Types.CLOB},
-		{"lastPublishDate", Types.TIMESTAMP}
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"kbTemplateId", Types.BIGINT}, {"groupId", Types.BIGINT},
+		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
+		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
+		{"modifiedDate", Types.TIMESTAMP}, {"title", Types.VARCHAR},
+		{"content", Types.CLOB}, {"lastPublishDate", Types.TIMESTAMP}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("kbTemplateId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -104,7 +102,7 @@ public class KBTemplateModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table KBTemplate (uuid_ VARCHAR(75) null,kbTemplateId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,title STRING null,content TEXT null,lastPublishDate DATE null)";
+		"create table KBTemplate (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,kbTemplateId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,title STRING null,content TEXT null,lastPublishDate DATE null)";
 
 	public static final String TABLE_SQL_DROP = "drop table KBTemplate";
 
@@ -120,21 +118,6 @@ public class KBTemplateModelImpl
 
 	public static final String TX_MANAGER = "liferayTransactionManager";
 
-	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.knowledge.base.service.util.ServiceProps.get(
-			"value.object.entity.cache.enabled.com.liferay.knowledge.base.model.KBTemplate"),
-		true);
-
-	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.knowledge.base.service.util.ServiceProps.get(
-			"value.object.finder.cache.enabled.com.liferay.knowledge.base.model.KBTemplate"),
-		true);
-
-	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(
-		com.liferay.knowledge.base.service.util.ServiceProps.get(
-			"value.object.column.bitmask.enabled.com.liferay.knowledge.base.model.KBTemplate"),
-		true);
-
 	public static final long COMPANYID_COLUMN_BITMASK = 1L;
 
 	public static final long GROUPID_COLUMN_BITMASK = 2L;
@@ -142,6 +125,14 @@ public class KBTemplateModelImpl
 	public static final long UUID_COLUMN_BITMASK = 4L;
 
 	public static final long MODIFIEDDATE_COLUMN_BITMASK = 8L;
+
+	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
+		_entityCacheEnabled = entityCacheEnabled;
+	}
+
+	public static void setFinderCacheEnabled(boolean finderCacheEnabled) {
+		_finderCacheEnabled = finderCacheEnabled;
+	}
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -156,6 +147,7 @@ public class KBTemplateModelImpl
 
 		KBTemplate model = new KBTemplateImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
 		model.setKbTemplateId(soapModel.getKbTemplateId());
 		model.setGroupId(soapModel.getGroupId());
@@ -190,10 +182,6 @@ public class KBTemplateModelImpl
 
 		return models;
 	}
-
-	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
-		com.liferay.knowledge.base.service.util.ServiceProps.get(
-			"lock.expiration.time.com.liferay.knowledge.base.model.KBTemplate"));
 
 	public KBTemplateModelImpl() {
 	}
@@ -319,6 +307,10 @@ public class KBTemplateModelImpl
 		Map<String, BiConsumer<KBTemplate, ?>> attributeSetterBiConsumers =
 			new LinkedHashMap<String, BiConsumer<KBTemplate, ?>>();
 
+		attributeGetterFunctions.put("mvccVersion", KBTemplate::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<KBTemplate, Long>)KBTemplate::setMvccVersion);
 		attributeGetterFunctions.put("uuid", KBTemplate::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid", (BiConsumer<KBTemplate, String>)KBTemplate::setUuid);
@@ -366,6 +358,17 @@ public class KBTemplateModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -609,6 +612,7 @@ public class KBTemplateModelImpl
 	public Object clone() {
 		KBTemplateImpl kbTemplateImpl = new KBTemplateImpl();
 
+		kbTemplateImpl.setMvccVersion(getMvccVersion());
 		kbTemplateImpl.setUuid(getUuid());
 		kbTemplateImpl.setKbTemplateId(getKbTemplateId());
 		kbTemplateImpl.setGroupId(getGroupId());
@@ -671,12 +675,12 @@ public class KBTemplateModelImpl
 
 	@Override
 	public boolean isEntityCacheEnabled() {
-		return ENTITY_CACHE_ENABLED;
+		return _entityCacheEnabled;
 	}
 
 	@Override
 	public boolean isFinderCacheEnabled() {
-		return FINDER_CACHE_ENABLED;
+		return _finderCacheEnabled;
 	}
 
 	@Override
@@ -701,6 +705,8 @@ public class KBTemplateModelImpl
 	@Override
 	public CacheModel<KBTemplate> toCacheModel() {
 		KBTemplateCacheModel kbTemplateCacheModel = new KBTemplateCacheModel();
+
+		kbTemplateCacheModel.mvccVersion = getMvccVersion();
 
 		kbTemplateCacheModel.uuid = getUuid();
 
@@ -842,6 +848,10 @@ public class KBTemplateModelImpl
 
 	}
 
+	private static boolean _entityCacheEnabled;
+	private static boolean _finderCacheEnabled;
+
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _kbTemplateId;

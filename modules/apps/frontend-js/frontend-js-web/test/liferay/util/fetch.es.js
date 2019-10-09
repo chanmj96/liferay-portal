@@ -12,53 +12,153 @@
  * details.
  */
 
-/* eslint no-undef: "warn" */
-
 'use strict';
 
-import fetch from '../../../src/main/resources/META-INF/resources/liferay/util/fetch.es';
+import fetchWrapper from '../../../src/main/resources/META-INF/resources/liferay/util/fetch.es';
 
 describe('Liferay.Util.fetch', () => {
 	const sampleUrl = 'http://sampleurl.com';
 
-	it('applies default settings if none are given', () => {
-		global.fetch = jest.fn((resource, init) => {
-			expect(init).toEqual({
-				credentials: 'include'
-			});
-		});
-
-		fetch(sampleUrl);
-
-		global.fetch.mockRestore();
+	beforeEach(() => {
+		fetch.mockResponse('');
 	});
 
-	it('overrides a default setting with given setting', () => {
-		global.fetch = jest.fn((resource, init) => {
-			expect(init).toEqual({
-				credentials: 'omit'
-			});
-		});
+	it('applies default settings if none are given', () => {
+		fetchWrapper(sampleUrl);
 
-		fetch(sampleUrl, {
-			credentials: 'omit'
-		});
+		const init = {
+			credentials: 'include',
+			headers: new Headers({
+				'x-csrf-token': 'default-mocked-auth-token'
+			})
+		};
 
-		global.fetch.mockRestore();
+		expect(fetch).toHaveBeenCalledWith(sampleUrl, init);
+	});
+
+	it('overrides default settings with given settings', () => {
+		const init = {
+			credentials: 'omit',
+			headers: {
+				'x-csrf-token': 'efgh'
+			}
+		};
+
+		fetchWrapper(sampleUrl, init);
+
+		const mergedInit = {
+			credentials: 'omit',
+			headers: new Headers({
+				'x-csrf-token': 'efgh'
+			})
+		};
+
+		expect(fetch).toHaveBeenCalledWith(sampleUrl, mergedInit);
 	});
 
 	it('merges default settings with given different settings', () => {
-		global.fetch = jest.fn((resource, init) => {
-			expect(init).toEqual({
-				credentials: 'include',
-				method: 'get'
-			});
-		});
+		const init = {
+			headers: {
+				'content-type': 'application/json'
+			},
+			method: 'GET'
+		};
 
-		fetch(sampleUrl, {
-			method: 'get'
-		});
+		fetchWrapper(sampleUrl, init);
 
-		global.fetch.mockRestore();
+		const mergedInit = {
+			credentials: 'include',
+			headers: new Headers({
+				'content-type': 'application/json',
+				'x-csrf-token': 'default-mocked-auth-token'
+			}),
+			method: 'GET'
+		};
+
+		expect(fetch).toHaveBeenCalledWith(sampleUrl, mergedInit);
+	});
+
+	it('sets given headers to lower-case before merging with defaults', () => {
+		const init = {
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRF-token': 'efgh'
+			}
+		};
+
+		fetchWrapper(sampleUrl, init);
+
+		const mergedInit = {
+			credentials: 'include',
+			headers: new Headers({
+				'content-type': 'application/json',
+				'x-csrf-token': 'efgh'
+			})
+		};
+
+		expect(fetch).toHaveBeenCalledWith(sampleUrl, mergedInit);
+	});
+
+	it('merges given multiple headers, setting name to lower-case', () => {
+		const init = {
+			headers: {
+				'Content-Type': 'application/json',
+				'Content-type': 'multipart/form-data'
+			}
+		};
+
+		fetchWrapper(sampleUrl, init);
+
+		const mergedInit = {
+			credentials: 'include',
+			headers: new Headers({
+				'content-type': 'application/json, multipart/form-data',
+				'x-csrf-token': 'default-mocked-auth-token'
+			})
+		};
+
+		expect(fetch).toHaveBeenCalledWith(sampleUrl, mergedInit);
+	});
+
+	it('allows given headers to be an array of arrays', () => {
+		const init = {
+			headers: [
+				['content-type', 'application/json'],
+				['x-csrf-token', 'efgh']
+			]
+		};
+
+		fetchWrapper(sampleUrl, init);
+
+		const mergedInit = {
+			credentials: 'include',
+			headers: new Headers({
+				'content-type': 'application/json',
+				'x-csrf-token': 'efgh'
+			})
+		};
+
+		expect(fetch).toHaveBeenCalledWith(sampleUrl, mergedInit);
+	});
+
+	it('allows given headers to be a Headers object', () => {
+		const init = {
+			headers: new Headers({
+				'content-type': 'application/json',
+				'x-csrf-token': 'efgh'
+			})
+		};
+
+		fetchWrapper(sampleUrl, init);
+
+		const mergedInit = {
+			credentials: 'include',
+			headers: new Headers({
+				'content-type': 'application/json',
+				'x-csrf-token': 'efgh'
+			})
+		};
+
+		expect(fetch).toHaveBeenCalledWith(sampleUrl, mergedInit);
 	});
 });

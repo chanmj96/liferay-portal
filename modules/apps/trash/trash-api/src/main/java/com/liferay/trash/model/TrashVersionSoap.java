@@ -19,20 +19,18 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class TrashVersionSoap implements Serializable {
 
 	public static TrashVersionSoap toSoapModel(TrashVersion model) {
 		TrashVersionSoap soapModel = new TrashVersionSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setVersionId(model.getVersionId());
 		soapModel.setCompanyId(model.getCompanyId());
 		soapModel.setEntryId(model.getEntryId());
@@ -93,6 +91,14 @@ public class TrashVersionSoap implements Serializable {
 		setVersionId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
 	public long getVersionId() {
 		return _versionId;
 	}
@@ -149,6 +155,7 @@ public class TrashVersionSoap implements Serializable {
 		_status = status;
 	}
 
+	private long _mvccVersion;
 	private long _versionId;
 	private long _companyId;
 	private long _entryId;

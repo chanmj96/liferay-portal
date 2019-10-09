@@ -395,7 +395,7 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 		Map<String, DDMFormField> ddmFormFieldsMap =
 			ddmForm.getDDMFormFieldsMap(true);
 
-		Set<String> ddmFormFieldsNames = new HashSet<>(ddmFormFieldsMap.size());
+		Set<String> ddmFormFieldsNames = new HashSet<>();
 
 		for (String ddmFormFieldName : ddmFormFieldsMap.keySet()) {
 			ddmFormFieldsNames.add(StringUtil.toLowerCase(ddmFormFieldName));
@@ -1126,10 +1126,7 @@ public class UpgradeDynamicDataMapping extends UpgradeProcess {
 
 					long expandoRowId = rs.getLong("classPK");
 
-					Map<String, String> expandoValuesMap = getExpandoValuesMap(
-						expandoRowId);
-
-					String xml = toXML(expandoValuesMap);
+					String xml = toXML(getExpandoValuesMap(expandoRowId));
 
 					ps2.setString(1, PortalUUIDUtil.generate());
 					ps2.setLong(2, expandoRowId);

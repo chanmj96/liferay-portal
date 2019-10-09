@@ -1,4 +1,4 @@
-@import 'mixins';
+@import 'atlas-variables';
 
 .portlet-users-admin {
 	#header-bottom {
@@ -47,7 +47,7 @@
 		margin-right: 2%;
 		width: 12%;
 
-		@include respond-to(phone) {
+		@include media-breakpoint-down(sm) {
 			float: none;
 			width: auto;
 		}
@@ -124,7 +124,6 @@
 	.social-network {
 		clear: both;
 		margin-bottom: 2em;
-		overflow: hidden;
 
 		img {
 			margin-left: 1em;
@@ -220,7 +219,7 @@
 	.user-status-selector {
 		margin-top: 5px;
 
-		@include respond-to(tablet, desktop) {
+		@include media-breakpoint-up(md) {
 			float: right;
 			margin-top: 0;
 		}
@@ -232,13 +231,13 @@
 		.input-select-wrapper {
 			width: 100%;
 
-			@include respond-to(tablet, desktop) {
+			@include media-breakpoint-up(md) {
 				width: auto;
 			}
 		}
 	}
 
-	@include respond-to(tablet, desktop) {
+	@include media-breakpoint-up(md) {
 		.user-table button {
 			float: left;
 		}
@@ -279,7 +278,7 @@
 			}
 		}
 
-		@media (min-width: $screen-desktop) {
+		@include media-breakpoint-up(lg) {
 			table {
 				table-layout: fixed;
 			}

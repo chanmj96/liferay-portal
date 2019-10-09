@@ -38,7 +38,7 @@ public class PropertiesPortalFileCheck extends BaseFileCheck {
 		throws IOException {
 
 		if (((isPortalSource() || isSubrepository()) &&
-			 fileName.matches(".*portal-legacy-.*\\.properties")) ||
+			 fileName.matches(".*/portal(-[^-]+)*\\.properties")) ||
 			(!isPortalSource() && !isSubrepository() &&
 			 fileName.endsWith("portal.properties"))) {
 
@@ -66,6 +66,10 @@ public class PropertiesPortalFileCheck extends BaseFileCheck {
 
 			while ((line = unsyncBufferedReader.readLine()) != null) {
 				lineNumber++;
+
+				if (line.matches(" *#.*")) {
+					continue;
+				}
 
 				int pos = line.indexOf(CharPool.EQUAL);
 

@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link BookmarksEntry}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see BookmarksEntry
  * @generated
  */
-@ProviderType
 public class BookmarksEntryWrapper
 	extends BaseModelWrapper<BookmarksEntry>
 	implements BookmarksEntry, ModelWrapper<BookmarksEntry> {
@@ -46,6 +43,7 @@ public class BookmarksEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("entryId", getEntryId());
 		attributes.put("groupId", getGroupId());
@@ -72,6 +70,12 @@ public class BookmarksEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -285,6 +289,16 @@ public class BookmarksEntryWrapper
 	@Override
 	public Date getModifiedDate() {
 		return model.getModifiedDate();
+	}
+
+	/**
+	 * Returns the mvcc version of this bookmarks entry.
+	 *
+	 * @return the mvcc version of this bookmarks entry
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
 	}
 
 	/**
@@ -581,6 +595,11 @@ public class BookmarksEntryWrapper
 		return model.isScheduled();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a bookmarks entry model instance should use the <code>BookmarksEntry</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -664,6 +683,16 @@ public class BookmarksEntryWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this bookmarks entry.
+	 *
+	 * @param mvccVersion the mvcc version of this bookmarks entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

@@ -21,14 +21,22 @@ import {
 	getComponentCache,
 	initComponentCache
 } from './component.es';
+
+import {getSessionValue, setSessionValue} from './util/session.es';
+
+import createActionURL from './util/portlet_url/create_action_url.es';
+import createPortletURL from './util/portlet_url/create_portlet_url.es';
+import createRenderURL from './util/portlet_url/create_render_url.es';
+import createResourceURL from './util/portlet_url/create_resource_url.es';
 import escape from 'lodash.escape';
 import fetch from './util/fetch.es';
 import formatStorage from './util/format_storage.es';
 import formatXML from './util/format_xml.es';
 import getCountries from './util/address/get_countries.es';
 import getCropRegion from './util/get_crop_region.es';
-import getRegions from './util/address/get_regions.es';
 import getFormElement from './util/form/get_form_element.es';
+import getPortletNamespace from './util/get_portlet_namespace.es';
+import getRegions from './util/address/get_regions.es';
 import groupBy from 'lodash.groupby';
 import isEqual from 'lodash.isequal';
 import portlet from './portlet/portlet.es';
@@ -63,12 +71,21 @@ Liferay.Util.formatStorage = formatStorage;
 Liferay.Util.formatXML = formatXML;
 Liferay.Util.getCropRegion = getCropRegion;
 Liferay.Util.getFormElement = getFormElement;
+Liferay.Util.getPortletNamespace = getPortletNamespace;
 Liferay.Util.groupBy = groupBy;
 Liferay.Util.isEqual = isEqual;
 Liferay.Util.navigate = navigate;
 Liferay.Util.ns = ns;
 Liferay.Util.objectToFormData = objectToFormData;
 Liferay.Util.objectToURLSearchParams = objectToURLSearchParams;
+
+Liferay.Util.PortletURL = {
+	createActionURL,
+	createPortletURL,
+	createRenderURL,
+	createResourceURL
+};
+
 Liferay.Util.postForm = postForm;
 Liferay.Util.setFormValues = setFormValues;
 Liferay.Util.toCharCode = toCharCode;
@@ -80,6 +97,11 @@ Liferay.Util.openToast = (...args) => {
 			commands.openToast(...args);
 		}
 	);
+};
+
+Liferay.Util.Session = {
+	get: getSessionValue,
+	set: setSessionValue
 };
 
 Liferay.Util.unescape = unescape;

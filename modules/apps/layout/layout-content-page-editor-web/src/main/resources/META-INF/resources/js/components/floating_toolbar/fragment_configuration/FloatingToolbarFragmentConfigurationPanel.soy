@@ -7,15 +7,12 @@
 	{@param item: [
 		configuration: [
 			fieldSets: list<[
-				name: string,
 				label: string,
 				fields: list<[
 					name: string,
 					label: string,
 					type: string,
-					typeOptions: [
-						validValues: list<string>
-					]
+					typeOptions: ?
 				]>
 			]>
 		],
@@ -25,33 +22,37 @@
 	{@param? _handleChangeConfiguration: any}
 	{@param? _handleRestoreButtonClick: any}
 	{@param? spritemap: string}
+	{@param? store: ?}
 
-	<div class="floating-toolbar-fragment-configuration-panel pt-3">
-		<div class="inline-scroller pb-3 pl-3 pr-3">
-			{foreach $fieldSet in $item.configuration.fieldSets}
-				{call .fieldSet}
-					{param configurationValues: $item.configurationValues /}
-					{param fieldSet: $fieldSet /}
-					{param handleChangeConfiguration: $_handleChangeConfiguration /}
-				{/call}
-			{/foreach}
-		</div>
+	<div class="popover popover-scrollable">
+		<div class="floating-toolbar-fragment-configuration-panel">
+			<div class="p-3">
+				{foreach $fieldSet in $item.configuration.fieldSets}
+					{call .fieldSet}
+						{param configurationValues: $item.configurationValues /}
+						{param fieldSet: $fieldSet /}
+						{param handleChangeConfiguration: $_handleChangeConfiguration /}
+						{param store: $store /}
+					{/call}
+				{/foreach}
+			</div>
 
-		<div aria-hidden="true" class="dropdown-divider m-0" role="presentation"></div>
+			<div aria-hidden="true" class="dropdown-divider m-0" role="presentation"></div>
 
-		<div class="dropdown-section">
-			<button
-				class="btn btn-block btn-outline-borderless btn-secondary btn-sm"
-				data-onclick="{$_handleRestoreButtonClick}"
-				type="button"
-			>
-				<span class="inline-item inline-item-before">
-					<svg class="lexicon-icon lexicon-icon-blogs" focusable="false" role="presentation">
-						<use xlink:href="{$spritemap ?: ''}#restore"></use>
-					</svg>
-				</span>
-				{msg desc=""}restore-values{/msg}
-			</button>
+			<div class="dropdown-section">
+				<button
+					class="btn btn-block btn-outline-borderless btn-secondary btn-sm"
+					data-onclick="{$_handleRestoreButtonClick}"
+					type="button"
+				>
+					<span class="inline-item inline-item-before">
+						<svg class="lexicon-icon lexicon-icon-blogs" focusable="false" role="presentation">
+							<use xlink:href="{$spritemap ?: ''}#restore"></use>
+						</svg>
+					</span>
+					{msg desc=""}restore-values{/msg}
+				</button>
+			</div>
 		</div>
 	</div>
 {/template}
@@ -62,28 +63,30 @@
 {template .fieldSet}
 	{@param configurationValues: ?}
 	{@param fieldSet: [
-		name: string,
 		label: string,
 		fields: list<[
 			name: string,
 			label: string,
 			type: string,
-			typeOptions: [
-				validValues: list<string>
-			]
+			typeOptions: ?
 		]>
 	]}
 	{@param handleChangeConfiguration: any}
+	{@param? store: ?}
 
-	<p class="mb-3 sheet-subtitle">{$fieldSet.label}</p>
-		{foreach $field in $fieldSet.fields}
-			{delcall com.liferay.layout.content.page.editor.web.field variant="$field.type"}
-				{param configurationValues: $configurationValues /}
-				{param field: $field /}
-				{param fieldSetName: $fieldSet.name /}
-				{param handleChangeConfiguration: $handleChangeConfiguration /}
-			{/delcall}
-		{/foreach}
+	{if $fieldSet.label}
+		<p class="mb-3 sheet-subtitle">{$fieldSet.label}</p>
+	{/if}
+
+	{foreach $field in $fieldSet.fields}
+		{delcall com.liferay.layout.content.page.editor.web.field variant="$field.type"}
+			{param configurationValues: $configurationValues /}
+			{param events: [ 'fieldValueChanged': $handleChangeConfiguration ] /}
+			{param field: $field /}
+			{param key: $field.name /}
+			{param store: $store /}
+		{/delcall}
+	{/foreach}
 {/template}
 
 /**
@@ -95,12 +98,8 @@
 		name: string,
 		label: string,
 		type: string,
-		typeOptions: [
-			validValues: list<string>
-		]
+		typeOptions: ?
 	]}
-	{@param fieldSetName: string}
-	{@param handleChangeConfiguration: any}
 
 	<div id="{$field.name}"></div>
 {/deltemplate}

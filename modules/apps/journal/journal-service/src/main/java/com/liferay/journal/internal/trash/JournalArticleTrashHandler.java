@@ -18,6 +18,7 @@ import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
+import com.liferay.journal.internal.util.JournalUtil;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.model.JournalFolder;
@@ -25,7 +26,6 @@ import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
 import com.liferay.journal.util.JournalHelper;
-import com.liferay.journal.util.impl.JournalUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.ContainerModel;
 import com.liferay.portal.kernel.model.TrashedModel;
@@ -356,13 +356,11 @@ public class JournalArticleTrashHandler extends JournalBaseTrashHandler {
 			containerModelId = article.getFolderId();
 		}
 
-		int restrictionType = _journalHelper.getRestrictionType(
-			containerModelId);
-
 		List<DDMStructure> folderDDMStructures =
 			_journalFolderLocalService.getDDMStructures(
 				_portal.getCurrentAndAncestorSiteGroupIds(article.getGroupId()),
-				containerModelId, restrictionType);
+				containerModelId,
+				_journalHelper.getRestrictionType(containerModelId));
 
 		for (DDMStructure folderDDMStructure : folderDDMStructures) {
 			if (folderDDMStructure.getStructureId() ==

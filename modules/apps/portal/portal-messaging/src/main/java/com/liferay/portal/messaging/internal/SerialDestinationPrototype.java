@@ -14,14 +14,20 @@
 
 package com.liferay.portal.messaging.internal;
 
+import com.liferay.portal.kernel.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.messaging.Destination;
 import com.liferay.portal.kernel.messaging.DestinationConfiguration;
-import com.liferay.portal.kernel.messaging.SerialDestination;
 
 /**
  * @author Michael C. Han
  */
 public class SerialDestinationPrototype implements DestinationPrototype {
+
+	public SerialDestinationPrototype(
+		PortalExecutorManager portalExecutorManager) {
+
+		_portalExecutorManager = portalExecutorManager;
+	}
 
 	@Override
 	public Destination createDestination(
@@ -33,6 +39,7 @@ public class SerialDestinationPrototype implements DestinationPrototype {
 			destinationConfiguration.getDestinationName());
 		serialDestination.setMaximumQueueSize(
 			destinationConfiguration.getMaximumQueueSize());
+		serialDestination.setPortalExecutorManager(_portalExecutorManager);
 		serialDestination.setRejectedExecutionHandler(
 			destinationConfiguration.getRejectedExecutionHandler());
 		serialDestination.setWorkersCoreSize(_WORKERS_CORE_SIZE);
@@ -46,5 +53,7 @@ public class SerialDestinationPrototype implements DestinationPrototype {
 	private static final int _WORKERS_CORE_SIZE = 1;
 
 	private static final int _WORKERS_MAX_SIZE = 1;
+
+	private final PortalExecutorManager _portalExecutorManager;
 
 }

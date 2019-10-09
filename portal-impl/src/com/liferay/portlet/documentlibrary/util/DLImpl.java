@@ -163,14 +163,15 @@ public class DLImpl implements DL {
 		StringBundler sb = new StringBundler((folders.size() * 3) + 5);
 
 		sb.append(themeDisplay.translate("home"));
-		sb.append(StringPool.SPACE);
 
 		for (Folder curFolder : folders) {
+			sb.append(StringPool.SPACE);
 			sb.append(StringPool.RAQUO_CHAR);
 			sb.append(StringPool.SPACE);
 			sb.append(curFolder.getName());
 		}
 
+		sb.append(StringPool.SPACE);
 		sb.append(StringPool.RAQUO_CHAR);
 		sb.append(StringPool.SPACE);
 		sb.append(folder.getName());
@@ -454,10 +455,7 @@ public class DLImpl implements DL {
 				document.get(Field.ENTRY_CLASS_PK));
 
 			try {
-				FileEntry fileEntry = DLAppLocalServiceUtil.getFileEntry(
-					fileEntryId);
-
-				entries.add(fileEntry);
+				entries.add(DLAppLocalServiceUtil.getFileEntry(fileEntryId));
 			}
 			catch (Exception e) {
 				if (_log.isWarnEnabled()) {
@@ -496,7 +494,7 @@ public class DLImpl implements DL {
 			SubscriptionLocalServiceUtil.getUserSubscriptions(
 				userId, DLFileEntryType.class.getName());
 
-		Set<Long> classPKs = new HashSet<>(subscriptions.size());
+		Set<Long> classPKs = new HashSet<>();
 
 		for (Subscription subscription : subscriptions) {
 			classPKs.add(subscription.getClassPK());
@@ -899,10 +897,8 @@ public class DLImpl implements DL {
 
 	@Override
 	public String getTitleWithExtension(FileEntry fileEntry) {
-		String title = fileEntry.getTitle();
-		String extension = fileEntry.getExtension();
-
-		return getTitleWithExtension(title, extension);
+		return getTitleWithExtension(
+			fileEntry.getTitle(), fileEntry.getExtension());
 	}
 
 	@Override

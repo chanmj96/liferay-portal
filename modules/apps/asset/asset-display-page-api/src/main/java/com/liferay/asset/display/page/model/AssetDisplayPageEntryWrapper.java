@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AssetDisplayPageEntry}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetDisplayPageEntry
  * @generated
  */
-@ProviderType
 public class AssetDisplayPageEntryWrapper
 	extends BaseModelWrapper<AssetDisplayPageEntry>
 	implements AssetDisplayPageEntry, ModelWrapper<AssetDisplayPageEntry> {
@@ -48,6 +45,7 @@ public class AssetDisplayPageEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("assetDisplayPageEntryId", getAssetDisplayPageEntryId());
 		attributes.put("groupId", getGroupId());
@@ -68,6 +66,12 @@ public class AssetDisplayPageEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -240,6 +244,16 @@ public class AssetDisplayPageEntryWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this asset display page entry.
+	 *
+	 * @return the mvcc version of this asset display page entry
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the plid of this asset display page entry.
 	 *
 	 * @return the plid of this asset display page entry
@@ -309,6 +323,11 @@ public class AssetDisplayPageEntryWrapper
 		return model.getUuid();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a asset display page entry model instance should use the <code>AssetDisplayPageEntry</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -397,6 +416,16 @@ public class AssetDisplayPageEntryWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset display page entry.
+	 *
+	 * @param mvccVersion the mvcc version of this asset display page entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

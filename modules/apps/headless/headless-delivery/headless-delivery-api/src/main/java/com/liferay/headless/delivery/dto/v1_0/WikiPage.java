@@ -38,6 +38,7 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -53,6 +54,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "WikiPage")
 public class WikiPage {
 
+	@GraphQLName("ViewableBy")
 	public static enum ViewableBy {
 
 		ANYONE("Anyone"), MEMBERS("Members"), OWNER("Owner");
@@ -86,21 +88,23 @@ public class WikiPage {
 
 	}
 
-	@Schema(description = "The wiki page's alternative title.")
-	public String getAlternativeHeadline() {
-		return alternativeHeadline;
+	@Schema(description = "The blog post's average rating.")
+	@Valid
+	public AggregateRating getAggregateRating() {
+		return aggregateRating;
 	}
 
-	public void setAlternativeHeadline(String alternativeHeadline) {
-		this.alternativeHeadline = alternativeHeadline;
+	public void setAggregateRating(AggregateRating aggregateRating) {
+		this.aggregateRating = aggregateRating;
 	}
 
 	@JsonIgnore
-	public void setAlternativeHeadline(
-		UnsafeSupplier<String, Exception> alternativeHeadlineUnsafeSupplier) {
+	public void setAggregateRating(
+		UnsafeSupplier<AggregateRating, Exception>
+			aggregateRatingUnsafeSupplier) {
 
 		try {
-			alternativeHeadline = alternativeHeadlineUnsafeSupplier.get();
+			aggregateRating = aggregateRatingUnsafeSupplier.get();
 		}
 		catch (RuntimeException re) {
 			throw re;
@@ -111,8 +115,8 @@ public class WikiPage {
 	}
 
 	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String alternativeHeadline;
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected AggregateRating aggregateRating;
 
 	@Schema(description = "The wiki page's content.")
 	public String getContent() {
@@ -143,6 +147,7 @@ public class WikiPage {
 	protected String content;
 
 	@Schema(description = "The wiki page's creator.")
+	@Valid
 	public Creator getCreator() {
 		return creator;
 	}
@@ -171,6 +176,7 @@ public class WikiPage {
 	protected Creator creator;
 
 	@Schema
+	@Valid
 	public CustomField[] getCustomFields() {
 		return customFields;
 	}
@@ -255,6 +261,34 @@ public class WikiPage {
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	protected Date dateModified;
+
+	@Schema(description = "The wiki page's description.")
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	@JsonIgnore
+	public void setDescription(
+		UnsafeSupplier<String, Exception> descriptionUnsafeSupplier) {
+
+		try {
+			description = descriptionUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected String description;
 
 	@Schema(
 		description = "The wiki page's media format (e.g., HTML, BBCode, etc.)."
@@ -370,7 +404,64 @@ public class WikiPage {
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String[] keywords;
 
+	@Schema(description = "The wiki page's number attachments.")
+	public Integer getNumberOfAttachments() {
+		return numberOfAttachments;
+	}
+
+	public void setNumberOfAttachments(Integer numberOfAttachments) {
+		this.numberOfAttachments = numberOfAttachments;
+	}
+
+	@JsonIgnore
+	public void setNumberOfAttachments(
+		UnsafeSupplier<Integer, Exception> numberOfAttachmentsUnsafeSupplier) {
+
+		try {
+			numberOfAttachments = numberOfAttachmentsUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Integer numberOfAttachments;
+
+	@Schema(description = "The number of child wiki page on this wiki page.")
+	public Integer getNumberOfWikiPages() {
+		return numberOfWikiPages;
+	}
+
+	public void setNumberOfWikiPages(Integer numberOfWikiPages) {
+		this.numberOfWikiPages = numberOfWikiPages;
+	}
+
+	@JsonIgnore
+	public void setNumberOfWikiPages(
+		UnsafeSupplier<Integer, Exception> numberOfWikiPagesUnsafeSupplier) {
+
+		try {
+			numberOfWikiPages = numberOfWikiPagesUnsafeSupplier.get();
+		}
+		catch (RuntimeException re) {
+			throw re;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	protected Integer numberOfWikiPages;
+
 	@Schema
+	@Valid
 	public RelatedContent[] getRelatedContents() {
 		return relatedContents;
 	}
@@ -430,6 +521,7 @@ public class WikiPage {
 	protected Long siteId;
 
 	@Schema(description = "The categories associated with this blog post.")
+	@Valid
 	public TaxonomyCategory[] getTaxonomyCategories() {
 		return taxonomyCategories;
 	}
@@ -491,6 +583,7 @@ public class WikiPage {
 	@Schema(
 		description = "A write-only property that specifies the default permissions."
 	)
+	@Valid
 	public ViewableBy getViewableBy() {
 		return viewableBy;
 	}
@@ -557,18 +650,14 @@ public class WikiPage {
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
 
-		if (alternativeHeadline != null) {
+		if (aggregateRating != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"alternativeHeadline\": ");
+			sb.append("\"aggregateRating\": ");
 
-			sb.append("\"");
-
-			sb.append(_escape(alternativeHeadline));
-
-			sb.append("\"");
+			sb.append(String.valueOf(aggregateRating));
 		}
 
 		if (content != null) {
@@ -643,6 +732,20 @@ public class WikiPage {
 			sb.append("\"");
 		}
 
+		if (description != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"description\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(description));
+
+			sb.append("\"");
+		}
+
 		if (encodingFormat != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -703,6 +806,26 @@ public class WikiPage {
 			}
 
 			sb.append("]");
+		}
+
+		if (numberOfAttachments != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"numberOfAttachments\": ");
+
+			sb.append(numberOfAttachments);
+		}
+
+		if (numberOfWikiPages != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"numberOfWikiPages\": ");
+
+			sb.append(numberOfWikiPages);
 		}
 
 		if (relatedContents != null) {

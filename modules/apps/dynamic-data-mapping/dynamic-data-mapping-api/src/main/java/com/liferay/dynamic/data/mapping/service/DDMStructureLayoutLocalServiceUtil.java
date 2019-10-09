@@ -14,7 +14,6 @@
 
 package com.liferay.dynamic.data.mapping.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,10 +30,9 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see DDMStructureLayoutLocalService
  * @generated
  */
-@ProviderType
 public class DDMStructureLayoutLocalServiceUtil {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.dynamic.data.mapping.service.impl.DDMStructureLayoutLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
@@ -139,6 +137,16 @@ public class DDMStructureLayoutLocalServiceUtil {
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return getService().deleteDDMStructureLayout(structureLayoutId);
+	}
+
+	public static void deleteDDMStructureLayouts(
+			long classNameId,
+			com.liferay.dynamic.data.mapping.model.DDMStructureVersion
+				ddmStructureVersion)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		getService().deleteDDMStructureLayouts(
+			classNameId, ddmStructureVersion);
 	}
 
 	/**
@@ -268,6 +276,12 @@ public class DDMStructureLayoutLocalServiceUtil {
 
 		return getService().fetchDDMStructureLayoutByUuidAndGroupId(
 			uuid, groupId);
+	}
+
+	public static com.liferay.dynamic.data.mapping.model.DDMStructureLayout
+		fetchStructureLayout(long structureLayoutId) {
+
+		return getService().fetchStructureLayout(structureLayoutId);
 	}
 
 	public static com.liferay.dynamic.data.mapping.model.DDMStructureLayout
@@ -450,8 +464,45 @@ public class DDMStructureLayoutLocalServiceUtil {
 		return getService().getStructureLayouts(groupId, start, end);
 	}
 
+	public static java.util.List
+		<com.liferay.dynamic.data.mapping.model.DDMStructureLayout>
+			getStructureLayouts(
+				long groupId, long classNameId, int start, int end,
+				com.liferay.portal.kernel.util.OrderByComparator
+					<com.liferay.dynamic.data.mapping.model.DDMStructureLayout>
+						orderByComparator) {
+
+		return getService().getStructureLayouts(
+			groupId, classNameId, start, end, orderByComparator);
+	}
+
+	public static java.util.List
+		<com.liferay.dynamic.data.mapping.model.DDMStructureLayout>
+			getStructureLayouts(
+				long groupId, long classNameId, long structureVersionId,
+				int start, int end,
+				com.liferay.portal.kernel.util.OrderByComparator
+					<com.liferay.dynamic.data.mapping.model.DDMStructureLayout>
+						orderByComparator) {
+
+		return getService().getStructureLayouts(
+			groupId, classNameId, structureVersionId, start, end,
+			orderByComparator);
+	}
+
 	public static int getStructureLayoutsCount(long groupId) {
 		return getService().getStructureLayoutsCount(groupId);
+	}
+
+	public static int getStructureLayoutsCount(long groupId, long classNameId) {
+		return getService().getStructureLayoutsCount(groupId, classNameId);
+	}
+
+	public static int getStructureLayoutsCount(
+		long groupId, long classNameId, long structureVersionId) {
+
+		return getService().getStructureLayoutsCount(
+			groupId, classNameId, structureVersionId);
 	}
 
 	public static java.util.List

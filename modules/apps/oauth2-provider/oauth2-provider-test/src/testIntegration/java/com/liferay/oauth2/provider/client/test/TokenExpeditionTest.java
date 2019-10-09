@@ -15,7 +15,7 @@
 package com.liferay.oauth2.provider.client.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.oauth2.provider.test.internal.TestAnnotatedApplication;
+import com.liferay.oauth2.provider.internal.test.TestAnnotatedApplication;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
@@ -73,10 +73,9 @@ public class TokenExpeditionTest extends BaseClientTestCase {
 						"liferay.LiferayOAuthDataProvider",
 					Level.WARN)) {
 
-			String errorString = parseError(
-				invocationBuilder.post(Entity.form(formData)));
+			Response response = invocationBuilder.post(Entity.form(formData));
 
-			Assert.assertEquals("invalid_client", errorString);
+			Assert.assertEquals(401, response.getStatus());
 
 			formData = new MultivaluedHashMap<>();
 
@@ -84,7 +83,7 @@ public class TokenExpeditionTest extends BaseClientTestCase {
 			formData.add("client_secret", "wrong");
 			formData.add("grant_type", "client_credentials");
 
-			errorString = parseError(
+			String errorString = parseError(
 				invocationBuilder.post(Entity.form(formData)));
 
 			Assert.assertEquals("invalid_client", errorString);
@@ -95,10 +94,9 @@ public class TokenExpeditionTest extends BaseClientTestCase {
 			formData.add("client_secret", "");
 			formData.add("grant_type", "client_credentials");
 
-			errorString = parseError(
-				invocationBuilder.post(Entity.form(formData)));
+			response = invocationBuilder.post(Entity.form(formData));
 
-			Assert.assertEquals("invalid_client", errorString);
+			Assert.assertEquals(401, response.getStatus());
 
 			formData = new MultivaluedHashMap<>();
 

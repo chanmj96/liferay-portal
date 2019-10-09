@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link VirtualHost}.
@@ -30,10 +28,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see VirtualHost
  * @generated
  */
-@ProviderType
 public class VirtualHostWrapper
 	extends BaseModelWrapper<VirtualHost>
-	implements VirtualHost, ModelWrapper<VirtualHost> {
+	implements ModelWrapper<VirtualHost>, VirtualHost {
 
 	public VirtualHostWrapper(VirtualHost virtualHost) {
 		super(virtualHost);
@@ -145,6 +142,11 @@ public class VirtualHostWrapper
 		return model.getVirtualHostId();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a virtual host model instance should use the <code>VirtualHost</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();

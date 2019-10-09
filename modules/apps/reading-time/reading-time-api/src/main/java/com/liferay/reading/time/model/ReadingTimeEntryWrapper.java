@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link ReadingTimeEntry}.
@@ -33,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ReadingTimeEntry
  * @generated
  */
-@ProviderType
 public class ReadingTimeEntryWrapper
 	extends BaseModelWrapper<ReadingTimeEntry>
-	implements ReadingTimeEntry, ModelWrapper<ReadingTimeEntry> {
+	implements ModelWrapper<ReadingTimeEntry>, ReadingTimeEntry {
 
 	public ReadingTimeEntryWrapper(ReadingTimeEntry readingTimeEntry) {
 		super(readingTimeEntry);
@@ -300,6 +297,11 @@ public class ReadingTimeEntryWrapper
 		return model.isInTrashImplicitly();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a reading time entry model instance should use the <code>ReadingTimeEntry</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();

@@ -103,6 +103,18 @@
 		</sequential>
 	</macrodef>
 
+	<macrodef name="update-websphere-lcs-property">
+		<sequential>
+			<replace
+				file="${app.server.websphere.instance.dir}/config/cells/liferay-cell/nodes/liferay-node/servers/server1/server.xml"
+			>
+				<replacetoken><![CDATA[<systemProperties xmi:id="Property_2" name="com.ibm.security.krb5.Krb5Debug" value="off" required="false"/>]]></replacetoken>
+				<replacevalue><![CDATA[<systemProperties name="com.ibm.security.krb5.Krb5Debug" required="false" value="off" xmi:id="Property_2" />
+      <systemProperties name="com.ibm.crypto.provider.DoRSATypeChecking" required="false" value="false" xmi:id="Property_1234" />]]></replacevalue>
+			</replace>
+		</sequential>
+	</macrodef>
+
 	<target name="build-dist-jboss">
 		<app-server-properties-update>
 			app.server.type=jboss
@@ -1179,6 +1191,10 @@ org.apache.level=WARNING]]>
 						<param-value>1.8</param-value>
 					</init-param>
 					<init-param>
+						<param-name>enablePooling</param-name>
+						<param-value>false</param-value>
+					</init-param>
+					<init-param>
 						<param-name>tagpoolClassName</param-name>
 						<param-value>com.liferay.support.tomcat.jasper.runtime.TagHandlerPool</param-value>
 					</init-param>
@@ -1666,21 +1682,21 @@ this task.
 					/>
 				</replace>
 
-				<chmod
-					perm="a+x"
+				<replace
+					dir="${app.server.weblogic.dir}"
+					includes="**/*.cmd,**/*.domains,**/*.py,**/*.properties,**/*.sh,**/*.txt,**/*.xml"
 				>
-					<fileset
-						dir="${app.server.weblogic.bin.dir}"
-					>
-						<include name="**/*.sh" />
-					</fileset>
-				</chmod>
+					<replacefilter
+						token="/opt/dev/projects/github/liferay-portal/bundles"
+						value="${app.server.parent.dir}"
+					/>
+				</replace>
 
 				<chmod
 					perm="a+x"
 				>
 					<fileset
-						dir="${app.server.weblogic.instance.dir}"
+						dir="${app.server.weblogic.bin.dir}"
 					>
 						<include name="**/*.sh" />
 					</fileset>
@@ -1692,6 +1708,16 @@ this task.
 					<replacetoken><![CDATA[-Xmx1024m]]></replacetoken>
 					<replacevalue expandProperties="true"><![CDATA[${app.server.weblogic.jvm.args} ${app.server.weblogic.jvm.mem}]]></replacevalue>
 				</replace>
+
+				<chmod
+					perm="a+x"
+				>
+					<fileset
+						dir="${app.server.weblogic.instance.dir}"
+					>
+						<include name="**/*.sh" />
+					</fileset>
+				</chmod>
 			</then>
 			<elseif>
 				<os family="windows" />
@@ -2261,6 +2287,8 @@ and put it in ${app.server.parent.dir}. Then rerun this task.
 		</replace>
 
 		<update-websphere-java-opts />
+
+		<update-websphere-lcs-property />
 	</target>
 
 	<target name="unzip-websphere-custom">
@@ -2346,6 +2374,8 @@ this task.
 		</if>
 
 		<update-websphere-java-opts />
+
+		<update-websphere-lcs-property />
 	</target>
 
 	<target name="unzip-wildfly">

@@ -17,7 +17,7 @@
 <%@ include file="/portlet/init.jsp" %>
 
 <%
-String productMenuState = SessionClicks.get(request, ProductNavigationProductMenuWebKeys.PRODUCT_NAVIGATION_PRODUCT_MENU_STATE, "closed");
+String productMenuState = SessionClicks.get(request, "com.liferay.product.navigation.product.menu.web_productMenuState", "closed");
 %>
 
 <div class="lfr-product-menu-sidebar" id="productMenuSidebar">
@@ -48,7 +48,7 @@ String productMenuState = SessionClicks.get(request, ProductNavigationProductMen
 	</div>
 </div>
 
-<aui:script use="liferay-store,io-request,parse-content">
+<aui:script use="aui-base">
 	var sidenavToggle = document.getElementById('<portlet:namespace />sidenavToggleId');
 
 	var sidenavInstance = Liferay.SideNavigation.initialize(sidenavToggle);
@@ -63,18 +63,18 @@ String productMenuState = SessionClicks.get(request, ProductNavigationProductMen
 	sidenavInstance.on(
 		'closed.lexicon.sidenav',
 		function(event) {
-			Liferay.Store('<%= ProductNavigationProductMenuWebKeys.PRODUCT_NAVIGATION_PRODUCT_MENU_STATE %>', 'closed');
+			Liferay.Util.Session.set('com.liferay.product.navigation.product.menu.web_productMenuState', 'closed');
 		}
 	);
 
 	sidenavInstance.on(
 		'open.lexicon.sidenav',
 		function(event) {
-			Liferay.Store('<%= ProductNavigationProductMenuWebKeys.PRODUCT_NAVIGATION_PRODUCT_MENU_STATE %>', 'open');
+			Liferay.Util.Session.set('com.liferay.product.navigation.product.menu.web_productMenuState', 'open');
 		}
 	);
 
-	if (Liferay.Util.isPhone() && ($('body').hasClass('open'))) {
+	if (Liferay.Util.isPhone() && (document.body.classList.contains('open'))) {
 		Liferay.SideNavigation.hide(sidenavToggle);
 	}
 </aui:script>

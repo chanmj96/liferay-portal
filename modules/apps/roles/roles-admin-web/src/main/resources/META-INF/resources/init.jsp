@@ -35,6 +35,7 @@ page import="com.liferay.application.list.PanelCategoryRegistry" %><%@
 page import="com.liferay.application.list.constants.ApplicationListWebKeys" %><%@
 page import="com.liferay.application.list.constants.PanelCategoryKeys" %><%@
 page import="com.liferay.application.list.display.context.logic.PanelCategoryHelper" %><%@
+page import="com.liferay.application.list.display.context.logic.PersonalMenuEntryHelper" %><%@
 page import="com.liferay.expando.kernel.model.ExpandoBridge" %><%@
 page import="com.liferay.expando.kernel.util.ExpandoBridgeFactoryUtil" %><%@
 page import="com.liferay.petra.string.StringBundler" %><%@
@@ -114,12 +115,15 @@ page import="com.liferay.portal.util.WebAppPool" %><%@
 page import="com.liferay.portlet.rolesadmin.search.ResourceActionRowChecker" %><%@
 page import="com.liferay.portlet.usersadmin.search.GroupSearch" %><%@
 page import="com.liferay.portlet.usersadmin.search.OrganizationSearch" %><%@
+page import="com.liferay.product.navigation.personal.menu.BasePersonalMenuEntry" %><%@
 page import="com.liferay.roles.admin.constants.RolesAdminPortletKeys" %><%@
 page import="com.liferay.roles.admin.kernel.util.RolesAdminUtil" %><%@
 page import="com.liferay.roles.admin.web.internal.display.context.EditRoleAssignmentsManagementToolbarDisplayContext" %><%@
 page import="com.liferay.roles.admin.web.internal.display.context.RoleDisplayContext" %><%@
 page import="com.liferay.roles.admin.web.internal.display.context.SelectRoleManagementToolbarDisplayContext" %><%@
 page import="com.liferay.roles.admin.web.internal.display.context.ViewRolesManagementToolbarDisplayContext" %><%@
+page import="com.liferay.roles.admin.web.internal.role.type.contributor.RoleTypeContributor" %><%@
+page import="com.liferay.roles.admin.web.internal.role.type.contributor.util.RoleTypeContributorRetrieverUtil" %><%@
 page import="com.liferay.roles.admin.web.internal.util.PortletDisplayTemplateUtil" %><%@
 page import="com.liferay.taglib.search.ResultRow" %><%@
 page import="com.liferay.users.admin.kernel.util.UsersAdmin" %><%@
@@ -170,6 +174,7 @@ private String _getActionLabel(HttpServletRequest request, ThemeDisplay themeDis
 
 	if (actionId.equals(ActionKeys.ACCESS_IN_CONTROL_PANEL)) {
 		PanelCategoryHelper panelCategoryHelper = (PanelCategoryHelper)request.getAttribute(ApplicationListWebKeys.PANEL_CATEGORY_HELPER);
+		PersonalMenuEntryHelper personalMenuEntryHelper = (PersonalMenuEntryHelper)request.getAttribute(ApplicationListWebKeys.PERSONAL_MENU_ENTRY_HELPER);
 
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(themeDisplay.getCompanyId(), resourceName);
 
@@ -178,6 +183,9 @@ private String _getActionLabel(HttpServletRequest request, ThemeDisplay themeDis
 		}
 		else if (panelCategoryHelper.containsPortlet(portlet.getPortletId(), PanelCategoryKeys.USER)) {
 			actionLabel = LanguageUtil.get(request, "access-in-my-account");
+		}
+		else if (personalMenuEntryHelper.hasPersonalMenuEntry(portlet.getPortletId())) {
+			actionLabel = LanguageUtil.get(request, "access-in-personal-menu");
 		}
 	}
 
@@ -206,7 +214,7 @@ private StringBundler _getResourceHtmlId(String resource) {
 	StringBundler sb = new StringBundler(2);
 
 	sb.append("resource_");
-	sb.append(resource.replace('.', '_'));
+	sb.append(StringUtil.replace(resource, '.', '_'));
 
 	return sb;
 }

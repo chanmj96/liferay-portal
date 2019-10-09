@@ -26,18 +26,19 @@ import org.talend.components.api.container.RuntimeContainer;
 public class LiferayRequestContentAggregatorSink extends LiferaySink {
 
 	@Override
+	public JsonObject doPatchRequest(
+		RuntimeContainer runtimeContainer, String resourceURL,
+		JsonObject jsonObject) {
+
+		return _processRequest(resourceURL, jsonObject);
+	}
+
+	@Override
 	public JsonObject doPostRequest(
 		RuntimeContainer runtimeContainer, String resourceURL,
 		JsonObject jsonObject) {
 
-		_outputResourceURL = resourceURL;
-		_outputJsonObject = jsonObject;
-
-		JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder();
-
-		jsonObjectBuilder.add("success", "true");
-
-		return jsonObjectBuilder.build();
+		return _processRequest(resourceURL, jsonObject);
 	}
 
 	public JsonObject getOutputJsonObject() {
@@ -46,6 +47,20 @@ public class LiferayRequestContentAggregatorSink extends LiferaySink {
 
 	public String getOutputResourceURL() {
 		return _outputResourceURL;
+	}
+
+	private JsonObject _processRequest(
+		String resourceURL, JsonObject jsonObject) {
+
+		_outputResourceURL = resourceURL;
+		_outputJsonObject = jsonObject;
+
+		JsonObjectBuilder jsonObjectBuilder = Json.createObjectBuilder(
+			jsonObject);
+
+		jsonObjectBuilder.add("success", "true");
+
+		return jsonObjectBuilder.build();
 	}
 
 	private JsonObject _outputJsonObject;

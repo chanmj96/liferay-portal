@@ -46,7 +46,7 @@ navigationURL.setParameter(SearchContainer.DEFAULT_CUR_PARAM, "0");
 
 <clay:navigation-bar
 	inverted="<%= layout.isTypeControlPanel() %>"
-	navigationItems="<%=
+	navigationItems='<%=
 		new JSPNavigationItemList(pageContext) {
 			{
 				add(
@@ -61,11 +61,11 @@ navigationURL.setParameter(SearchContainer.DEFAULT_CUR_PARAM, "0");
 
 						navigationItem.setActive(actionRequired);
 						navigationItem.setHref(renderResponse.createRenderURL(), "actionRequired", StringPool.TRUE);
-						navigationItem.setLabel(LanguageUtil.format(request, "requests-list-x", String.valueOf(UserNotificationEventLocalServiceUtil.getArchivedUserNotificationEventsCount(themeDisplay.getUserId(), UserNotificationDeliveryConstants.TYPE_WEBSITE, true, false))));
+						navigationItem.setLabel(LanguageUtil.format(request, "requests-list-x", String.valueOf(UserNotificationEventLocalServiceUtil.getArchivedUserNotificationEventsCount(themeDisplay.getUserId(), UserNotificationDeliveryConstants.TYPE_WEBSITE, true, true, false))));
 					});
 			}
 		}
-	%>"
+	%>'
 />
 
 <clay:management-toolbar
@@ -103,6 +103,7 @@ navigationURL.setParameter(SearchContainer.DEFAULT_CUR_PARAM, "0");
 
 					UserNotificationFeedEntry userNotificationFeedEntry = UserNotificationManagerUtil.interpret(StringPool.BLANK, userNotificationEvent, ServiceContextFactory.getInstance(request));
 
+					rowData.put("actions", StringUtil.merge(notificationsManagementToolbarDisplayContext.getAvailableActions(userNotificationEvent, userNotificationFeedEntry)));
 					rowData.put("userNotificationFeedEntry", userNotificationFeedEntry);
 
 					row.setData(rowData);
@@ -177,34 +178,31 @@ navigationURL.setParameter(SearchContainer.DEFAULT_CUR_PARAM, "0");
 
 			var currentTarget = event.currentTarget;
 
-			A.io.request(
+			Liferay.Util.fetch(
 				currentTarget.attr('href'),
 				{
-					dataType: 'JSON',
-					on: {
-						success: function() {
-							var responseData = this.get('responseData');
+					method: 'POST'
+				}
+			).then(function(response) {
+				return response.json();
+			}).then(function(response) {
+				if (response.success) {
+					var notificationContainer = currentTarget.ancestor('li.list-group-item');
 
-							if (responseData.success) {
-								var notificationContainer = currentTarget.ancestor('li.list-group-item');
+					if (notificationContainer) {
+						var markAsReadURL = notificationContainer.one('a').attr('href');
 
-								if (notificationContainer) {
-									var markAsReadURL = notificationContainer.one('a').attr('href');
+						form.attr('method', 'post');
 
-									form.attr('method', 'post');
+						submitForm(form, markAsReadURL);
 
-									submitForm(form, markAsReadURL);
-
-									notificationContainer.remove();
-								}
-							}
-							else {
-								getNotice().show();
-							}
-						}
+						notificationContainer.remove();
 					}
 				}
-			);
+				else {
+					getNotice().show();
+				}
+			});
 		},
 		'.user-notification-action'
 	);

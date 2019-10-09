@@ -12,8 +12,6 @@
  * details.
  */
 
-/* eslint no-unused-vars: "warn" */
-
 import State, {Config} from 'metal-state';
 import {buildFragment} from 'metal-dom';
 
@@ -213,8 +211,9 @@ class MapBase extends State {
 		const customControls = {};
 
 		if (controls.indexOf(this.constructor.CONTROLS.HOME) !== -1) {
-			const homeControl = buildFragment(TPL_HOME_BUTTON)
-				.firstElementChild;
+			const homeControl = buildFragment(TPL_HOME_BUTTON).querySelector(
+				'.btn.btn-default.home-button'
+			);
 			customControls[this.constructor.CONTROLS.HOME] = homeControl;
 			this.addControl(
 				homeControl,
@@ -226,8 +225,9 @@ class MapBase extends State {
 			controls.indexOf(this.constructor.CONTROLS.SEARCH) !== -1 &&
 			this.constructor.SearchImpl
 		) {
-			const searchControl = buildFragment(TPL_SEARCH_BOX)
-				.firstElementChild;
+			const searchControl = buildFragment(TPL_SEARCH_BOX).querySelector(
+				'div.col-md-6.search-controls'
+			);
 			customControls[
 				this.constructor.CONTROLS.SEARCH
 			] = new this.constructor.SearchImpl({
@@ -248,7 +248,12 @@ class MapBase extends State {
 	 * @return {Object} Created map
 	 * @review
 	 */
-	_createMap(geolocation, controlsConfig) {
+	_createMap(
+		/* eslint-disable no-unused-vars */
+		location,
+		controlsConfig
+		/* eslint-enable no-unused-vars */
+	) {
 		throw new Error('This method must be implemented');
 	}
 
@@ -499,7 +504,12 @@ class MapBase extends State {
 	 * @param {MapBase.POSITION} position Position defined in MapBase class
 	 * @review
 	 */
-	addControl(/* control, position */) {
+	addControl(
+		/* eslint-disable no-unused-vars */
+		control,
+		position
+		/* eslint-enable no-unused-vars */
+	) {
 		throw new Error('This method must be implemented');
 	}
 
@@ -519,7 +529,11 @@ class MapBase extends State {
 	 * @param {Object} location
 	 * @review
 	 */
-	setCenter(/* location */) {
+	setCenter(
+		/* eslint-disable no-unused-vars */
+		location
+		/* eslint-enable no-unused-vars */
+	) {
 		throw new Error('This method must be implemented');
 	}
 
@@ -603,8 +617,8 @@ class MapBase extends State {
 	setPosition(position) {
 		this.emit('positionChange', {
 			newVal: {
-				location: position.location,
-				address: position.address
+				address: position.address,
+				location: position.location
 			}
 		});
 

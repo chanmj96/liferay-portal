@@ -56,8 +56,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the WikiPage service. Represents a row in the &quot;WikiPage&quot; database table, with each column mapped to a property of this class.
  *
@@ -70,11 +68,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class WikiPageModelImpl
 	extends BaseModelImpl<WikiPage> implements WikiPageModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a wiki page model instance should use the <code>WikiPage</code> interface instead.
@@ -82,24 +79,26 @@ public class WikiPageModelImpl
 	public static final String TABLE_NAME = "WikiPage";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"pageId", Types.BIGINT},
-		{"resourcePrimKey", Types.BIGINT}, {"groupId", Types.BIGINT},
-		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
-		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
-		{"modifiedDate", Types.TIMESTAMP}, {"nodeId", Types.BIGINT},
-		{"title", Types.VARCHAR}, {"version", Types.DOUBLE},
-		{"minorEdit", Types.BOOLEAN}, {"content", Types.CLOB},
-		{"summary", Types.VARCHAR}, {"format", Types.VARCHAR},
-		{"head", Types.BOOLEAN}, {"parentTitle", Types.VARCHAR},
-		{"redirectTitle", Types.VARCHAR}, {"lastPublishDate", Types.TIMESTAMP},
-		{"status", Types.INTEGER}, {"statusByUserId", Types.BIGINT},
-		{"statusByUserName", Types.VARCHAR}, {"statusDate", Types.TIMESTAMP}
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"pageId", Types.BIGINT}, {"resourcePrimKey", Types.BIGINT},
+		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
+		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
+		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
+		{"nodeId", Types.BIGINT}, {"title", Types.VARCHAR},
+		{"version", Types.DOUBLE}, {"minorEdit", Types.BOOLEAN},
+		{"content", Types.CLOB}, {"summary", Types.VARCHAR},
+		{"format", Types.VARCHAR}, {"head", Types.BOOLEAN},
+		{"parentTitle", Types.VARCHAR}, {"redirectTitle", Types.VARCHAR},
+		{"lastPublishDate", Types.TIMESTAMP}, {"status", Types.INTEGER},
+		{"statusByUserId", Types.BIGINT}, {"statusByUserName", Types.VARCHAR},
+		{"statusDate", Types.TIMESTAMP}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("pageId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("resourcePrimKey", Types.BIGINT);
@@ -127,7 +126,7 @@ public class WikiPageModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table WikiPage (uuid_ VARCHAR(75) null,pageId LONG not null primary key,resourcePrimKey LONG,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,nodeId LONG,title VARCHAR(255) null,version DOUBLE,minorEdit BOOLEAN,content TEXT null,summary STRING null,format VARCHAR(75) null,head BOOLEAN,parentTitle VARCHAR(255) null,redirectTitle VARCHAR(255) null,lastPublishDate DATE null,status INTEGER,statusByUserId LONG,statusByUserName VARCHAR(75) null,statusDate DATE null)";
+		"create table WikiPage (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,pageId LONG not null primary key,resourcePrimKey LONG,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,nodeId LONG,title VARCHAR(255) null,version DOUBLE,minorEdit BOOLEAN,content TEXT null,summary STRING null,format VARCHAR(75) null,head BOOLEAN,parentTitle VARCHAR(255) null,redirectTitle VARCHAR(255) null,lastPublishDate DATE null,status INTEGER,statusByUserId LONG,statusByUserName VARCHAR(75) null,statusDate DATE null)";
 
 	public static final String TABLE_SQL_DROP = "drop table WikiPage";
 
@@ -142,21 +141,6 @@ public class WikiPageModelImpl
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
 
 	public static final String TX_MANAGER = "liferayTransactionManager";
-
-	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.wiki.service.util.ServiceProps.get(
-			"value.object.entity.cache.enabled.com.liferay.wiki.model.WikiPage"),
-		true);
-
-	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.wiki.service.util.ServiceProps.get(
-			"value.object.finder.cache.enabled.com.liferay.wiki.model.WikiPage"),
-		true);
-
-	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(
-		com.liferay.wiki.service.util.ServiceProps.get(
-			"value.object.column.bitmask.enabled.com.liferay.wiki.model.WikiPage"),
-		true);
 
 	public static final long COMPANYID_COLUMN_BITMASK = 1L;
 
@@ -184,6 +168,14 @@ public class WikiPageModelImpl
 
 	public static final long VERSION_COLUMN_BITMASK = 4096L;
 
+	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
+		_entityCacheEnabled = entityCacheEnabled;
+	}
+
+	public static void setFinderCacheEnabled(boolean finderCacheEnabled) {
+		_finderCacheEnabled = finderCacheEnabled;
+	}
+
 	/**
 	 * Converts the soap model instance into a normal model instance.
 	 *
@@ -197,6 +189,7 @@ public class WikiPageModelImpl
 
 		WikiPage model = new WikiPageImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
 		model.setPageId(soapModel.getPageId());
 		model.setResourcePrimKey(soapModel.getResourcePrimKey());
@@ -244,10 +237,6 @@ public class WikiPageModelImpl
 
 		return models;
 	}
-
-	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
-		com.liferay.wiki.service.util.ServiceProps.get(
-			"lock.expiration.time.com.liferay.wiki.model.WikiPage"));
 
 	public WikiPageModelImpl() {
 	}
@@ -373,6 +362,10 @@ public class WikiPageModelImpl
 		Map<String, BiConsumer<WikiPage, ?>> attributeSetterBiConsumers =
 			new LinkedHashMap<String, BiConsumer<WikiPage, ?>>();
 
+		attributeGetterFunctions.put("mvccVersion", WikiPage::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<WikiPage, Long>)WikiPage::setMvccVersion);
 		attributeGetterFunctions.put("uuid", WikiPage::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid", (BiConsumer<WikiPage, String>)WikiPage::setUuid);
@@ -462,6 +455,17 @@ public class WikiPageModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -1265,6 +1269,7 @@ public class WikiPageModelImpl
 	public Object clone() {
 		WikiPageImpl wikiPageImpl = new WikiPageImpl();
 
+		wikiPageImpl.setMvccVersion(getMvccVersion());
 		wikiPageImpl.setUuid(getUuid());
 		wikiPageImpl.setPageId(getPageId());
 		wikiPageImpl.setResourcePrimKey(getResourcePrimKey());
@@ -1367,12 +1372,12 @@ public class WikiPageModelImpl
 
 	@Override
 	public boolean isEntityCacheEnabled() {
-		return ENTITY_CACHE_ENABLED;
+		return _entityCacheEnabled;
 	}
 
 	@Override
 	public boolean isFinderCacheEnabled() {
-		return FINDER_CACHE_ENABLED;
+		return _finderCacheEnabled;
 	}
 
 	@Override
@@ -1431,6 +1436,8 @@ public class WikiPageModelImpl
 	@Override
 	public CacheModel<WikiPage> toCacheModel() {
 		WikiPageCacheModel wikiPageCacheModel = new WikiPageCacheModel();
+
+		wikiPageCacheModel.mvccVersion = getMvccVersion();
 
 		wikiPageCacheModel.uuid = getUuid();
 
@@ -1635,6 +1642,10 @@ public class WikiPageModelImpl
 
 	}
 
+	private static boolean _entityCacheEnabled;
+	private static boolean _finderCacheEnabled;
+
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _pageId;

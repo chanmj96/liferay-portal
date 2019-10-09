@@ -135,8 +135,8 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 						StringBundler.concat(
 							"The search engine processed ",
 							searchSearchResponse.getSearchRequestString(),
-							" in ",
-							searchSearchResponse.getExecutionTime() + " ms"));
+							" in ", searchSearchResponse.getExecutionTime(),
+							" ms"));
 				}
 
 				populateResponse(searchSearchResponse, searchResponseBuilder);
@@ -181,8 +181,8 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 				_log.info(
 					StringBundler.concat(
-						"Searching ", query.toString(), " took ",
-						stopWatch.getTime(), " ms"));
+						"Searching ", query, " took ", stopWatch.getTime(),
+						" ms"));
 			}
 		}
 	}
@@ -205,7 +205,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 					StringBundler.concat(
 						"The search engine processed ",
 						countSearchResponse.getSearchRequestString(), " in ",
-						countSearchResponse.getExecutionTime() + " ms"));
+						countSearchResponse.getExecutionTime(), " ms"));
 			}
 
 			populateResponse(
@@ -413,7 +413,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			searchRequest.isIncludeResponseString());
 		baseSearchRequest.setPostFilterQuery(
 			searchRequest.getPostFilterQuery());
-		baseSearchRequest.setRescoreQuery(searchRequest.getRescoreQuery());
+		baseSearchRequest.setRescores(searchRequest.getRescores());
 		baseSearchRequest.setStatsRequests(searchRequest.getStatsRequests());
 
 		setAggregations(baseSearchRequest, searchRequest);

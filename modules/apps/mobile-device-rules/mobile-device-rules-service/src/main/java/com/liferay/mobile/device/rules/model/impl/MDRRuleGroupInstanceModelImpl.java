@@ -52,8 +52,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the MDRRuleGroupInstance service. Represents a row in the &quot;MDRRuleGroupInstance&quot; database table, with each column mapped to a property of this class.
  *
@@ -66,12 +64,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class MDRRuleGroupInstanceModelImpl
 	extends BaseModelImpl<MDRRuleGroupInstance>
 	implements MDRRuleGroupInstanceModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a mdr rule group instance model instance should use the <code>MDRRuleGroupInstance</code> interface instead.
@@ -79,19 +76,20 @@ public class MDRRuleGroupInstanceModelImpl
 	public static final String TABLE_NAME = "MDRRuleGroupInstance";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"ruleGroupInstanceId", Types.BIGINT},
-		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
-		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
-		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
-		{"classNameId", Types.BIGINT}, {"classPK", Types.BIGINT},
-		{"ruleGroupId", Types.BIGINT}, {"priority", Types.INTEGER},
-		{"lastPublishDate", Types.TIMESTAMP}
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"ruleGroupInstanceId", Types.BIGINT}, {"groupId", Types.BIGINT},
+		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
+		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
+		{"modifiedDate", Types.TIMESTAMP}, {"classNameId", Types.BIGINT},
+		{"classPK", Types.BIGINT}, {"ruleGroupId", Types.BIGINT},
+		{"priority", Types.INTEGER}, {"lastPublishDate", Types.TIMESTAMP}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("ruleGroupInstanceId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -108,7 +106,7 @@ public class MDRRuleGroupInstanceModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table MDRRuleGroupInstance (uuid_ VARCHAR(75) null,ruleGroupInstanceId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,ruleGroupId LONG,priority INTEGER,lastPublishDate DATE null)";
+		"create table MDRRuleGroupInstance (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,ruleGroupInstanceId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,ruleGroupId LONG,priority INTEGER,lastPublishDate DATE null)";
 
 	public static final String TABLE_SQL_DROP =
 		"drop table MDRRuleGroupInstance";
@@ -125,21 +123,6 @@ public class MDRRuleGroupInstanceModelImpl
 
 	public static final String TX_MANAGER = "liferayTransactionManager";
 
-	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.mobile.device.rules.service.util.ServiceProps.get(
-			"value.object.entity.cache.enabled.com.liferay.mobile.device.rules.model.MDRRuleGroupInstance"),
-		true);
-
-	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.mobile.device.rules.service.util.ServiceProps.get(
-			"value.object.finder.cache.enabled.com.liferay.mobile.device.rules.model.MDRRuleGroupInstance"),
-		true);
-
-	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(
-		com.liferay.mobile.device.rules.service.util.ServiceProps.get(
-			"value.object.column.bitmask.enabled.com.liferay.mobile.device.rules.model.MDRRuleGroupInstance"),
-		true);
-
 	public static final long CLASSNAMEID_COLUMN_BITMASK = 1L;
 
 	public static final long CLASSPK_COLUMN_BITMASK = 2L;
@@ -153,6 +136,14 @@ public class MDRRuleGroupInstanceModelImpl
 	public static final long UUID_COLUMN_BITMASK = 32L;
 
 	public static final long RULEGROUPINSTANCEID_COLUMN_BITMASK = 64L;
+
+	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
+		_entityCacheEnabled = entityCacheEnabled;
+	}
+
+	public static void setFinderCacheEnabled(boolean finderCacheEnabled) {
+		_finderCacheEnabled = finderCacheEnabled;
+	}
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -169,6 +160,7 @@ public class MDRRuleGroupInstanceModelImpl
 
 		MDRRuleGroupInstance model = new MDRRuleGroupInstanceImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
 		model.setRuleGroupInstanceId(soapModel.getRuleGroupInstanceId());
 		model.setGroupId(soapModel.getGroupId());
@@ -208,10 +200,6 @@ public class MDRRuleGroupInstanceModelImpl
 
 		return models;
 	}
-
-	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
-		com.liferay.mobile.device.rules.service.util.ServiceProps.get(
-			"lock.expiration.time.com.liferay.mobile.device.rules.model.MDRRuleGroupInstance"));
 
 	public MDRRuleGroupInstanceModelImpl() {
 	}
@@ -342,6 +330,12 @@ public class MDRRuleGroupInstanceModelImpl
 				new LinkedHashMap
 					<String, BiConsumer<MDRRuleGroupInstance, ?>>();
 
+		attributeGetterFunctions.put(
+			"mvccVersion", MDRRuleGroupInstance::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<MDRRuleGroupInstance, Long>)
+				MDRRuleGroupInstance::setMvccVersion);
 		attributeGetterFunctions.put("uuid", MDRRuleGroupInstance::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid",
@@ -424,6 +418,17 @@ public class MDRRuleGroupInstanceModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -736,6 +741,7 @@ public class MDRRuleGroupInstanceModelImpl
 		MDRRuleGroupInstanceImpl mdrRuleGroupInstanceImpl =
 			new MDRRuleGroupInstanceImpl();
 
+		mdrRuleGroupInstanceImpl.setMvccVersion(getMvccVersion());
 		mdrRuleGroupInstanceImpl.setUuid(getUuid());
 		mdrRuleGroupInstanceImpl.setRuleGroupInstanceId(
 			getRuleGroupInstanceId());
@@ -800,12 +806,12 @@ public class MDRRuleGroupInstanceModelImpl
 
 	@Override
 	public boolean isEntityCacheEnabled() {
-		return ENTITY_CACHE_ENABLED;
+		return _entityCacheEnabled;
 	}
 
 	@Override
 	public boolean isFinderCacheEnabled() {
-		return FINDER_CACHE_ENABLED;
+		return _finderCacheEnabled;
 	}
 
 	@Override
@@ -849,6 +855,8 @@ public class MDRRuleGroupInstanceModelImpl
 	public CacheModel<MDRRuleGroupInstance> toCacheModel() {
 		MDRRuleGroupInstanceCacheModel mdrRuleGroupInstanceCacheModel =
 			new MDRRuleGroupInstanceCacheModel();
+
+		mdrRuleGroupInstanceCacheModel.mvccVersion = getMvccVersion();
 
 		mdrRuleGroupInstanceCacheModel.uuid = getUuid();
 
@@ -987,6 +995,10 @@ public class MDRRuleGroupInstanceModelImpl
 
 	}
 
+	private static boolean _entityCacheEnabled;
+	private static boolean _finderCacheEnabled;
+
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _ruleGroupInstanceId;

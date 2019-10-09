@@ -16,7 +16,7 @@ import BooleanInput from '../inputs/BooleanInput.es';
 import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
-import {ClaySelectWithOption} from '@clayui/select';
+import {ClaySelectWithOption} from '@clayui/form';
 import CollectionInput from '../inputs/CollectionInput.es';
 import DateInput from '../inputs/DateInput.es';
 import DateTimeInput from '../inputs/DateTimeInput.es';
@@ -35,6 +35,7 @@ import {
 } from '../../utils/utils.es';
 import {DragSource as dragSource, DropTarget as dropTarget} from 'react-dnd';
 import {DragTypes} from '../../utils/drag-types.es';
+import {fetch} from 'frontend-js-web';
 import {PROPERTY_TYPES} from '../../utils/constants.es';
 import {PropTypes} from 'prop-types';
 
@@ -231,8 +232,8 @@ class CriteriaRow extends Component {
 
 		return (
 			<span>
-				<b className='mr-1 text-dark'>{propertyLabel}</b>
-				<span className='operator mr-1'>{operatorLabel}</span>
+				<b className="mr-1 text-dark">{propertyLabel}</b>
+				<span className="operator mr-1">{operatorLabel}</span>
 				<b>{parsedValue}</b>
 			</span>
 		);
@@ -346,8 +347,8 @@ class CriteriaRow extends Component {
 
 		return (
 			<ClayAlert
-				className='bg-transparent p-1 mt-1 border-0'
-				displayType='danger'
+				className="bg-transparent p-1 mt-1 border-0"
+				displayType="danger"
 				title={Liferay.Language.get('error')}
 			>
 				{message}
@@ -379,19 +380,19 @@ class CriteriaRow extends Component {
 		const disabledInput = !!error;
 
 		return (
-			<div className='edit-container'>
+			<div className="edit-container">
 				{connectDragSource(
-					<div className='drag-icon'>
-						<ClayIcon symbol='drag' />
+					<div className="drag-icon">
+						<ClayIcon symbol="drag" />
 					</div>
 				)}
 
-				<span className='criterion-string'>
+				<span className="criterion-string">
 					<b>{propertyLabel}</b>
 				</span>
 
 				<ClaySelectWithOption
-					className='criterion-input operator-input form-control'
+					className="criterion-input operator-input form-control"
 					disabled={disabledInput}
 					onChange={this._handleInputChange('operatorName')}
 					options={filteredSupportedOperators.map(
@@ -407,31 +408,31 @@ class CriteriaRow extends Component {
 
 				{error ? (
 					<ClayButton
+						className="btn-outline-danger"
 						onClick={this._handleDelete}
-						className='btn-outline-danger'
 					>
 						{Liferay.Language.get('delete')}
 					</ClayButton>
 				) : (
-					<React.Fragment>
+					<>
 						<ClayButton
-							className='btn-outline-borderless'
-							displayType='secondary'
+							className="btn-outline-borderless"
+							displayType="secondary"
 							monospaced
 							onClick={this._handleDuplicate}
 						>
-							<ClayIcon symbol='paste' />
+							<ClayIcon symbol="paste" />
 						</ClayButton>
 
 						<ClayButton
-							className='btn-outline-borderless'
-							displayType='secondary'
+							className="btn-outline-borderless"
+							displayType="secondary"
 							monospaced
 							onClick={this._handleDelete}
 						>
-							<ClayIcon symbol='times-circle' />
+							<ClayIcon symbol="times-circle" />
 						</ClayButton>
-					</React.Fragment>
+					</>
 				)}
 			</div>
 		);
@@ -473,7 +474,7 @@ class CriteriaRow extends Component {
 		});
 
 		return (
-			<React.Fragment>
+			<>
 				{connectDropTarget(
 					connectDragPreview(
 						<div className={classes}>
@@ -486,7 +487,7 @@ class CriteriaRow extends Component {
 									value
 								})
 							) : (
-								<span className='criterion-string'>
+								<span className="criterion-string">
 									{this._getReadableCriteriaString({
 										error: errorOnProperty,
 										operatorLabel,
@@ -500,7 +501,7 @@ class CriteriaRow extends Component {
 					)
 				)}
 				{errorOnProperty && this._renderErrorMessage()}
-			</React.Fragment>
+			</>
 		);
 	}
 }

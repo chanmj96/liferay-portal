@@ -16,6 +16,7 @@ package com.liferay.asset.list.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 
@@ -36,9 +37,10 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface AssetListEntryModel
-	extends BaseModel<AssetListEntry>, ShardedModel, StagedGroupedModel {
+	extends BaseModel<AssetListEntry>, MVCCModel, ShardedModel,
+			StagedGroupedModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. All methods that expect a asset list entry model instance should use the {@link AssetListEntry} interface instead.
@@ -57,6 +59,22 @@ public interface AssetListEntryModel
 	 * @param primaryKey the primary key of this asset list entry
 	 */
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this asset list entry.
+	 *
+	 * @return the mvcc version of this asset list entry
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this asset list entry.
+	 *
+	 * @param mvccVersion the mvcc version of this asset list entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
 
 	/**
 	 * Returns the uuid of this asset list entry.

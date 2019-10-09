@@ -32,6 +32,8 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -161,20 +163,22 @@ public class ContentField {
 	@Schema(
 		description = "A list of child content fields that depend on this resource."
 	)
-	public ContentField[] getNestedFields() {
-		return nestedFields;
+	@Valid
+	public ContentField[] getNestedContentFields() {
+		return nestedContentFields;
 	}
 
-	public void setNestedFields(ContentField[] nestedFields) {
-		this.nestedFields = nestedFields;
+	public void setNestedContentFields(ContentField[] nestedContentFields) {
+		this.nestedContentFields = nestedContentFields;
 	}
 
 	@JsonIgnore
-	public void setNestedFields(
-		UnsafeSupplier<ContentField[], Exception> nestedFieldsUnsafeSupplier) {
+	public void setNestedContentFields(
+		UnsafeSupplier<ContentField[], Exception>
+			nestedContentFieldsUnsafeSupplier) {
 
 		try {
-			nestedFields = nestedFieldsUnsafeSupplier.get();
+			nestedContentFields = nestedContentFieldsUnsafeSupplier.get();
 		}
 		catch (RuntimeException re) {
 			throw re;
@@ -186,7 +190,7 @@ public class ContentField {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected ContentField[] nestedFields;
+	protected ContentField[] nestedContentFields;
 
 	@Schema(
 		description = "A flag that indicates whether this field can be rendered multiple times."
@@ -219,6 +223,7 @@ public class ContentField {
 	protected Boolean repeatable;
 
 	@Schema
+	@Valid
 	public Value getValue() {
 		return value;
 	}
@@ -327,19 +332,19 @@ public class ContentField {
 			sb.append("\"");
 		}
 
-		if (nestedFields != null) {
+		if (nestedContentFields != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"nestedFields\": ");
+			sb.append("\"nestedContentFields\": ");
 
 			sb.append("[");
 
-			for (int i = 0; i < nestedFields.length; i++) {
-				sb.append(String.valueOf(nestedFields[i]));
+			for (int i = 0; i < nestedContentFields.length; i++) {
+				sb.append(String.valueOf(nestedContentFields[i]));
 
-				if ((i + 1) < nestedFields.length) {
+				if ((i + 1) < nestedContentFields.length) {
 					sb.append(", ");
 				}
 			}

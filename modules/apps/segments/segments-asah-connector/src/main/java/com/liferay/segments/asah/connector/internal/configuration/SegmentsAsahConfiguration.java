@@ -14,7 +14,6 @@
 
 package com.liferay.segments.asah.connector.internal.configuration;
 
-import aQute.bnd.annotation.ProviderType;
 import aQute.bnd.annotation.metatype.Meta;
 
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
@@ -28,7 +27,6 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 	localization = "content/Language",
 	name = "segments-asah-connector-configuration-name"
 )
-@ProviderType
 public interface SegmentsAsahConfiguration {
 
 	@Meta.AD(
@@ -46,7 +44,10 @@ public interface SegmentsAsahConfiguration {
 	)
 	public int interestTermsCacheExpirationTime();
 
-	@Meta.AD(deflt = "15", name = "check-interval", required = false)
+	@Meta.AD(
+		deflt = "15", description = "check-interval-description",
+		name = "check-interval", required = false
+	)
 	public int checkInterval();
 
 }

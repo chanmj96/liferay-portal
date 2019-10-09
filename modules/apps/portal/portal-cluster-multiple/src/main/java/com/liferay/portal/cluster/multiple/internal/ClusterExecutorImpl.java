@@ -123,9 +123,8 @@ public class ClusterExecutorImpl implements ClusterExecutor {
 			new FutureClusterResponses(clusterNodeIds);
 
 		if (!clusterRequest.isFireAndForget()) {
-			String uuid = clusterRequest.getUuid();
-
-			_futureClusterResponses.put(uuid, futureClusterResponses);
+			_futureClusterResponses.put(
+				clusterRequest.getUuid(), futureClusterResponses);
 		}
 
 		if (clusterNodeIds.remove(_localClusterNodeStatus.getClusterNodeId())) {
@@ -469,10 +468,10 @@ public class ClusterExecutorImpl implements ClusterExecutor {
 	}
 
 	protected void initialize(
-		String channelLogicName, String channelPropertiesString,
+		String channelLogicName, String channelPropertiesLocation,
 		String channelName) {
 
-		if (Validator.isNull(channelPropertiesString)) {
+		if (Validator.isNull(channelPropertiesLocation)) {
 			throw new IllegalStateException(
 				"Set \"" + PropsKeys.CLUSTER_LINK_CHANNEL_PROPERTIES_CONTROL +
 					"\"");
@@ -490,8 +489,8 @@ public class ClusterExecutorImpl implements ClusterExecutor {
 			this);
 
 		_clusterChannel = _clusterChannelFactory.createClusterChannel(
-			channelLogicName, channelPropertiesString, channelName,
-			clusterReceiver);
+			_executorService, channelLogicName, channelPropertiesLocation,
+			channelName, clusterReceiver);
 
 		ClusterNode localClusterNode = new ClusterNode(
 			generateClusterNodeId(), _clusterChannel.getBindInetAddress());

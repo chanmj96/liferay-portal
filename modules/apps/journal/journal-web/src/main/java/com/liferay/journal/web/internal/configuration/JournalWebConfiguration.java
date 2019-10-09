@@ -36,6 +36,12 @@ public interface JournalWebConfiguration {
 	public boolean changeableDefaultLanguage();
 
 	@Meta.AD(
+		deflt = "true", description = "structure-field-indexable-enable-help",
+		name = "structure-field-indexable-enable", required = false
+	)
+	public boolean structureFieldIndexableEnable();
+
+	@Meta.AD(
 		deflt = "descriptive", name = "default-display-view", required = false
 	)
 	public String defaultDisplayView();

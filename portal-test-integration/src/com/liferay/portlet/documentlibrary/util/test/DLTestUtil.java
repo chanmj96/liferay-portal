@@ -34,7 +34,10 @@ import java.io.InputStream;
 
 /**
  * @author Adolfo Pérez
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ *             com.liferay.document.library.test.util.DLTestUtil}
  */
+@Deprecated
 public class DLTestUtil {
 
 	public static DLFileEntry addDLFileEntry(long dlFolderId) throws Exception {
@@ -57,10 +60,8 @@ public class DLTestUtil {
 	}
 
 	public static DLFolder addDLFolder(long groupId) throws Exception {
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(groupId);
-
-		return addDLFolder(groupId, serviceContext);
+		return addDLFolder(
+			groupId, ServiceContextTestUtil.getServiceContext(groupId));
 	}
 
 	public static DLFolder addDLFolder(

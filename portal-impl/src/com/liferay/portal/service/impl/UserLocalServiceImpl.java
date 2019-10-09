@@ -81,6 +81,8 @@ import com.liferay.portal.kernel.model.UserGroupRole;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.search.Indexable;
+import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.QueryConfig;
@@ -170,7 +172,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -1017,6 +1018,9 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		user.setContactId(counterLocalService.increment());
 
 		if (Validator.isNotNull(password1)) {
+			PasswordModificationThreadLocal.setPasswordModified(true);
+			PasswordModificationThreadLocal.setPasswordUnencrypted(password1);
+
 			user.setPassword(PasswordEncryptorUtil.encrypt(password1));
 			user.setPasswordUnencrypted(password1);
 		}
@@ -1482,9 +1486,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		// Verify digest
 
-		String digest = user.getDigest();
-
-		if (Validator.isNull(digest)) {
+		if (Validator.isNull(user.getDigest())) {
 			_log.error(
 				"User must first login through the portal " + user.getUserId());
 
@@ -1758,7 +1760,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		boolean sendEmail = ParamUtil.getBoolean(serviceContext, "sendEmail");
 
 		if (sendEmail) {
-			notifyUser(user, password, serviceContext);
+			notifyUser(user, serviceContext);
 		}
 
 		Company company = companyPersistence.findByPrimaryKey(
@@ -3740,7 +3742,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		Company company = companyPersistence.findByPrimaryKey(companyId);
 
-		if (!company.isSendPassword() && !company.isSendPasswordResetLink()) {
+		if (!company.isSendPasswordResetLink()) {
 			throw new SendPasswordException.MustBeEnabled(company);
 		}
 
@@ -3754,98 +3756,37 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		PasswordPolicy passwordPolicy = user.getPasswordPolicy();
 
-		String newPassword = StringPool.BLANK;
+		Date expirationDate = null;
 
-		if (company.isSendPasswordResetLink()) {
-			Date expirationDate = null;
+		if ((passwordPolicy != null) &&
+			(passwordPolicy.getResetTicketMaxAge() > 0)) {
 
-			if ((passwordPolicy != null) &&
-				(passwordPolicy.getResetTicketMaxAge() > 0)) {
-
-				expirationDate = new Date(
-					System.currentTimeMillis() +
-						(passwordPolicy.getResetTicketMaxAge() * 1000));
-			}
-
-			Ticket ticket = ticketLocalService.addDistinctTicket(
-				companyId, User.class.getName(), user.getUserId(),
-				TicketConstants.TYPE_PASSWORD, null, expirationDate,
-				serviceContext);
-
-			StringBundler sb = new StringBundler(6);
-
-			sb.append(serviceContext.getPortalURL());
-			sb.append(serviceContext.getPathMain());
-			sb.append("/portal/update_password?p_l_id=");
-			sb.append(serviceContext.getPlid());
-			sb.append("&ticketKey=");
-			sb.append(ticket.getKey());
-
-			String passwordResetURL = sb.toString();
-
-			sendPasswordNotification(
-				user, companyId, null, passwordResetURL, fromName, fromAddress,
-				subject, body, serviceContext);
-		}
-		else if (company.isSendPassword()) {
-			if (!Objects.equals(
-					PasswordEncryptorUtil.getDefaultPasswordAlgorithmType(),
-					PasswordEncryptorUtil.TYPE_NONE)) {
-
-				if (LDAPSettingsUtil.isPasswordPolicyEnabled(
-						user.getCompanyId())) {
-
-					if (_log.isWarnEnabled()) {
-						StringBundler sb = new StringBundler(5);
-
-						sb.append("When LDAP password policy is enabled, it ");
-						sb.append("is possible that portal generated ");
-						sb.append("passwords will not match the LDAP policy.");
-						sb.append("Using RegExpToolkit to generate new ");
-						sb.append("password.");
-
-						_log.warn(sb.toString());
-					}
-
-					RegExpToolkit regExpToolkit = new RegExpToolkit();
-
-					newPassword = regExpToolkit.generate(null);
-				}
-				else {
-					newPassword = PwdToolkitUtil.generate(passwordPolicy);
-				}
-
-				boolean passwordReset = false;
-
-				if (passwordPolicy.isChangeable() &&
-					passwordPolicy.isChangeRequired()) {
-
-					passwordReset = true;
-				}
-
-				trackPassword(user);
-
-				user.setPassword(PasswordEncryptorUtil.encrypt(newPassword));
-				user.setPasswordUnencrypted(newPassword);
-				user.setPasswordEncrypted(true);
-				user.setPasswordReset(passwordReset);
-				user.setPasswordModified(true);
-				user.setPasswordModifiedDate(new Date());
-
-				userPersistence.update(user);
-
-				user.setPasswordModified(false);
-			}
-			else {
-				newPassword = user.getPassword();
-			}
-
-			sendPasswordNotification(
-				user, companyId, newPassword, null, fromName, fromAddress,
-				subject, body, serviceContext);
+			expirationDate = new Date(
+				System.currentTimeMillis() +
+					(passwordPolicy.getResetTicketMaxAge() * 1000));
 		}
 
-		return company.isSendPassword();
+		Ticket ticket = ticketLocalService.addDistinctTicket(
+			companyId, User.class.getName(), user.getUserId(),
+			TicketConstants.TYPE_PASSWORD, null, expirationDate,
+			serviceContext);
+
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(serviceContext.getPortalURL());
+		sb.append(serviceContext.getPathMain());
+		sb.append("/portal/update_password?p_l_id=");
+		sb.append(serviceContext.getPlid());
+		sb.append("&ticketKey=");
+		sb.append(ticket.getKey());
+
+		String passwordResetURL = sb.toString();
+
+		sendPasswordNotification(
+			user, companyId, null, passwordResetURL, fromName, fromAddress,
+			subject, body, serviceContext);
+
+		return false;
 	}
 
 	/**
@@ -4271,6 +4212,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * @param  emailAddress2 the user's new email address confirmation
 	 * @return the user
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public User updateEmailAddress(
 			long userId, String password, String emailAddress1,
@@ -4311,6 +4253,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 *         remote host, and agent for the user.
 	 * @return the user
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public User updateEmailAddress(
 			long userId, String password, String emailAddress1,
@@ -4639,6 +4582,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * @param  jobTitle the user's job title
 	 * @return the user
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public User updateJobTitle(long userId, String jobTitle)
 		throws PortalException {
@@ -4786,6 +4730,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * @param  modifiedDate the new modified date
 	 * @return the user
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public User updateModifiedDate(long userId, Date modifiedDate)
 		throws PortalException {
@@ -5066,6 +5011,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 	 * @param  screenName the user's new screen name
 	 * @return the user
 	 */
+	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public User updateScreenName(long userId, String screenName)
 		throws PortalException {
@@ -5220,11 +5166,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		// User
 
-		User user = userPersistence.findByPrimaryKey(userId);
-
-		Company company = companyPersistence.findByPrimaryKey(
-			user.getCompanyId());
-
 		String password = oldPassword;
 		screenName = getLogin(screenName);
 		emailAddress = StringUtil.toLowerCase(StringUtil.trim(emailAddress));
@@ -5241,18 +5182,23 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			emailAddress = StringPool.BLANK;
 		}
 
+		Locale locale = LocaleUtil.fromLanguageId(languageId);
+
+		validate(
+			userId, screenName, emailAddress, openId, firstName, middleName,
+			lastName, smsSn, locale);
+
+		User user = userPersistence.findByPrimaryKey(userId);
+
+		Company company = companyPersistence.findByPrimaryKey(
+			user.getCompanyId());
+
 		if (!PropsValues.USERS_EMAIL_ADDRESS_REQUIRED &&
 			Validator.isNull(emailAddress)) {
 
 			emailAddress = emailAddressGenerator.generate(
 				user.getCompanyId(), userId);
 		}
-
-		Locale locale = LocaleUtil.fromLanguageId(languageId);
-
-		validate(
-			userId, screenName, emailAddress, openId, firstName, middleName,
-			lastName, smsSn, locale);
 
 		if (Validator.isNotNull(newPassword1) ||
 			Validator.isNotNull(newPassword2)) {
@@ -6109,9 +6055,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		return true;
 	}
 
-	protected void notifyUser(
-		User user, String password, ServiceContext serviceContext) {
-
+	protected void notifyUser(User user, ServiceContext serviceContext) {
 		if (!PrefsPropsUtil.getBoolean(
 				user.getCompanyId(),
 				PropsKeys.ADMIN_EMAIL_USER_ADDED_ENABLED)) {
@@ -6154,26 +6098,19 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 				PropsKeys.ADMIN_EMAIL_USER_ADDED_NO_PASSWORD_BODY);
 		}
 		else {
-			if (company.isSendPassword()) {
-				localizedBodyMap = LocalizationUtil.getLocalizationMap(
-					companyPortletPreferences, "adminEmailUserAddedBody",
-					PropsKeys.ADMIN_EMAIL_USER_ADDED_BODY);
-			}
-			else {
-				Ticket ticket = ticketLocalService.addDistinctTicket(
-					user.getCompanyId(), User.class.getName(), user.getUserId(),
-					TicketConstants.TYPE_PASSWORD, null, null, serviceContext);
+			Ticket ticket = ticketLocalService.addDistinctTicket(
+				user.getCompanyId(), User.class.getName(), user.getUserId(),
+				TicketConstants.TYPE_PASSWORD, null, null, serviceContext);
 
-				passwordResetURL = StringBundler.concat(
-					serviceContext.getPortalURL(), serviceContext.getPathMain(),
-					"/portal/update_password?p_l_id=", serviceContext.getPlid(),
-					"&ticketKey=", ticket.getKey());
+			passwordResetURL = StringBundler.concat(
+				serviceContext.getPortalURL(), serviceContext.getPathMain(),
+				"/portal/update_password?p_l_id=", serviceContext.getPlid(),
+				"&ticketKey=", ticket.getKey());
 
-				localizedBodyMap = LocalizationUtil.getLocalizationMap(
-					companyPortletPreferences,
-					"adminEmailUserAddedResetPasswordBody",
-					PropsKeys.ADMIN_EMAIL_USER_ADDED_RESET_PASSWORD_BODY);
-			}
+			localizedBodyMap = LocalizationUtil.getLocalizationMap(
+				companyPortletPreferences,
+				"adminEmailUserAddedResetPasswordBody",
+				PropsKeys.ADMIN_EMAIL_USER_ADDED_RESET_PASSWORD_BODY);
 		}
 
 		String subject = _getLocalizedValue(
@@ -6197,8 +6134,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			"[$PASSWORD_SETUP_URL$]", passwordResetURL);
 		mailTemplateContextBuilder.put(
 			"[$USER_ID$]", String.valueOf(user.getUserId()));
-		mailTemplateContextBuilder.put(
-			"[$USER_PASSWORD$]", HtmlUtil.escape(password));
 		mailTemplateContextBuilder.put(
 			"[$USER_SCREENNAME$]", HtmlUtil.escape(user.getScreenName()));
 
@@ -6335,11 +6270,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			prefix = "adminEmailPasswordReset";
 			subjectProperty = PropsKeys.ADMIN_EMAIL_PASSWORD_RESET_SUBJECT;
 		}
-		else if (company.isSendPassword()) {
-			bodyProperty = PropsKeys.ADMIN_EMAIL_PASSWORD_SENT_BODY;
-			prefix = "adminEmailPasswordSent";
-			subjectProperty = PropsKeys.ADMIN_EMAIL_PASSWORD_SENT_SUBJECT;
-		}
 		else {
 			bodyProperty = PropsKeys.ADMIN_EMAIL_PASSWORD_CHANGED_BODY;
 			prefix = "adminEmailPasswordChanged";
@@ -6386,8 +6316,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		mailTemplateContextBuilder.put("[$TO_NAME$]", HtmlUtil.escape(toName));
 		mailTemplateContextBuilder.put(
 			"[$USER_ID$]", String.valueOf(user.getUserId()));
-		mailTemplateContextBuilder.put(
-			"[$USER_PASSWORD$]", HtmlUtil.escape(newPassword));
 		mailTemplateContextBuilder.put(
 			"[$USER_SCREENNAME$]", HtmlUtil.escape(user.getScreenName()));
 

@@ -53,7 +53,7 @@ import org.osgi.annotation.versioning.ProviderType;
 )
 public interface LayoutService extends BaseService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link LayoutServiceUtil} to access the layout remote service. Add custom service methods to <code>com.liferay.portal.service.impl.LayoutServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -722,5 +722,7 @@ public interface LayoutService extends BaseService {
 	 */
 	public Layout updatePriority(long plid, int priority)
 		throws PortalException;
+
+	public Layout updateType(long plid, String type) throws PortalException;
 
 }

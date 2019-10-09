@@ -16,11 +16,35 @@ import '../FieldBase/FieldBase.es';
 import './TextRegister.soy.js';
 import 'clay-autocomplete';
 import Component from 'metal-component';
+import {debounce, cancelDebounce} from 'frontend-js-web';
+import dom from 'metal-dom';
 import Soy from 'metal-soy';
 import templates from './Text.soy.js';
 import {Config} from 'metal-state';
 
 class Text extends Component {
+	created() {
+		this.debouncedUpdate = debounce(_value => {
+			if (this.animationFrameRequest) {
+				window.cancelAnimationFrame(this.animationFrameRequest);
+			}
+
+			this.animationFrameRequest = window.requestAnimationFrame(() => {
+				if (!this.isDisposed()) {
+					this.setState({_value});
+				}
+			});
+		}, 300);
+	}
+
+	attached() {
+		const portalElement = dom.toElement('#clay_dropdown_portal');
+
+		if (portalElement) {
+			dom.addClasses(portalElement, 'show');
+		}
+	}
+
 	dispatchEvent(event, name, value) {
 		this.emit(name, {
 			fieldInstance: this,
@@ -50,11 +74,26 @@ class Text extends Component {
 		};
 	}
 
+	shouldUpdate(changes) {
+		for (const key in changes || {}) {
+			if (key === 'events' || key === 'value') {
+				continue;
+			}
+
+			if (
+				!Liferay.Util.isEqual(changes[key].newVal, changes[key].prevVal)
+			) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	willReceiveState(changes) {
 		if (changes.value) {
-			this.setState({
-				_value: changes.value.newVal
-			});
+			cancelDebounce(this.debouncedUpdate);
+			this.debouncedUpdate(changes.value.newVal);
 		}
 	}
 
@@ -88,8 +127,8 @@ class Text extends Component {
 
 		this.setState(
 			{
-				value,
-				filteredItems: []
+				filteredItems: [],
+				value
 			},
 			() => {
 				this.dispatchEvent(event, 'fieldEdited', value);
@@ -152,6 +191,15 @@ Text.STATE = {
 	 */
 
 	dataType: Config.string().value('string'),
+
+	/**
+	 * @default false
+	 * @instance
+	 * @memberof Text
+	 * @type {?(boolean|undefined)}
+	 */
+
+	displayErrors: Config.bool().value(false),
 
 	/**
 	 * @default undefined
@@ -245,7 +293,7 @@ Text.STATE = {
 	 * @type {?(string|undefined)}
 	 */
 
-	placeholder: Config.string(),
+	placeholder: Config.string().value(''),
 
 	/**
 	 * @default undefined

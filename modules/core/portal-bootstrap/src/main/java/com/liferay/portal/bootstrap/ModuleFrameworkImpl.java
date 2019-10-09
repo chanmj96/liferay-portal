@@ -56,6 +56,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -74,6 +77,8 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Dictionary;
@@ -115,6 +120,7 @@ import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.framework.wiring.FrameworkWiring;
 
 import org.springframework.beans.factory.BeanIsAbstractException;
@@ -1116,7 +1122,7 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 		if (_log.isDebugEnabled()) {
 			String s = sb.toString();
 
-			s = s.replace(",", "\n");
+			s = StringUtil.replace(s, ',', '\n');
 
 			_log.debug(
 				"The portal's system bundle is exporting the following " +
@@ -1192,6 +1198,38 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 			catch (BundleException be) {
 				_log.error("Unable to install bundle at " + location, be);
 			}
+		}
+	}
+
+	private void _installConfigs(ClassLoader classLoader) throws Exception {
+		BundleContext bundleContext = _framework.getBundleContext();
+
+		Class<?> configInstallerClass = classLoader.loadClass(
+			"org.apache.felix.fileinstall.internal.ConfigInstaller");
+
+		Method method = configInstallerClass.getDeclaredMethod(
+			"install", File.class);
+
+		Constructor<?> constructor =
+			configInstallerClass.getDeclaredConstructor(
+				BundleContext.class,
+				classLoader.loadClass("org.osgi.service.cm.ConfigurationAdmin"),
+				classLoader.loadClass(
+					"org.apache.felix.fileinstall.internal.FileInstall"));
+
+		constructor.setAccessible(true);
+
+		Object configInstaller = constructor.newInstance(
+			bundleContext,
+			bundleContext.getService(
+				bundleContext.getServiceReference(
+					"org.osgi.service.cm.ConfigurationAdmin")),
+			null);
+
+		File dir = new File(PropsValues.MODULE_FRAMEWORK_CONFIGS_DIR);
+
+		for (File file : dir.listFiles()) {
+			method.invoke(configInstaller, file);
 		}
 	}
 
@@ -1646,6 +1684,12 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 		frameworkWiring.resolveBundles(bundles);
 
+		_startConfigurationBundles(bundles);
+
+		BundleWiring bundleWiring = fileInstallBundle.adapt(BundleWiring.class);
+
+		_installConfigs(bundleWiring.getClassLoader());
+
 		if (PropsValues.MODULE_FRAMEWORK_CONCURRENT_STARTUP_ENABLED) {
 			Runtime runtime = Runtime.getRuntime();
 
@@ -1738,6 +1782,24 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Registered required services");
+		}
+	}
+
+	private void _startConfigurationBundles(Collection<Bundle> bundles)
+		throws BundleException {
+
+		Iterator<Bundle> iterator = bundles.iterator();
+
+		while (iterator.hasNext()) {
+			Bundle bundle = iterator.next();
+
+			if (_configurationBundleSymbolicNames.contains(
+					bundle.getSymbolicName())) {
+
+				bundle.start();
+
+				iterator.remove();
+			}
 		}
 	}
 
@@ -1877,6 +1939,10 @@ public class ModuleFrameworkImpl implements ModuleFramework {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ModuleFrameworkImpl.class);
+
+	private static final List<String> _configurationBundleSymbolicNames =
+		Arrays.asList(
+			PropsValues.MODULE_FRAMEWORK_CONFIGURATION_BUNDLE_SYMBOLIC_NAMES);
 
 	private Framework _framework;
 	private final Map

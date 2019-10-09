@@ -30,17 +30,17 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Destination;
+import com.liferay.portal.kernel.messaging.DestinationConfiguration;
+import com.liferay.portal.kernel.messaging.DestinationFactoryUtil;
 import com.liferay.portal.kernel.messaging.InvokerMessageListener;
 import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.messaging.MessageListener;
-import com.liferay.portal.kernel.messaging.SerialDestination;
 import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.AuditedModel;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.GroupedModel;
-import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.model.Portlet;
@@ -80,6 +80,7 @@ import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -100,8 +101,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -126,6 +127,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.PageContext;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 
 /**
  * @author Brian Wing Shun Chan
@@ -391,9 +397,8 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 		PortletConfig portletConfig = PortletConfigFactoryUtil.create(
 			portlet, servletContext);
 
-		ResourceBundle resourceBundle = portletConfig.getResourceBundle(locale);
-
-		return LanguageUtil.format(resourceBundle, pattern, arguments);
+		return LanguageUtil.format(
+			portletConfig.getResourceBundle(locale), pattern, arguments);
 	}
 
 	@Override
@@ -685,10 +690,8 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 			String lifecycle, WindowState windowState, Object... parameters)
 		throws Exception {
 
-		Layout layout = themeDisplay.getLayout();
-
 		PortletURL portletURL = PortletURLFactoryUtil.create(
-			request, portlet, layout, lifecycle);
+			request, portlet, themeDisplay.getLayout(), lifecycle);
 
 		portletURL.setParameter("action", action);
 		portletURL.setParameter("controller", controller);
@@ -910,15 +913,21 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 			}
 		}
 		else {
-			SerialDestination serialDestination = new SerialDestination();
+			DestinationConfiguration destinationConfiguration =
+				new DestinationConfiguration(
+					DestinationConfiguration.DESTINATION_TYPE_SERIAL,
+					destinationName);
 
-			serialDestination.setName(destinationName);
+			Destination serialDestination =
+				DestinationFactoryUtil.createDestination(
+					destinationConfiguration);
 
-			serialDestination.afterPropertiesSet();
-
-			serialDestination.open();
-
-			MessageBusUtil.addDestination(serialDestination);
+			destinationServiceRegistrations.put(
+				serialDestination.getName(),
+				_bundleContext.registerService(
+					Destination.class, serialDestination,
+					MapUtil.singletonDictionary(
+						"destination.name", serialDestination.getName())));
 		}
 
 		try {
@@ -1044,6 +1053,7 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 
 		portletRequest = (PortletRequest)request.getAttribute(
 			JavaConstants.JAVAX_PORTLET_REQUEST);
+
 		portletResponse = (PortletResponse)request.getAttribute(
 			JavaConstants.JAVAX_PORTLET_RESPONSE);
 
@@ -1651,6 +1661,8 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 	protected Company company;
 	protected MessageListener controllerMessageListener;
 	protected String controllerPath;
+	protected Map<String, ServiceRegistration<Destination>>
+		destinationServiceRegistrations = new ConcurrentHashMap<>();
 	protected EventRequest eventRequest;
 	protected EventResponse eventResponse;
 	protected String format;
@@ -1684,6 +1696,7 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 	protected User user;
 	protected String viewPath;
 
+	private static final BundleContext _bundleContext;
 	private static final TransactionConfig _transactionConfig;
 
 	static {
@@ -1694,6 +1707,10 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 		builder.setRollbackForClasses(Exception.class);
 
 		_transactionConfig = builder.build();
+
+		Bundle bundle = FrameworkUtil.getBundle(BaseAlloyControllerImpl.class);
+
+		_bundleContext = bundle.getBundleContext();
 	}
 
 }

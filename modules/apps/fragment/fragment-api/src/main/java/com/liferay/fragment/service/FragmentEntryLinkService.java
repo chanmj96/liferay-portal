@@ -24,6 +24,8 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Transactional;
 
+import java.util.Map;
+
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -44,7 +46,7 @@ import org.osgi.annotation.versioning.ProviderType;
 )
 public interface FragmentEntryLinkService extends BaseService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link FragmentEntryLinkServiceUtil} to access the fragment entry link remote service. Add custom service methods to <code>com.liferay.fragment.service.impl.FragmentEntryLinkServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -86,10 +88,19 @@ public interface FragmentEntryLinkService extends BaseService {
 			long fragmentEntryLinkId, String editableValues)
 		throws PortalException;
 
+	public FragmentEntryLink updateFragmentEntryLink(
+			long fragmentEntryLinkId, String editableValues,
+			boolean updateClassedModel)
+		throws PortalException;
+
 	public void updateFragmentEntryLinks(
 			long groupId, long classNameId, long classPK,
 			long[] fragmentEntryIds, String editableValues,
 			ServiceContext serviceContext)
+		throws PortalException;
+
+	public void updateFragmentEntryLinks(
+			Map<Long, String> fragmentEntryLinksEditableValuesMap)
 		throws PortalException;
 
 }

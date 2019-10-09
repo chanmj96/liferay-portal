@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link SocialActivity}.
@@ -31,10 +29,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialActivity
  * @generated
  */
-@ProviderType
 public class SocialActivityWrapper
 	extends BaseModelWrapper<SocialActivity>
-	implements SocialActivity, ModelWrapper<SocialActivity> {
+	implements ModelWrapper<SocialActivity>, SocialActivity {
 
 	public SocialActivityWrapper(SocialActivity socialActivity) {
 		super(socialActivity);
@@ -353,6 +350,11 @@ public class SocialActivityWrapper
 		return model.isClassName(className);
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a social activity model instance should use the <code>SocialActivity</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();

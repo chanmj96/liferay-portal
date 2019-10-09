@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link UserNotificationEvent}.
@@ -30,10 +28,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see UserNotificationEvent
  * @generated
  */
-@ProviderType
 public class UserNotificationEventWrapper
 	extends BaseModelWrapper<UserNotificationEvent>
-	implements UserNotificationEvent, ModelWrapper<UserNotificationEvent> {
+	implements ModelWrapper<UserNotificationEvent>, UserNotificationEvent {
 
 	public UserNotificationEventWrapper(
 		UserNotificationEvent userNotificationEvent) {
@@ -324,6 +321,11 @@ public class UserNotificationEventWrapper
 		return model.isDelivered();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a user notification event model instance should use the <code>UserNotificationEvent</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();

@@ -19,8 +19,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link UserGroupGroupRole}.
@@ -30,10 +28,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see UserGroupGroupRole
  * @generated
  */
-@ProviderType
 public class UserGroupGroupRoleWrapper
 	extends BaseModelWrapper<UserGroupGroupRole>
-	implements UserGroupGroupRole, ModelWrapper<UserGroupGroupRole> {
+	implements ModelWrapper<UserGroupGroupRole>, UserGroupGroupRole {
 
 	public UserGroupGroupRoleWrapper(UserGroupGroupRole userGroupGroupRole) {
 		super(userGroupGroupRole);
@@ -168,6 +165,11 @@ public class UserGroupGroupRoleWrapper
 		return model.getUserGroupId();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a user group group role model instance should use the <code>UserGroupGroupRole</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();

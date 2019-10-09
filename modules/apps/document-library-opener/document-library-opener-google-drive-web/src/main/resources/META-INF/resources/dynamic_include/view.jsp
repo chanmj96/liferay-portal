@@ -46,16 +46,6 @@ DLOpenerGoogleDriveFileReference dlOpenerGoogleDriveFileReference = (DLOpenerGoo
 				}
 			);
 
-			function showError(message) {
-				showStatusMessage(
-					{
-						message: message,
-						title: '<liferay-ui:message key="error" />:',
-						type: 'danger'
-					}
-				);
-			}
-
 			function navigate() {
 				if (url && isTimeConsumed) {
 					window.location.href = url;
@@ -63,10 +53,9 @@ DLOpenerGoogleDriveFileReference dlOpenerGoogleDriveFileReference = (DLOpenerGoo
 			}
 
 			function polling() {
-				fetch(
+				Liferay.Util.fetch(
 					'<%= googleDriveBackgroundTaskStatusURL %>',
 					{
-						credentials: 'include',
 						method: 'POST'
 					}
 				)
@@ -103,15 +92,25 @@ DLOpenerGoogleDriveFileReference dlOpenerGoogleDriveFileReference = (DLOpenerGoo
 				);
 			}
 
-			<%
-			String messageKey = "you-are-being-redirected-to-an-external-editor-to-edit-this-document";
-
-			String cmd = ParamUtil.getString(request, Constants.CMD);
-
-			if (cmd.equals(DLOpenerGoogleDriveWebConstants.GOOGLE_DRIVE_ADD)) {
-				messageKey = "you-are-being-redirected-to-an-external-editor-to-create-this-document";
+			function showError(message) {
+				showStatusMessage(
+					{
+						message: message,
+						title: '<liferay-ui:message key="error" />:',
+						type: 'danger'
+					}
+				);
 			}
-			%>
+
+		<%
+		String messageKey = "you-are-being-redirected-to-an-external-editor-to-edit-this-document";
+
+		String cmd = ParamUtil.getString(request, Constants.CMD);
+
+		if (cmd.equals(Constants.ADD)) {
+			messageKey = "you-are-being-redirected-to-an-external-editor-to-create-this-document";
+		}
+		%>
 
 			Liferay.Util.openWindow(
 				{

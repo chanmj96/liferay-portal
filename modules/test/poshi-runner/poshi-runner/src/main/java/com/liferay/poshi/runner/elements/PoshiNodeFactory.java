@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import org.dom4j.Comment;
 import org.dom4j.Document;
@@ -42,6 +43,10 @@ import org.dom4j.Node;
  * @author Kenji Heigel
  */
 public abstract class PoshiNodeFactory {
+
+	public static boolean getValidatePoshiScript() {
+		return _validatePoshiScript;
+	}
 
 	public static PoshiNode<?, ?> newPoshiNode(Node node) {
 		PoshiNode<?, ?> newPoshiNode = null;
@@ -100,9 +105,8 @@ public abstract class PoshiNodeFactory {
 			if (content.startsWith("<definition")) {
 				Document document = Dom4JUtil.parse(content);
 
-				Element rootElement = document.getRootElement();
-
-				return _definitionPoshiElement.clone(rootElement, url);
+				return _definitionPoshiElement.clone(
+					document.getRootElement(), url);
 			}
 
 			if (_definitionPoshiElement.isBalancedPoshiScript(content, true)) {
@@ -142,8 +146,8 @@ public abstract class PoshiNodeFactory {
 	}
 
 	protected static boolean hasPoshiScriptParserException(URL url) {
-		List<String> failingFilePaths =
-			PoshiScriptParserException.getFailingFilePaths();
+		Set<String> failingFilePaths =
+			PoshiScriptParserException.getUniqueErrorPaths();
 
 		return failingFilePaths.contains(url.getFile());
 	}

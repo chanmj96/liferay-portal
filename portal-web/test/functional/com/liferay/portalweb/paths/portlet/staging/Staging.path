@@ -221,6 +221,37 @@
 	<td></td>
 	<td></td>
 </tr>
+<!--PUBLICATION_SUMMARY-->
+<tr>
+	<td>PUBLICATION_CONTENT</td>
+	<td>//div[@class='process-summary-section' and contains(.,'${key_contentName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLICATION_DATE</td>
+	<td>//div[@class='process-summary-section' and contains(.,'${key_dateRestrictionOption}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLICATION_DELETIONS</td>
+	<td>//div[@class='sheet-subtitle' and contains(.,'Deletions')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLICATION_LOOK_AND_FEEL</td>
+	<td>//div[@class='process-summary-subsection' and contains(.,'${key_lookAndFeel}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLICATION_PAGE_OPTION</td>
+	<td>//div[@class='process-summary-subsection' and contains(.,'Pages Option')]//span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLICATION_PERMISSION</td>
+	<td>//div[@class='process-summary-subsection' and contains(.,'Publish Permissions')]</td>
+	<td></td>
+</tr>
 <!--STAGING_MENU-->
 <tr>
 	<td>STAGING_MENU_READY_FOR_PUBLICATION</td>

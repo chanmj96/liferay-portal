@@ -18,6 +18,7 @@ import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,17 +27,14 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing AssetLink in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class AssetLinkCacheModel
-	implements CacheModel<AssetLink>, Externalizable {
+	implements CacheModel<AssetLink>, Externalizable, MVCCModel {
 
 	@Override
 	public boolean equals(Object obj) {
@@ -50,7 +48,9 @@ public class AssetLinkCacheModel
 
 		AssetLinkCacheModel assetLinkCacheModel = (AssetLinkCacheModel)obj;
 
-		if (linkId == assetLinkCacheModel.linkId) {
+		if ((linkId == assetLinkCacheModel.linkId) &&
+			(mvccVersion == assetLinkCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +59,28 @@ public class AssetLinkCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, linkId);
+		int hashCode = HashUtil.hash(0, linkId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(19);
+		StringBundler sb = new StringBundler(21);
 
-		sb.append("{linkId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", linkId=");
 		sb.append(linkId);
 		sb.append(", companyId=");
 		sb.append(companyId);
@@ -93,6 +107,7 @@ public class AssetLinkCacheModel
 	public AssetLink toEntityModel() {
 		AssetLinkImpl assetLinkImpl = new AssetLinkImpl();
 
+		assetLinkImpl.setMvccVersion(mvccVersion);
 		assetLinkImpl.setLinkId(linkId);
 		assetLinkImpl.setCompanyId(companyId);
 		assetLinkImpl.setUserId(userId);
@@ -123,6 +138,8 @@ public class AssetLinkCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
 		linkId = objectInput.readLong();
 
 		companyId = objectInput.readLong();
@@ -142,6 +159,8 @@ public class AssetLinkCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		objectOutput.writeLong(linkId);
 
 		objectOutput.writeLong(companyId);
@@ -166,6 +185,7 @@ public class AssetLinkCacheModel
 		objectOutput.writeInt(weight);
 	}
 
+	public long mvccVersion;
 	public long linkId;
 	public long companyId;
 	public long userId;

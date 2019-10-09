@@ -62,6 +62,7 @@ public class PersonalApplicationURLUtil {
 
 		Group group = user.getGroup();
 
+		boolean controlPanelLayout = false;
 		boolean privateLayout = true;
 
 		ThemeDisplay themeDisplay =
@@ -86,6 +87,10 @@ public class PersonalApplicationURLUtil {
 
 			Layout currentLayout = themeDisplay.getLayout();
 
+			if (currentLayout.isTypeControlPanel()) {
+				controlPanelLayout = true;
+			}
+
 			if (currentLayout.isPublicLayout()) {
 				privateLayout = false;
 			}
@@ -100,19 +105,6 @@ public class PersonalApplicationURLUtil {
 			layout = LayoutLocalServiceUtil.getFriendlyURLLayout(
 				group.getGroupId(), privateLayout,
 				PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL);
-
-			if (!LayoutPermissionUtil.contains(
-					themeDisplay.getPermissionChecker(), layout, true,
-					ActionKeys.VIEW)) {
-
-				Group controlPanelGroup = themeDisplay.getControlPanelGroup();
-
-				layout = new VirtualLayout(
-					LayoutLocalServiceUtil.getFriendlyURLLayout(
-						controlPanelGroup.getGroupId(), privateLayout,
-						PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL),
-					themeDisplay.getScopeGroup());
-			}
 		}
 		catch (NoSuchLayoutException nsle) {
 
@@ -124,6 +116,20 @@ public class PersonalApplicationURLUtil {
 
 			layout = _addEmbeddedPersonalApplicationLayout(
 				user.getUserId(), group.getGroupId(), privateLayout);
+		}
+
+		if ((controlPanelLayout && !group.isControlPanel()) ||
+			!LayoutPermissionUtil.contains(
+				themeDisplay.getPermissionChecker(), layout, true,
+				ActionKeys.VIEW)) {
+
+			Group controlPanelGroup = themeDisplay.getControlPanelGroup();
+
+			layout = new VirtualLayout(
+				LayoutLocalServiceUtil.getFriendlyURLLayout(
+					controlPanelGroup.getGroupId(), privateLayout,
+					PropsValues.CONTROL_PANEL_LAYOUT_FRIENDLY_URL),
+				themeDisplay.getScopeGroup());
 		}
 
 		LiferayPortletURL liferayPortletURL = PortletURLFactoryUtil.create(

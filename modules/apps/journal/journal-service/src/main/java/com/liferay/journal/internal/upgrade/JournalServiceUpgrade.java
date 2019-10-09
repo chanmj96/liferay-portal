@@ -76,6 +76,7 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.upgrade.BaseUpgradeSQLServerDatetime;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
+import com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion;
 import com.liferay.portal.kernel.upgrade.UpgradeStep;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import com.liferay.subscription.service.SubscriptionLocalService;
@@ -89,7 +90,10 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Eduardo García
  */
-@Component(immediate = true, service = UpgradeStepRegistrator.class)
+@Component(
+	immediate = true,
+	service = {JournalServiceUpgrade.class, UpgradeStepRegistrator.class}
+)
 public class JournalServiceUpgrade implements UpgradeStepRegistrator {
 
 	@Override
@@ -194,9 +198,7 @@ public class JournalServiceUpgrade implements UpgradeStepRegistrator {
 				_subscriptionLocalService, JournalArticle.class.getName(),
 				UpgradeDiscussionSubscriptionClassName.DeletionMode.ADD_NEW));
 
-		registry.register(
-			"1.1.7", "1.1.8",
-			new com.liferay.journal.internal.upgrade.v1_1_7.UpgradeUrlTitle());
+		registry.register("1.1.7", "1.1.8", new DummyUpgradeStep());
 
 		registry.register(
 			"1.1.8", "2.0.0",
@@ -210,6 +212,28 @@ public class JournalServiceUpgrade implements UpgradeStepRegistrator {
 			"2.0.0", "3.0.0",
 			new com.liferay.journal.internal.upgrade.v3_0_0.
 				UpgradeJournalArticleImage(_imageLocalService));
+
+		registry.register(
+			"3.0.0", "3.0.1",
+			new com.liferay.journal.internal.upgrade.v3_0_1.
+				UpgradeJournalArticle());
+
+		registry.register("3.0.1", "3.0.2", new DummyUpgradeStep());
+
+		registry.register(
+			"3.0.2", "3.1.0",
+			new UpgradeMVCCVersion() {
+
+				@Override
+				protected String[] getModuleTableNames() {
+					return new String[] {
+						"JournalArticle", "JournalArticleLocalization",
+						"JournalArticleResource", "JournalContentSearch",
+						"JournalFeed", "JournalFolder"
+					};
+				}
+
+			});
 	}
 
 	protected void deleteTempImages() throws Exception {

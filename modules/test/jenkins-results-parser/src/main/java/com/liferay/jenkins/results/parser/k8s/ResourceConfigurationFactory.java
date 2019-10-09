@@ -16,14 +16,22 @@ package com.liferay.jenkins.results.parser.k8s;
 
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 
+import io.kubernetes.client.models.V1Affinity;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1EmptyDirVolumeSource;
 import io.kubernetes.client.models.V1EnvVar;
+import io.kubernetes.client.models.V1LabelSelector;
+import io.kubernetes.client.models.V1LabelSelectorRequirement;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.models.V1PodAffinity;
+import io.kubernetes.client.models.V1PodAffinityTerm;
 import io.kubernetes.client.models.V1PodSpec;
+import io.kubernetes.client.models.V1SecretVolumeSource;
+import io.kubernetes.client.models.V1SecurityContext;
 import io.kubernetes.client.models.V1Volume;
+import io.kubernetes.client.models.V1VolumeMount;
 
 import java.io.IOException;
 
@@ -33,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,6 +64,22 @@ public class ResourceConfigurationFactory {
 
 		return getConfigurationPod(
 			_getDatabaseConfigurationName(databaseName, databaseVersion));
+	}
+
+	public static Set<String> getPodConfigurationKeys() {
+		return _podConfigurationsMap.keySet();
+	}
+
+	protected static String getPodPrefix() {
+		String hostname = JenkinsResultsParserUtil.getHostName(null);
+
+		if (hostname == null) {
+			throw new RuntimeException("Unable to determine hostname");
+		}
+
+		hostname = hostname.toLowerCase();
+
+		return hostname.replaceAll("([^\\.]+)(\\..*|)", "$1");
 	}
 
 	private static String _getDatabaseConfigurationName(
@@ -86,6 +111,37 @@ public class ResourceConfigurationFactory {
 		catch (IOException ioe) {
 			throw new RuntimeException("Unable to get Docker registry URL");
 		}
+	}
+
+	private static V1Affinity _newConfigurationAffinity() {
+		V1Affinity v1Affinity = new V1Affinity();
+
+		V1PodAffinity v1PodAffinity = new V1PodAffinity();
+
+		V1PodAffinityTerm v1PodAffinityTerm = new V1PodAffinityTerm();
+
+		V1LabelSelector v1LabelSelector = new V1LabelSelector();
+
+		V1LabelSelectorRequirement v1LabelSelectorRequirement =
+			new V1LabelSelectorRequirement();
+
+		v1LabelSelectorRequirement.setKey("app");
+		v1LabelSelectorRequirement.setOperator("In");
+		v1LabelSelectorRequirement.setValues(
+			new ArrayList<>(Arrays.asList(getPodPrefix())));
+
+		v1LabelSelector.setMatchExpressions(
+			new ArrayList<>(Arrays.asList(v1LabelSelectorRequirement)));
+
+		v1PodAffinityTerm.setLabelSelector(v1LabelSelector);
+		v1PodAffinityTerm.setTopologyKey("kubernetes.io/hostname");
+
+		v1PodAffinity.setRequiredDuringSchedulingIgnoredDuringExecution(
+			new ArrayList<>(Arrays.asList(v1PodAffinityTerm)));
+
+		v1Affinity.setPodAffinity(v1PodAffinity);
+
+		return v1Affinity;
 	}
 
 	private static V1Container _newConfigurationContainer(
@@ -137,26 +193,58 @@ public class ResourceConfigurationFactory {
 		return v1PodSpec;
 	}
 
+	private static V1SecurityContext _newConfigurationSecurityContext(
+		Boolean privileged) {
+
+		V1SecurityContext v1SecurityContext = new V1SecurityContext();
+
+		v1SecurityContext.setPrivileged(privileged);
+
+		return v1SecurityContext;
+	}
+
 	private static Pod _newDatabaseConfigurationPod(
 		String dockerBaseImageName, String dockerImageName,
 		List<V1ContainerPort> v1ContainerPorts, List<V1EnvVar> v1EnvVars) {
 
+		return _newDatabaseConfigurationPod(
+			dockerBaseImageName, dockerImageName, v1ContainerPorts, v1EnvVars,
+			Arrays.asList(_newEmptyDirConfigurationVolume()), null, false);
+	}
+
+	private static Pod _newDatabaseConfigurationPod(
+		String dockerBaseImageName, String dockerImageName,
+		List<V1ContainerPort> v1ContainerPorts, List<V1EnvVar> v1EnvVars,
+		Boolean privileged) {
+
+		return _newDatabaseConfigurationPod(
+			dockerBaseImageName, dockerImageName, v1ContainerPorts, v1EnvVars,
+			Arrays.asList(_newEmptyDirConfigurationVolume()), null, privileged);
+	}
+
+	private static Pod _newDatabaseConfigurationPod(
+		String dockerBaseImageName, String dockerImageName,
+		List<V1ContainerPort> v1ContainerPorts, List<V1EnvVar> v1EnvVars,
+		List<V1Volume> v1Volumes, List<V1VolumeMount> v1VolumeMounts) {
+
+		return _newDatabaseConfigurationPod(
+			dockerBaseImageName, dockerImageName, v1ContainerPorts, v1EnvVars,
+			v1Volumes, v1VolumeMounts, false);
+	}
+
+	private static Pod _newDatabaseConfigurationPod(
+		String dockerBaseImageName, String dockerImageName,
+		List<V1ContainerPort> v1ContainerPorts, List<V1EnvVar> v1EnvVars,
+		List<V1Volume> v1Volumes, List<V1VolumeMount> v1VolumeMounts,
+		Boolean privileged) {
+
 		V1Pod v1Pod = new V1Pod();
 
-		String hostname = JenkinsResultsParserUtil.getHostName(null);
-
-		if (hostname == null) {
-			throw new RuntimeException("Unable to determine hostname");
-		}
-
-		hostname = JenkinsResultsParserUtil.combine(
-			hostname.replaceFirst("\\..*", ""), "-", dockerBaseImageName);
+		String hostname = getPodPrefix() + "-" + dockerBaseImageName;
 
 		V1ObjectMeta v1ObjectMeta = _newConfigurationMetaData(hostname);
 
-		String serviceName = "database";
-
-		v1ObjectMeta.putLabelsItem("app", serviceName);
+		v1ObjectMeta.putLabelsItem("app", dockerBaseImageName);
 
 		v1Pod.setMetadata(v1ObjectMeta);
 
@@ -167,27 +255,64 @@ public class ResourceConfigurationFactory {
 
 		v1Container.setPorts(v1ContainerPorts);
 
+		v1Container.setSecurityContext(
+			_newConfigurationSecurityContext(privileged));
+
+		if (v1VolumeMounts != null) {
+			v1Container.setVolumeMounts(v1VolumeMounts);
+		}
+
 		V1PodSpec v1PodSpec = _newConfigurationPodSpec(v1Container);
 
-		v1PodSpec.setHostname(hostname);
-		v1PodSpec.setSubdomain(serviceName);
-		v1PodSpec.setVolumes(
-			new ArrayList<>(
-				Arrays.asList(
-					_newEmptyDirConfigurationVolume(dockerBaseImageName))));
+		v1PodSpec.setAffinity(_newConfigurationAffinity());
+		v1PodSpec.setHostname(hostname.toLowerCase());
+		v1PodSpec.setSubdomain("database");
+		v1PodSpec.setVolumes(new ArrayList<>(v1Volumes));
 
 		v1Pod.setSpec(v1PodSpec);
 
-		return new Pod(v1Pod);
+		LiferayK8sConnection liferayK8sConnection =
+			LiferayK8sConnection.getInstance();
+
+		return liferayK8sConnection.newPod(v1Pod);
 	}
 
-	private static V1Volume _newEmptyDirConfigurationVolume(
-		String dockerImageName) {
+	private static Pod _newDB2ConfigurationPod(
+		String dockerBaseImageName, String dockerImageName) {
 
+		List<V1ContainerPort> v1ContainerPorts = new ArrayList<>(
+			Arrays.asList(
+				_newConfigurationContainerPort(dockerBaseImageName, 50000)));
+
+		String db2Password = "password";
+
+		try {
+			Properties buildProperties =
+				JenkinsResultsParserUtil.getBuildProperties();
+
+			db2Password = buildProperties.getProperty(
+				"portal.test.properties[database.db2.password]", db2Password);
+		}
+		catch (IOException ioe) {
+			System.out.println("Unable to get DB2 password");
+		}
+
+		List<V1EnvVar> v1EnvVars = new ArrayList<>(
+			Arrays.asList(
+				_newConfigurationEnvVar("DB2INST1_PASSWORD", db2Password),
+				_newConfigurationEnvVar("DB2INSTANCE", "db2inst1"),
+				_newConfigurationEnvVar("LICENSE", "accept")));
+
+		return _newDatabaseConfigurationPod(
+			dockerBaseImageName, dockerImageName, v1ContainerPorts, v1EnvVars,
+			true);
+	}
+
+	private static V1Volume _newEmptyDirConfigurationVolume() {
 		V1Volume v1Volume = new V1Volume();
 
 		v1Volume.setEmptyDir(new V1EmptyDirVolumeSource());
-		v1Volume.setName(dockerImageName);
+		v1Volume.setName("empty-dir");
 
 		return v1Volume;
 	}
@@ -234,7 +359,10 @@ public class ResourceConfigurationFactory {
 		}
 
 		return _newDatabaseConfigurationPod(
-			dockerBaseImageName, dockerImageName, v1ContainerPorts, v1EnvVars);
+			dockerBaseImageName, dockerImageName, v1ContainerPorts, v1EnvVars,
+			Arrays.asList(
+				_newEmptyDirConfigurationVolume(), _newSSHSecretVolume()),
+			Arrays.asList(_newSSHSecretVolumeMount()));
 	}
 
 	private static Pod _newPostgreSQLConfigurationPod(
@@ -251,11 +379,51 @@ public class ResourceConfigurationFactory {
 			dockerBaseImageName, dockerImageName, v1ContainerPorts, v1EnvVars);
 	}
 
+	private static V1Volume _newSSHSecretVolume() {
+		V1SecretVolumeSource v1SecretVolumeSource = new V1SecretVolumeSource();
+
+		v1SecretVolumeSource.secretName("ssh-secret");
+
+		V1Volume v1Volume = new V1Volume();
+
+		v1Volume.setSecret(v1SecretVolumeSource);
+		v1Volume.setName("ssh-secret");
+
+		return v1Volume;
+	}
+
+	private static V1VolumeMount _newSSHSecretVolumeMount() {
+		V1VolumeMount v1VolumeMount = new V1VolumeMount();
+
+		v1VolumeMount.setMountPath("/mnt/ssh-secret-volume");
+		v1VolumeMount.setName("ssh-secret");
+
+		return v1VolumeMount;
+	}
+
+	private static Pod _newSybaseConfigurationPod(
+		String dockerBaseImageName, String dockerImageName) {
+
+		List<V1ContainerPort> v1ContainerPorts = new ArrayList<>(
+			Arrays.asList(
+				_newConfigurationContainerPort(dockerBaseImageName, 5000)));
+
+		return _newDatabaseConfigurationPod(
+			dockerBaseImageName, dockerImageName, v1ContainerPorts,
+			new ArrayList<V1EnvVar>());
+	}
+
 	private static final Pattern _databaseVersionPattern = Pattern.compile(
 		"([^\\.]*\\.[^\\.]*)\\..*");
 	private static final Map<String, Pod> _podConfigurationsMap =
 		new HashMap<String, Pod>() {
 			{
+				put(
+					"db2111",
+					ResourceConfigurationFactory._newDB2ConfigurationPod(
+						"db2111",
+						_getKubernetesDockerRegistryHostname() +
+							"/store/ibmcorp/db2_developer_c:11.1.4.4-x86_64"));
 				put(
 					"mariadb102",
 					ResourceConfigurationFactory._newMySQLConfigurationPod(
@@ -282,6 +450,12 @@ public class ResourceConfigurationFactory {
 					"postgresql10",
 					ResourceConfigurationFactory._newPostgreSQLConfigurationPod(
 						"postgresql10", "postgres:10.9"));
+				put(
+					"sybase160",
+					ResourceConfigurationFactory._newSybaseConfigurationPod(
+						"sybase160",
+						_getKubernetesDockerRegistryHostname() +
+							"/liferay-ci-slave-db-sybase"));
 			}
 		};
 

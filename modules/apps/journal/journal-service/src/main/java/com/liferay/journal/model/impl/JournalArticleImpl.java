@@ -117,7 +117,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 			getGroupId(), JournalConstants.SERVICE_NAME, serviceContext);
 
 		Folder folder = PortletFileRepositoryUtil.addPortletFolder(
-			getUserId(), repository.getRepositoryId(),
+			PortalUtil.getValidUserId(getCompanyId(), getUserId()),
+			repository.getRepositoryId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			String.valueOf(getResourcePrimKey()), serviceContext);
 
@@ -139,12 +140,13 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 
 	@Override
 	public Object clone() {
-		JournalArticleImpl journalArticle = (JournalArticleImpl)super.clone();
+		JournalArticleImpl journalArticleImpl =
+			(JournalArticleImpl)super.clone();
 
-		journalArticle.setDescriptionMap(getDescriptionMap());
-		journalArticle.setTitleMap(getTitleMap());
+		journalArticleImpl.setDescriptionMap(getDescriptionMap());
+		journalArticleImpl.setTitleMap(getTitleMap());
 
-		return journalArticle;
+		return journalArticleImpl;
 	}
 
 	@Override
@@ -398,10 +400,8 @@ public class JournalArticleImpl extends JournalArticleBaseImpl {
 
 	@Override
 	public String getFriendlyURLsXML() throws PortalException {
-		Map<Locale, String> friendlyURLMap = getFriendlyURLMap();
-
 		return LocalizationUtil.updateLocalization(
-			friendlyURLMap, StringPool.BLANK, "FriendlyURL",
+			getFriendlyURLMap(), StringPool.BLANK, "FriendlyURL",
 			LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()));
 	}
 

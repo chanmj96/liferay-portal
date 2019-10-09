@@ -150,8 +150,7 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + SiteAdminPortletKeys.SITE_ADMIN,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
 	service = Portlet.class
 )
@@ -345,9 +344,8 @@ public class SiteAdminPortlet extends MVCPortlet {
 
 		SitesUtil.resetPrototype(layoutSet);
 
-		Group group = groupLocalService.getGroup(groupId);
-
-		SitesUtil.mergeLayoutSetPrototypeLayouts(group, layoutSet);
+		SitesUtil.mergeLayoutSetPrototypeLayouts(
+			groupLocalService.getGroup(groupId), layoutSet);
 
 		layoutSetPrototype = layoutSetPrototypeService.getLayoutSetPrototype(
 			layoutSetPrototypeId);
@@ -401,7 +399,7 @@ public class SiteAdminPortlet extends MVCPortlet {
 	protected long[] filterRemoveUserIds(long groupId, long[] userIds)
 		throws Exception {
 
-		Set<Long> filteredUserIds = new HashSet<>(userIds.length);
+		Set<Long> filteredUserIds = new HashSet<>();
 
 		for (long userId : userIds) {
 			if (userLocalService.hasGroupUser(groupId, userId)) {

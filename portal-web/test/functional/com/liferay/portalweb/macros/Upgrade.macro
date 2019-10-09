@@ -752,6 +752,10 @@ definition {
 	}
 
 	macro resetTestUserPassword {
+		Type(
+			locator1 = "TextInput#EMAIL",
+			value1 = "${administratorEmail}");
+
 		SetupWizard.finishConfigurationPG();
 
 		Portlet.shutdownServer();
@@ -778,54 +782,39 @@ definition {
 	macro searchForAssetsAfterUpgrade {
 		Navigator.openURL();
 
-		/*<execute macro="SearchPortlets#searchEmbedded">
-			<var name="searchTerm" value="Web Content" />
-		</execute>
+		SearchPortlets.searchEmbedded(searchTerm = "Web Content");
 
-		<execute macro="SearchResultPortlet#viewSearchResults">
-			<var name="searchAssetSummary" value="Web Content Content" />
-			<var name="searchAssetTitle" value="Web Content Title" />
-			<var name="searchAssetType" value="Web Content Article" />
-		</execute>
+		SearchResultPortlet.viewSearchResults(
+			searchAssetSummary = "Web Content Content",
+			searchAssetTitle = "Web Content Title",
+			searchAssetType = "Web Content Article");
 
-		<execute macro="SearchPortlets#searchEmbedded">
-			<var name="searchTerm" value="Document1" />
-		</execute>
+		SearchPortlets.searchEmbedded(searchTerm = "Document1");
 
-		<execute macro="SearchResultPortlet#viewSearchResults">
-			<var name="searchAssetTitle" value="Document1" />
-			<var name="searchAssetType" value="Document" />
-		</execute>
+		SearchResultPortlet.viewSearchResults(
+			searchAssetTitle = "Document1",
+			searchAssetType = "Document");
 
-		<execute macro="SearchPortlets#searchEmbedded">
-			<var name="searchTerm" value="Message Boards" />
-		</execute>
+		SearchPortlets.searchEmbedded(searchTerm = "Message Boards");
 
-		<execute macro="SearchResultPortlet#viewSearchResults">
-			<var name="searchAssetSummary" value="Message Boards Body" />
-			<var name="searchAssetTitle" value="Message Boards Subject" />
-			<var name="searchAssetType" value="Message Boards Message" />
-		</execute>
+		SearchResultPortlet.viewSearchResults(
+			searchAssetSummary = "Message Boards Body",
+			searchAssetTitle = "Message Boards Subject",
+			searchAssetType = "Message Boards Message");
 
-		<execute macro="SearchPortlets#searchEmbedded">
-			<var name="searchTerm" value="Wiki" />
-		</execute>
+		SearchPortlets.searchEmbedded(searchTerm = "Wiki");
 
-		<execute macro="SearchResultPortlet#viewSearchResults">
-			<var name="searchAssetSummary" value="Wiki Front Page Content" />
-			<var name="searchAssetTitle" value="FrontPage" />
-			<var name="searchAssetType" value="Wiki Page" />
-		</execute>
+		SearchResultPortlet.viewSearchResults(
+			searchAssetSummary = "Wiki Front Page Content",
+			searchAssetTitle = "FrontPage",
+			searchAssetType = "Wiki Page");
 
-		<execute macro="SearchPortlets#searchEmbedded">
-			<var name="searchTerm" value="Blogs" />
-		</execute>
+		SearchPortlets.searchEmbedded(searchTerm = "Blogs");
 
-		<execute macro="SearchResultPortlet#viewSearchResults">
-			<var name="searchAssetSummary" value="Blogs Entry Content" />
-			<var name="searchAssetTitle" value="Blogs Entry Title" />
-			<var name="searchAssetType" value="Blogs Entry" />
-		</execute> */
+		SearchResultPortlet.viewSearchResults(
+			searchAssetSummary = "Blogs Entry Content",
+			searchAssetTitle = "Blogs Entry Title",
+			searchAssetType = "Blogs Entry");
 	}
 
 	macro submitNewWorkflow {
@@ -980,8 +969,8 @@ definition {
 			fieldValue = "05/02/2016");
 
 		FormsAdmin.viewCheckboxEntry(
-			fieldLabel = "Checkbox",
-			fieldName = "Checkbox");
+			fieldName = "Checkbox",
+			fieldValue = "Checkbox");
 
 		FormPortlet.clickNextPage();
 
@@ -1346,6 +1335,53 @@ definition {
 		CalendarEvent.view(eventTitle = "Post Upgrade Calendar Event");
 	}
 
+	macro viewClassicSearchPortletConfiguration {
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Site Name");
+
+		ClassicSearch.gotoOptions(portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		AssertTextEquals(
+			key_scopeName = "Everything",
+			locator1 = "Select#SCOPE_SELECTED",
+			value1 = "Everything");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "UserSearchFacet");
+
+		Navigator.gotoNavTab(navTab = "Spell Check Settings");
+
+		FormFields.viewCheckboxChecked(fieldName = "collatedSpellCheckResultEnabled");
+
+		IFrame.closeFrame();
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Site Name");
+
+		ClassicSearch.search(searchTerm = "WC Title");
+
+		ClassicSearch.viewSearchResultPG(
+			searchAssetTitle = "WC Title 1",
+			searchAssetType = "Web Content Article");
+
+		ClassicSearch.viewSearchResultPG(
+			searchAssetTitle = "WC Title 2",
+			searchAssetType = "Web Content Article");
+
+		AssertElementNotPresent(locator1 = "SearchResults#USER_FACET_ANY_USER");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Site Name");
+
+		ClassicSearch.search(searchTerm = "Cotent");
+
+		AssertElementPresent(locator1 = "Search#SEARCH_SUGGESTED_SPELLING");
+	}
+
 	macro viewDocument {
 		Navigator.gotoPage(pageName = "Document");
 
@@ -1387,6 +1423,119 @@ definition {
 			searchTerm = "Drools");
 	}
 
+	macro viewInstanceSettings {
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Instance Configuration",
+			configurationName = "General",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.viewTextValue(
+			fieldName = "homeURL",
+			fieldValue = "/web/test/home");
+
+		FormFields.viewTextValue(
+			fieldName = "default-logout-page",
+			fieldValue = "/web/test/home");
+
+		FormFields.viewTextValue(
+			fieldName = "default-landing-page",
+			fieldValue = "/web/test/home");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "User Authentication",
+			configurationName = "General",
+			configurationScope = "Virtual Instance Scope");
+
+		AssertSelectedLabel(
+			locator1 = "PortalSettingsAuthentication#AUTHENTICATION_GENERAL_HOW_DO_USERS_AUTHENTICATE_SELECT",
+			value1 = "By Screen Name");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "company-security-auto-login");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "company-security-send-password");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "company-security-send-password-reset-link");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "company-security-strangers");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "company-security-strangers-with-mx");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "User Authentication",
+			configurationName = "Reserved Credentials",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.viewTextMultilineValue(
+			fieldName = "reserved-screen-names",
+			fieldValue = "usersn");
+
+		FormFields.viewTextMultilineValue(
+			fieldName = "reserved-email-addresses",
+			fieldValue = "userea@liferay.com");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Users",
+			configurationName = "Fields",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.viewCheckboxChecked(fieldName = "users-screen-name-always-autogenerate");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "field-enable-com-liferay-portal-kernel-model-Contact-birthday");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "field-enable-com-liferay-portal-kernel-model-Contact-male");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Users",
+			configurationName = "Default User Associations",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.viewTextMultilineValue(
+			fieldName = "default-group-names",
+			fieldValue = "Liferay");
+
+		FormFields.viewTextMultilineValue(
+			fieldName = "default-role-names",
+			fieldValue = "Administrator");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Email",
+			configurationName = "Email Sender",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.viewTextValue(
+			fieldName = "email-from-name",
+			fieldValue = "Test Test");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Sharing",
+			configurationName = "Content Sharing",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "sites-content-sharing-through-administrators-enabled");
+
+		AssertSelectedLabel(
+			locator1 = "PortalSettingsContentSharing#CONTENT_SHARING_SELECTOR",
+			value1 = "Disabled by Default");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Localization",
+			configurationName = "Language",
+			configurationScope = "Virtual Instance Scope");
+
+		AssertTextEquals(
+			locator1 = "LanguageConfiguration#LANGUAGES_CURRENT",
+			value1 = "Spanish (Spain)   English (United States)");
+
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Localization",
+			configurationName = "Time Zone",
+			configurationScope = "Virtual Instance Scope");
+
+		AssertSelectedLabel(
+			locator1 = "Select#TIME_ZONE",
+			value1 = "(UTC +03:00) Eastern European Time");
+	}
+
 	macro viewMessageBoards {
 		Navigator.gotoPage(pageName = "Message Boards");
 
@@ -1395,7 +1544,7 @@ definition {
 
 	macro viewMSBUpgrade {
 		task ("Assert the fragments survived") {
-			FragmentsAdmin.openFragmentsAdmin(siteURLKey = "test-site-name");
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
 
 			FragmentsAdmin.viewEntryPresent(entry = "Content");
 
@@ -1415,7 +1564,7 @@ definition {
 
 			FragmentsAdmin.viewEntryPresent(entry = "Title");
 
-			FragmentsAdmin.gotoEntryEllipsisItem(
+			FragmentsAdminNavigator.gotoEntryEllipsisItem(
 				entry = "Button",
 				item = "Edit");
 
@@ -1689,6 +1838,78 @@ definition {
 		Portlet.viewNoPermissionPG();
 	}
 
+	macro viewSearchPortletsConfiguration {
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Site Name");
+
+		SearchPortlets.gotoEmbeddedOptions(portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		FormFields.viewTextValue(
+			fieldName = "destination",
+			fieldValue = "site-page");
+
+		IFrame.closeFrame();
+
+		Portlet.gotoPortletOptions(
+			portletName = "Search Result",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		FormFields.viewTextValue(
+			fieldName = "paginationDelta",
+			fieldValue = "2");
+
+		IFrame.closeFrame();
+
+		Portlet.gotoPortletOptions(
+			portletName = "Search Options",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		FormFields.viewCheckboxChecked(fieldName = "allowEmptySearches");
+
+		IFrame.closeFrame();
+
+		Portlet.gotoPortletOptions(
+			portletName = "Suggestion",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		FormFields.viewCheckboxChecked(fieldName = "spellCheckSuggestionEnabled");
+
+		IFrame.closeFrame();
+
+		Portlet.gotoPortletOptions(
+			portletName = "Type Facet",
+			portletOption = "Configuration");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "frequenciesVisible");
+
+		IFrame.closeFrame();
+
+		SearchPortlets.searchEmbedded(searchTerm = "WC Title");
+
+		Pagination.viewResults(results = "Showing 1 to 2 of 3 entries.");
+
+		AssertElementNotPresent(locator1 = "Search#SEARCH_TYPE_FACET_TERM_COUNT");
+
+		Navigator.gotoSitePage(
+			pageName = "Site Page",
+			siteName = "Site Name");
+
+		SearchPortlets.searchEmbedded(searchTerm = "Cotent");
+
+		AssertElementPresent(locator1 = "Search#SEARCH_SUGGESTED_SPELLING");
+	}
+
 	macro viewStagingNestedPortlets {
 		Navigator.gotoStagedSitePage(
 			pageName = "Staging Test Page",
@@ -1710,6 +1931,202 @@ definition {
 		NestedPortlets.viewPG(
 			portletColumnNumberTo = "1",
 			portletName = "Blogs");
+	}
+
+	macro viewSystemSettings {
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Web Content",
+			configurationName = "Web Content",
+			configurationScope = "Virtual Instance Scope");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "addDefaultStructures");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "charactersblacklist",
+			fieldValue = "test");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "errorTemplateFTL",
+			fieldValue = "errortest.ftl");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "errorTemplateVM",
+			fieldValue = "errortest.vm");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "errorTemplateXSL",
+			fieldValue = "errortest.xsl");
+
+		FormFields.viewTextValue(
+			fieldName = "checkInterval",
+			fieldValue = "5");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "customTokenNames",
+			fieldValue = "Custom Token Name1");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "customTokenValues",
+			fieldValue = "Custom Token Value1");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "articleCommentsEnabled");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "databaseContentKeywordSearchEnabled");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "expireAllArticleVersionsEnabled");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "articleViewPermissionsCheckEnabled");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Web Content",
+			configurationName = "Administration",
+			configurationScope = "System Scope");
+
+		FormFields.viewCheckboxChecked(fieldName = "changeableDefaultLanguage");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "defaultDisplayView",
+			fieldValue = "list");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "journalArticleForceAutogenerateId");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "journalArticlesSearchWithIndex");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Web Content",
+			configurationName = "Service",
+			configurationScope = "Site Scope");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "emailFromName",
+			fieldValue = "test name");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "emailFromAddress",
+			fieldValue = "test@liferay.com");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "emailArticleAddedEnabled");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "emailArticleUpdatedEnabled");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Wiki",
+			configurationName = "Wiki Service",
+			configurationScope = "Site Scope");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "emailFromAddress",
+			fieldValue = "test@liferay.com");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "emailFromName",
+			fieldValue = "test name");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "emailPageAddedEnabled");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "emailPageUpdatedEnabled");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "frontPageName",
+			fieldValue = "TestFrontPage");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "getCreoleEditor",
+			fieldValue = "ckeditor_creole");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "getHTMLEditor",
+			fieldValue = "creole");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "initialNodeName",
+			fieldValue = "TestMainNode");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "pageCommentsEnabled");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "pageMinorEditAddSocialActivity");
+
+		FormFields.viewTextValue(
+			fieldName = "rssAbstractLength",
+			fieldValue = "500");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Wiki",
+			configurationName = "Widgets Display",
+			configurationScope = "Widget Scope");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "enableCommentRatings");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "enableComments");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "enableHighlighting");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "enablePageRatings");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "enableRelatedAssets");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Dynamic Data Mapping",
+			configurationName = "Dynamic Data Mapping Service",
+			configurationScope = "Site Scope");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "smallImageExtensions",
+			fieldValue = ".svg",
+			repeatableFieldNumber = "4");
+
+		SystemSettings.viewTextareaValue(
+			fieldName = "smallImageExtensions",
+			fieldValue = "*",
+			repeatableFieldNumber = "5");
+
+		FormFields.viewTextValue(
+			fieldName = "smallImageMaxSize",
+			fieldValue = "5120");
+
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "System Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Dynamic Data Mapping",
+			configurationName = "Dynamic Data Mapping Web",
+			configurationScope = "System Scope");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "autogenerateStructureKey");
+
+		FormFields.viewCheckboxNotChecked(fieldName = "autogenerateTemplateKey");
 	}
 
 	macro viewUpgrade {

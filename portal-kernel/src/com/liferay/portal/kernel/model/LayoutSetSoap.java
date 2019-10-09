@@ -20,22 +20,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.portal.service.http.LayoutSetServiceSoap}.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LayoutSetSoap implements Serializable {
 
 	public static LayoutSetSoap toSoapModel(LayoutSet model) {
 		LayoutSetSoap soapModel = new LayoutSetSoap();
 
 		soapModel.setMvccVersion(model.getMvccVersion());
-		soapModel.setHeadId(model.getHeadId());
 		soapModel.setLayoutSetId(model.getLayoutSetId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -46,7 +42,6 @@ public class LayoutSetSoap implements Serializable {
 		soapModel.setThemeId(model.getThemeId());
 		soapModel.setColorSchemeId(model.getColorSchemeId());
 		soapModel.setCss(model.getCss());
-		soapModel.setPageCount(model.getPageCount());
 		soapModel.setSettings(model.getSettings());
 		soapModel.setLayoutSetPrototypeUuid(model.getLayoutSetPrototypeUuid());
 		soapModel.setLayoutSetPrototypeLinkEnabled(
@@ -110,14 +105,6 @@ public class LayoutSetSoap implements Serializable {
 
 	public void setMvccVersion(long mvccVersion) {
 		_mvccVersion = mvccVersion;
-	}
-
-	public long getHeadId() {
-		return _headId;
-	}
-
-	public void setHeadId(long headId) {
-		_headId = headId;
 	}
 
 	public long getLayoutSetId() {
@@ -204,14 +191,6 @@ public class LayoutSetSoap implements Serializable {
 		_css = css;
 	}
 
-	public int getPageCount() {
-		return _pageCount;
-	}
-
-	public void setPageCount(int pageCount) {
-		_pageCount = pageCount;
-	}
-
 	public String getSettings() {
 		return _settings;
 	}
@@ -243,7 +222,6 @@ public class LayoutSetSoap implements Serializable {
 	}
 
 	private long _mvccVersion;
-	private long _headId;
 	private long _layoutSetId;
 	private long _groupId;
 	private long _companyId;
@@ -254,7 +232,6 @@ public class LayoutSetSoap implements Serializable {
 	private String _themeId;
 	private String _colorSchemeId;
 	private String _css;
-	private int _pageCount;
 	private String _settings;
 	private String _layoutSetPrototypeUuid;
 	private boolean _layoutSetPrototypeLinkEnabled;

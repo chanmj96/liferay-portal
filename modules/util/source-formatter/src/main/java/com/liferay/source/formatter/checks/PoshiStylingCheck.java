@@ -15,8 +15,10 @@
 package com.liferay.source.formatter.checks;
 
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ToolsUtil;
-import com.liferay.source.formatter.checks.util.PoshiSourceUtil;
+import com.liferay.source.formatter.checks.util.SourceUtil;
 
 import java.io.IOException;
 
@@ -40,10 +42,9 @@ public class PoshiStylingCheck extends BaseFileCheck {
 	private void _checkLineBreak(String fileName, String content) {
 		int x = -1;
 
-		int[] multiLineCommentsPositions =
-			PoshiSourceUtil.getMultiLinePositions(
-				content, _multiLineCommentsPattern);
-		int[] multiLineStringPositions = PoshiSourceUtil.getMultiLinePositions(
+		int[] multiLineCommentsPositions = SourceUtil.getMultiLinePositions(
+			content, _multiLineCommentsPattern);
+		int[] multiLineStringPositions = SourceUtil.getMultiLinePositions(
 			content, _multiLineStringPattern);
 
 		while (true) {
@@ -53,12 +54,17 @@ public class PoshiStylingCheck extends BaseFileCheck {
 				return;
 			}
 
+			int lineNumber = getLineNumber(content, x);
+
+			String line = getLine(content, lineNumber);
+
 			if ((content.charAt(x + 1) != CharPool.NEW_LINE) &&
 				!ToolsUtil.isInsideQuotes(content, x) &&
-				!PoshiSourceUtil.isInsideMultiLines(
-					getLineNumber(content, x), multiLineCommentsPositions) &&
-				!PoshiSourceUtil.isInsideMultiLines(
-					getLineNumber(content, x), multiLineStringPositions)) {
+				!SourceUtil.isInsideMultiLines(
+					lineNumber, multiLineCommentsPositions) &&
+				!SourceUtil.isInsideMultiLines(
+					lineNumber, multiLineStringPositions) &&
+				!StringUtil.startsWith(line.trim(), StringPool.DOUBLE_SLASH)) {
 
 				addMessage(
 					fileName, "There should be a line break after ';'",

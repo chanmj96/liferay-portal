@@ -17,7 +17,9 @@ package com.liferay.document.library.web.internal.portlet.configuration.icon;
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.web.internal.portlet.action.ActionUtil;
+import com.liferay.document.library.web.internal.util.DLPortletConfigurationIconUtil;
 import com.liferay.document.library.web.internal.util.DLTrashUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
@@ -30,6 +32,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.util.RepositoryUtil;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletRequest;
@@ -55,91 +58,91 @@ public class DeleteFolderPortletConfigurationIcon
 
 	@Override
 	public String getMessage(PortletRequest portletRequest) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		Folder folder = null;
-
 		try {
-			folder = ActionUtil.getFolder(portletRequest);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)portletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			Folder folder = ActionUtil.getFolder(portletRequest);
+
+			String key = "delete";
+
+			if (_dlTrashUtil.isTrashEnabled(
+					themeDisplay.getScopeGroupId(), folder.getRepositoryId())) {
+
+				key = "move-to-recycle-bin";
+			}
+
+			return LanguageUtil.get(
+				getResourceBundle(getLocale(portletRequest)), key);
 		}
 		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+			return ReflectionUtil.throwException(pe);
 		}
-
-		String key = "delete";
-
-		if (isTrashEnabled(
-				themeDisplay.getScopeGroupId(), folder.getRepositoryId())) {
-
-			key = "move-to-recycle-bin";
-		}
-
-		return LanguageUtil.get(
-			getResourceBundle(getLocale(portletRequest)), key);
 	}
 
 	@Override
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		PortletURL portletURL = _portal.getControlPanelPortletURL(
-			portletRequest, DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
-			PortletRequest.ACTION_PHASE);
-
-		Folder folder = null;
-
 		try {
-			folder = ActionUtil.getFolder(portletRequest);
+			PortletURL portletURL = _portal.getControlPanelPortletURL(
+				portletRequest, DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
+				PortletRequest.ACTION_PHASE);
+
+			Folder folder = ActionUtil.getFolder(portletRequest);
+
+			if (folder.isMountPoint()) {
+				portletURL.setParameter(
+					ActionRequest.ACTION_NAME,
+					"/document_library/edit_repository");
+			}
+			else {
+				portletURL.setParameter(
+					ActionRequest.ACTION_NAME, "/document_library/edit_folder");
+			}
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)portletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			if (folder.isMountPoint() ||
+				!_dlTrashUtil.isTrashEnabled(
+					themeDisplay.getScopeGroupId(), folder.getRepositoryId())) {
+
+				portletURL.setParameter(Constants.CMD, Constants.DELETE);
+			}
+			else {
+				portletURL.setParameter(Constants.CMD, Constants.MOVE_TO_TRASH);
+			}
+
+			PortletURL redirectURL = _portal.getControlPanelPortletURL(
+				portletRequest, DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
+				PortletRequest.RENDER_PHASE);
+
+			long parentFolderId = folder.getParentFolderId();
+
+			if (parentFolderId == DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+				redirectURL.setParameter(
+					"mvcRenderCommandName", "/document_library/view");
+			}
+			else {
+				redirectURL.setParameter(
+					"mvcRenderCommandName", "/document_library/view_folder");
+			}
+
+			redirectURL.setParameter(
+				"folderId", String.valueOf(parentFolderId));
+
+			portletURL.setParameter("redirect", redirectURL.toString());
+			portletURL.setParameter(
+				"folderId", String.valueOf(folder.getFolderId()));
+
+			return portletURL.toString();
 		}
 		catch (PortalException pe) {
-			throw new RuntimeException(pe);
+			return ReflectionUtil.throwException(pe);
 		}
-
-		if (folder.isMountPoint()) {
-			portletURL.setParameter(
-				ActionRequest.ACTION_NAME, "/document_library/edit_repository");
-		}
-		else {
-			portletURL.setParameter(
-				ActionRequest.ACTION_NAME, "/document_library/edit_folder");
-		}
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		if (folder.isMountPoint() ||
-			!isTrashEnabled(
-				themeDisplay.getScopeGroupId(), folder.getRepositoryId())) {
-
-			portletURL.setParameter(Constants.CMD, Constants.DELETE);
-		}
-		else {
-			portletURL.setParameter(Constants.CMD, Constants.MOVE_TO_TRASH);
-		}
-
-		PortletURL redirectURL = _portal.getControlPanelPortletURL(
-			portletRequest, DLPortletKeys.DOCUMENT_LIBRARY_ADMIN,
-			PortletRequest.RENDER_PHASE);
-
-		long parentFolderId = folder.getParentFolderId();
-
-		if (parentFolderId == DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-			redirectURL.setParameter(
-				"mvcRenderCommandName", "/document_library/view");
-		}
-		else {
-			redirectURL.setParameter(
-				"mvcRenderCommandName", "/document_library/view_folder");
-		}
-
-		redirectURL.setParameter("folderId", String.valueOf(parentFolderId));
-
-		portletURL.setParameter("redirect", redirectURL.toString());
-		portletURL.setParameter(
-			"folderId", String.valueOf(folder.getFolderId()));
-
-		return portletURL.toString();
 	}
 
 	@Override
@@ -149,35 +152,34 @@ public class DeleteFolderPortletConfigurationIcon
 
 	@Override
 	public boolean isShow(PortletRequest portletRequest) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		return DLPortletConfigurationIconUtil.runWithDefaultValueOnError(
+			false,
+			() -> {
+				Folder folder = ActionUtil.getFolder(portletRequest);
 
-		try {
-			Folder folder = ActionUtil.getFolder(portletRequest);
+				if (folder.isMountPoint() ||
+					(RepositoryUtil.isExternalRepository(
+						folder.getRepositoryId()) &&
+					 folder.isRoot())) {
 
-			return ModelResourcePermissionHelper.contains(
-				_folderModelResourcePermission,
-				themeDisplay.getPermissionChecker(),
-				themeDisplay.getScopeGroupId(), folder.getFolderId(),
-				ActionKeys.DELETE);
-		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
-		}
+					return false;
+				}
+
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)portletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
+
+				return ModelResourcePermissionHelper.contains(
+					_folderModelResourcePermission,
+					themeDisplay.getPermissionChecker(),
+					themeDisplay.getScopeGroupId(), folder.getFolderId(),
+					ActionKeys.DELETE);
+			});
 	}
 
 	@Override
 	public boolean isToolTip() {
 		return false;
-	}
-
-	protected boolean isTrashEnabled(long groupId, long repositoryId) {
-		try {
-			return _dlTrashUtil.isTrashEnabled(groupId, repositoryId);
-		}
-		catch (PortalException pe) {
-			throw new RuntimeException(pe);
-		}
 	}
 
 	@Reference

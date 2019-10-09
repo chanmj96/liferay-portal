@@ -15,7 +15,6 @@
 package com.liferay.asset.auto.tagger.opennlp.internal;
 
 import com.liferay.asset.auto.tagger.AssetAutoTagProvider;
-import com.liferay.asset.auto.tagger.opennlp.api.OpenNLPDocumentAssetAutoTagger;
 import com.liferay.asset.auto.tagger.opennlp.internal.configuration.OpenNLPDocumentAssetAutoTaggerCompanyConfiguration;
 import com.liferay.asset.auto.tagger.text.extractor.TextExtractor;
 import com.liferay.asset.auto.tagger.text.extractor.TextExtractorTracker;
@@ -26,7 +25,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.util.Collection;
@@ -51,18 +49,18 @@ public class OpenNLPDocumentAssetAutoTagProvider
 		try {
 			if (_isEnabled(assetEntry)) {
 				TextExtractor textExtractor =
-					_infoTextExtractorTracker.getTextExtractor(
+					_textExtractorTracker.getTextExtractor(
 						assetEntry.getClassName());
 
 				if (textExtractor != null) {
 					Locale locale = LocaleUtil.fromLanguageId(
 						assetEntry.getDefaultLanguageId());
 
-					return _openNLPDocumentAssetAutoTagger.getTagNames(
+					return _openNLPDocumentAssetAutoTaggerImpl.getTagNames(
 						assetEntry.getCompanyId(),
-						textExtractor.extract(
+						() -> textExtractor.extract(
 							_getAssetObject(assetEntry), locale),
-						locale, ContentTypes.TEXT_PLAIN);
+						locale, assetEntry.getMimeType());
 				}
 			}
 		}
@@ -101,9 +99,10 @@ public class OpenNLPDocumentAssetAutoTagProvider
 	private ConfigurationProvider _configurationProvider;
 
 	@Reference
-	private TextExtractorTracker _infoTextExtractorTracker;
+	private OpenNLPDocumentAssetAutoTaggerImpl
+		_openNLPDocumentAssetAutoTaggerImpl;
 
 	@Reference
-	private OpenNLPDocumentAssetAutoTagger _openNLPDocumentAssetAutoTagger;
+	private TextExtractorTracker _textExtractorTracker;
 
 }

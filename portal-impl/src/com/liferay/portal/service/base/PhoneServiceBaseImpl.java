@@ -45,9 +45,9 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class PhoneServiceBaseImpl
-	extends BaseServiceImpl implements PhoneService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, PhoneService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>PhoneService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.PhoneServiceUtil</code>.

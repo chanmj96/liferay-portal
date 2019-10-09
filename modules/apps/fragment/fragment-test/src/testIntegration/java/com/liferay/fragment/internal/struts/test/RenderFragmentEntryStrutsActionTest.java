@@ -40,6 +40,7 @@ import java.net.URL;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import org.junit.After;
@@ -161,15 +162,34 @@ public class RenderFragmentEntryStrutsActionTest {
 
 		Document.OutputSettings outputSettings = new Document.OutputSettings();
 
-		outputSettings.prettyPrint(true);
+		outputSettings.indentAmount(0);
+		outputSettings.prettyPrint(false);
 
 		document.outputSettings(outputSettings);
 
-		Elements elements = document.getElementsByTag("title");
+		Element bodyElement = document.body();
+
+		Elements elements = bodyElement.getElementsByTag("title");
 
 		elements.remove();
 
-		return document.html();
+		elements = bodyElement.getElementsByTag("link");
+
+		elements.remove();
+
+		elements = bodyElement.getElementsByTag("script");
+
+		elements.remove();
+
+		return _removeSpacingCharactersBetweenTags(bodyElement);
+	}
+
+	private String _removeSpacingCharactersBetweenTags(Element bodyElement) {
+		String htmlString = bodyElement.html();
+
+		htmlString = htmlString.replaceAll(">\\s+", ">");
+
+		return htmlString.replaceAll("\\s+<", "<");
 	}
 
 	private void _setUpEnvironment(

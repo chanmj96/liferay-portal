@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link TrashVersion}.
@@ -31,10 +29,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see TrashVersion
  * @generated
  */
-@ProviderType
 public class TrashVersionWrapper
 	extends BaseModelWrapper<TrashVersion>
-	implements TrashVersion, ModelWrapper<TrashVersion> {
+	implements ModelWrapper<TrashVersion>, TrashVersion {
 
 	public TrashVersionWrapper(TrashVersion trashVersion) {
 		super(trashVersion);
@@ -44,6 +41,7 @@ public class TrashVersionWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("versionId", getVersionId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("entryId", getEntryId());
@@ -57,6 +55,12 @@ public class TrashVersionWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long versionId = (Long)attributes.get("versionId");
 
 		if (versionId != null) {
@@ -151,6 +155,16 @@ public class TrashVersionWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this trash version.
+	 *
+	 * @return the mvcc version of this trash version
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this trash version.
 	 *
 	 * @return the primary key of this trash version
@@ -207,6 +221,11 @@ public class TrashVersionWrapper
 		return model.getVersionId();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a trash version model instance should use the <code>TrashVersion</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -255,6 +274,16 @@ public class TrashVersionWrapper
 	@Override
 	public void setEntryId(long entryId) {
 		model.setEntryId(entryId);
+	}
+
+	/**
+	 * Sets the mvcc version of this trash version.
+	 *
+	 * @param mvccVersion the mvcc version of this trash version
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

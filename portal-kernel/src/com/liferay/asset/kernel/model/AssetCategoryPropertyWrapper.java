@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AssetCategoryProperty}.
@@ -34,7 +32,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @Deprecated
-@ProviderType
 public class AssetCategoryPropertyWrapper
 	extends BaseModelWrapper<AssetCategoryProperty>
 	implements AssetCategoryProperty, ModelWrapper<AssetCategoryProperty> {
@@ -49,6 +46,7 @@ public class AssetCategoryPropertyWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("categoryPropertyId", getCategoryPropertyId());
 		attributes.put("companyId", getCompanyId());
 		attributes.put("userId", getUserId());
@@ -64,6 +62,12 @@ public class AssetCategoryPropertyWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long categoryPropertyId = (Long)attributes.get("categoryPropertyId");
 
 		if (categoryPropertyId != null) {
@@ -180,6 +184,16 @@ public class AssetCategoryPropertyWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this asset category property.
+	 *
+	 * @return the mvcc version of this asset category property
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this asset category property.
 	 *
 	 * @return the primary key of this asset category property
@@ -229,6 +243,11 @@ public class AssetCategoryPropertyWrapper
 		return model.getValue();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a asset category property model instance should use the <code>AssetCategoryProperty</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -292,6 +311,16 @@ public class AssetCategoryPropertyWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset category property.
+	 *
+	 * @param mvccVersion the mvcc version of this asset category property
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

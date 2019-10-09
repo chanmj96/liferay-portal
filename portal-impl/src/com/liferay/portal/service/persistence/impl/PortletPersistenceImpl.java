@@ -47,8 +47,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The persistence implementation for the portlet service.
  *
@@ -59,11 +57,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class PortletPersistenceImpl
 	extends BasePersistenceImpl<Portlet> implements PortletPersistence {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Always use <code>PortletUtil</code> to access the portlet persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
@@ -145,14 +142,13 @@ public class PortletPersistenceImpl
 	 * @param start the lower bound of the range of portlets
 	 * @param end the upper bound of the range of portlets (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching portlets
 	 */
 	@Override
 	public List<Portlet> findByCompanyId(
 		long companyId, int start, int end,
-		OrderByComparator<Portlet> orderByComparator,
-		boolean retrieveFromCache) {
+		OrderByComparator<Portlet> orderByComparator, boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -162,10 +158,13 @@ public class PortletPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindByCompanyId;
-			finderArgs = new Object[] {companyId};
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindByCompanyId;
+				finderArgs = new Object[] {companyId};
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindByCompanyId;
 			finderArgs = new Object[] {
 				companyId, start, end, orderByComparator
@@ -174,13 +173,13 @@ public class PortletPersistenceImpl
 
 		List<Portlet> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<Portlet>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (Portlet portlet : list) {
-					if ((companyId != portlet.getCompanyId())) {
+					if (companyId != portlet.getCompanyId()) {
 						list = null;
 
 						break;
@@ -240,10 +239,14 @@ public class PortletPersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -642,20 +645,24 @@ public class PortletPersistenceImpl
 	 *
 	 * @param companyId the company ID
 	 * @param portletId the portlet ID
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the matching portlet, or <code>null</code> if a matching portlet could not be found
 	 */
 	@Override
 	public Portlet fetchByC_P(
-		long companyId, String portletId, boolean retrieveFromCache) {
+		long companyId, String portletId, boolean useFinderCache) {
 
 		portletId = Objects.toString(portletId, "");
 
-		Object[] finderArgs = new Object[] {companyId, portletId};
+		Object[] finderArgs = null;
+
+		if (useFinderCache) {
+			finderArgs = new Object[] {companyId, portletId};
+		}
 
 		Object result = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			result = FinderCacheUtil.getResult(
 				_finderPathFetchByC_P, finderArgs, this);
 		}
@@ -708,8 +715,10 @@ public class PortletPersistenceImpl
 				List<Portlet> list = q.list();
 
 				if (list.isEmpty()) {
-					FinderCacheUtil.putResult(
-						_finderPathFetchByC_P, finderArgs, list);
+					if (useFinderCache) {
+						FinderCacheUtil.putResult(
+							_finderPathFetchByC_P, finderArgs, list);
+					}
 				}
 				else {
 					Portlet portlet = list.get(0);
@@ -720,7 +729,10 @@ public class PortletPersistenceImpl
 				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(_finderPathFetchByC_P, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(
+						_finderPathFetchByC_P, finderArgs);
+				}
 
 				throw processException(e);
 			}
@@ -1269,13 +1281,13 @@ public class PortletPersistenceImpl
 	 * @param start the lower bound of the range of portlets
 	 * @param end the upper bound of the range of portlets (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of portlets
 	 */
 	@Override
 	public List<Portlet> findAll(
 		int start, int end, OrderByComparator<Portlet> orderByComparator,
-		boolean retrieveFromCache) {
+		boolean useFinderCache) {
 
 		boolean pagination = true;
 		FinderPath finderPath = null;
@@ -1285,17 +1297,20 @@ public class PortletPersistenceImpl
 			(orderByComparator == null)) {
 
 			pagination = false;
-			finderPath = _finderPathWithoutPaginationFindAll;
-			finderArgs = FINDER_ARGS_EMPTY;
+
+			if (useFinderCache) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
+		else if (useFinderCache) {
 			finderPath = _finderPathWithPaginationFindAll;
 			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<Portlet> list = null;
 
-		if (retrieveFromCache) {
+		if (useFinderCache) {
 			list = (List<Portlet>)FinderCacheUtil.getResult(
 				finderPath, finderArgs, this);
 		}
@@ -1345,10 +1360,14 @@ public class PortletPersistenceImpl
 
 				cacheResult(list);
 
-				FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				if (useFinderCache) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
 			catch (Exception e) {
-				FinderCacheUtil.removeResult(finderPath, finderArgs);
+				if (useFinderCache) {
+					FinderCacheUtil.removeResult(finderPath, finderArgs);
+				}
 
 				throw processException(e);
 			}

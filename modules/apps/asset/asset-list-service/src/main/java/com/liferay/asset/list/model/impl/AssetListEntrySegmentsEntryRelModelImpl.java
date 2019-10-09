@@ -47,8 +47,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the AssetListEntrySegmentsEntryRel service. Represents a row in the &quot;AssetListEntrySegmentsEntryRel&quot; database table, with each column mapped to a property of this class.
  *
@@ -60,12 +58,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetListEntrySegmentsEntryRelImpl
  * @generated
  */
-@ProviderType
 public class AssetListEntrySegmentsEntryRelModelImpl
 	extends BaseModelImpl<AssetListEntrySegmentsEntryRel>
 	implements AssetListEntrySegmentsEntryRelModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a asset list entry segments entry rel model instance should use the <code>AssetListEntrySegmentsEntryRel</code> interface instead.
@@ -73,18 +70,20 @@ public class AssetListEntrySegmentsEntryRelModelImpl
 	public static final String TABLE_NAME = "AssetListEntrySegmentsEntryRel";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"alEntrySegmentsEntryRelId", Types.BIGINT},
-		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
-		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
-		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
-		{"assetListEntryId", Types.BIGINT}, {"segmentsEntryId", Types.BIGINT},
-		{"typeSettings", Types.CLOB}, {"lastPublishDate", Types.TIMESTAMP}
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"alEntrySegmentsEntryRelId", Types.BIGINT}, {"groupId", Types.BIGINT},
+		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
+		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
+		{"modifiedDate", Types.TIMESTAMP}, {"assetListEntryId", Types.BIGINT},
+		{"segmentsEntryId", Types.BIGINT}, {"typeSettings", Types.CLOB},
+		{"lastPublishDate", Types.TIMESTAMP}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("alEntrySegmentsEntryRelId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -100,7 +99,7 @@ public class AssetListEntrySegmentsEntryRelModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table AssetListEntrySegmentsEntryRel (uuid_ VARCHAR(75) null,alEntrySegmentsEntryRelId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,assetListEntryId LONG,segmentsEntryId LONG,typeSettings TEXT null,lastPublishDate DATE null)";
+		"create table AssetListEntrySegmentsEntryRel (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,alEntrySegmentsEntryRelId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,assetListEntryId LONG,segmentsEntryId LONG,typeSettings TEXT null,lastPublishDate DATE null)";
 
 	public static final String TABLE_SQL_DROP =
 		"drop table AssetListEntrySegmentsEntryRel";
@@ -273,6 +272,12 @@ public class AssetListEntrySegmentsEntryRelModelImpl
 					<String, BiConsumer<AssetListEntrySegmentsEntryRel, ?>>();
 
 		attributeGetterFunctions.put(
+			"mvccVersion", AssetListEntrySegmentsEntryRel::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<AssetListEntrySegmentsEntryRel, Long>)
+				AssetListEntrySegmentsEntryRel::setMvccVersion);
+		attributeGetterFunctions.put(
 			"uuid", AssetListEntrySegmentsEntryRel::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid",
@@ -355,6 +360,16 @@ public class AssetListEntrySegmentsEntryRelModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@Override
@@ -619,6 +634,7 @@ public class AssetListEntrySegmentsEntryRelModelImpl
 		AssetListEntrySegmentsEntryRelImpl assetListEntrySegmentsEntryRelImpl =
 			new AssetListEntrySegmentsEntryRelImpl();
 
+		assetListEntrySegmentsEntryRelImpl.setMvccVersion(getMvccVersion());
 		assetListEntrySegmentsEntryRelImpl.setUuid(getUuid());
 		assetListEntrySegmentsEntryRelImpl.setAssetListEntrySegmentsEntryRelId(
 			getAssetListEntrySegmentsEntryRelId());
@@ -736,6 +752,8 @@ public class AssetListEntrySegmentsEntryRelModelImpl
 		AssetListEntrySegmentsEntryRelCacheModel
 			assetListEntrySegmentsEntryRelCacheModel =
 				new AssetListEntrySegmentsEntryRelCacheModel();
+
+		assetListEntrySegmentsEntryRelCacheModel.mvccVersion = getMvccVersion();
 
 		assetListEntrySegmentsEntryRelCacheModel.uuid = getUuid();
 
@@ -894,6 +912,7 @@ public class AssetListEntrySegmentsEntryRelModelImpl
 	private static boolean _entityCacheEnabled;
 	private static boolean _finderCacheEnabled;
 
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _assetListEntrySegmentsEntryRelId;

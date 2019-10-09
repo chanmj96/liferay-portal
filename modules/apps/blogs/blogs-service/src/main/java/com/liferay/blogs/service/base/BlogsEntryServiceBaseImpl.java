@@ -45,9 +45,9 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class BlogsEntryServiceBaseImpl
 	extends BaseServiceImpl
-	implements BlogsEntryService, AopService, IdentifiableOSGiService {
+	implements AopService, BlogsEntryService, IdentifiableOSGiService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>BlogsEntryService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.blogs.service.BlogsEntryServiceUtil</code>.

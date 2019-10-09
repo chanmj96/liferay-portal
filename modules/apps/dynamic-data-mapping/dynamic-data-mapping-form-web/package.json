@@ -1,15 +1,13 @@
 {
 	"dependencies": {
-		"classnames": "^2.2.6",
-		"clay-alert": "2.16.1",
-		"clay-checkbox": "2.16.1",
-		"clay-icon": "2.16.1",
-		"clay-management-toolbar": "2.16.1",
-		"clay-modal": "2.16.1",
-		"clay-radio": "2.16.1",
+		"classnames": "2.2.6",
+		"clay-alert": "2.18.1",
+		"clay-checkbox": "2.18.1",
+		"clay-icon": "2.18.1",
+		"clay-management-toolbar": "2.18.1",
+		"clay-modal": "2.18.1",
+		"clay-radio": "2.18.1",
 		"clipboard": "2.0.4",
-		"metal-clipboard": "2.0.1",
-		"metal-debounce": "^2.0.2",
 		"metal-dom": "2.16.8",
 		"metal-drag-drop": "3.3.1",
 		"metal-events": "2.16.8",
@@ -19,20 +17,8 @@
 		"object-hash": "^1.3.0"
 	},
 	"jest": {
-		"moduleNameMapper": {
-			"(.*)\\.soy$": "$1.soy.js",
-			"dynamic-data-mapping-form-builder/(.*)": "<rootDir>/../dynamic-data-mapping-form-builder/src/main/resources/META-INF/resources/$1",
-			"dynamic-data-mapping-form-renderer/(.*)": "<rootDir>/../dynamic-data-mapping-form-renderer/src/main/resources/META-INF/resources/$1",
-			"source/(.*)": "<rootDir>/src/main/resources/META-INF/resources/admin/js/$1.js"
-		},
 		"modulePathIgnorePatterns": [
-			"/build/",
-			"/classes/",
-			"/__fixtures__/",
 			"/__mock__/"
-		],
-		"setupFiles": [
-			"<rootDir>/jest-setup.config.js"
 		],
 		"setupFilesAfterEnv": [
 			"<rootDir>jest-setup-after-env.config.js"
@@ -42,10 +28,7 @@
 		],
 		"testPathIgnorePatterns": [
 			"ShareFormPopover"
-		],
-		"transform": {
-			".+": "./jest-workspaces-transform.js"
-		}
+		]
 	},
 	"main": "admin/js/main.es.js",
 	"name": "dynamic-data-mapping-form-web",

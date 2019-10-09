@@ -27,7 +27,7 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Company;
-import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -37,16 +37,19 @@ import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.util.SearchUtil;
 import com.liferay.portal.vulcan.util.TransformUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.BadRequestException;
+import javax.validation.ValidationException;
 
 /**
  * @author Leonardo Barros
@@ -85,12 +88,12 @@ public class CommonDataRecordCollectionResource<T> {
 	}
 
 	public Page<T> getDataDefinitionDataRecordCollectionsPage(
-			AcceptLanguage acceptLanguage, Long dataDefinitionId,
-			String keywords, Pagination pagination)
+			AcceptLanguage acceptLanguage, Company company,
+			Long dataDefinitionId, String keywords, Pagination pagination)
 		throws Exception {
 
 		if (pagination.getPageSize() > 250) {
-			throw new BadRequestException(
+			throw new ValidationException(
 				LanguageUtil.format(
 					acceptLanguage.getPreferredLocale(),
 					"page-size-is-greater-than-x", 250));
@@ -99,18 +102,42 @@ public class CommonDataRecordCollectionResource<T> {
 		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
 			dataDefinitionId);
 
-		return Page.of(
-			TransformUtil.transform(
-				_ddlRecordSetLocalService.search(
+		if (Validator.isNull(keywords)) {
+			return Page.of(
+				TransformUtil.transform(
+					_ddlRecordSetLocalService.search(
+						ddmStructure.getCompanyId(), ddmStructure.getGroupId(),
+						keywords, DDLRecordSetConstants.SCOPE_DATA_ENGINE,
+						pagination.getStartPosition(),
+						pagination.getEndPosition(), null),
+					_transformUnsafeFunction),
+				pagination,
+				_ddlRecordSetLocalService.searchCount(
 					ddmStructure.getCompanyId(), ddmStructure.getGroupId(),
-					keywords, DDLRecordSetConstants.SCOPE_DATA_ENGINE,
-					pagination.getStartPosition(), pagination.getEndPosition(),
-					null),
-				_transformUnsafeFunction),
-			pagination,
-			_ddlRecordSetLocalService.searchCount(
-				ddmStructure.getCompanyId(), ddmStructure.getGroupId(),
-				keywords, DDLRecordSetConstants.SCOPE_DATA_ENGINE));
+					keywords, DDLRecordSetConstants.SCOPE_DATA_ENGINE));
+		}
+
+		return SearchUtil.search(
+			booleanQuery -> {
+			},
+			null, DDLRecordSet.class, keywords, pagination,
+			queryConfig -> queryConfig.setSelectedFieldNames(
+				Field.ENTRY_CLASS_PK),
+			searchContext -> {
+				searchContext.setAttribute(Field.DESCRIPTION, keywords);
+				searchContext.setAttribute(Field.NAME, keywords);
+				searchContext.setAttribute(
+					"DDMStructureId", ddmStructure.getStructureId());
+				searchContext.setAttribute(
+					"scope", DDLRecordSetConstants.SCOPE_DATA_ENGINE);
+				searchContext.setCompanyId(company.getCompanyId());
+				searchContext.setGroupIds(
+					new long[] {ddmStructure.getGroupId()});
+			},
+			document -> _transformUnsafeFunction.apply(
+				_ddlRecordSetLocalService.getRecordSet(
+					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)))),
+			null);
 	}
 
 	public T getDataRecordCollection(Long dataRecordCollectionId)
@@ -134,31 +161,50 @@ public class CommonDataRecordCollectionResource<T> {
 	}
 
 	public Page<T> getSiteDataRecordCollectionsPage(
-			AcceptLanguage acceptLanguage, String keywords,
+			AcceptLanguage acceptLanguage, Company company, String keywords,
 			Pagination pagination, Long siteId)
 		throws Exception {
 
 		if (pagination.getPageSize() > 250) {
-			throw new BadRequestException(
+			throw new ValidationException(
 				LanguageUtil.format(
 					acceptLanguage.getPreferredLocale(),
 					"page-size-is-greater-than-x", 250));
 		}
 
-		Group group = _groupLocalService.getGroup(siteId);
+		if (Validator.isNull(keywords)) {
+			return Page.of(
+				TransformUtil.transform(
+					_ddlRecordSetLocalService.search(
+						company.getCompanyId(), siteId, keywords,
+						DDLRecordSetConstants.SCOPE_DATA_ENGINE,
+						pagination.getStartPosition(),
+						pagination.getEndPosition(), null),
+					_transformUnsafeFunction),
+				pagination,
+				_ddlRecordSetLocalService.searchCount(
+					company.getCompanyId(), siteId, keywords,
+					DDLRecordSetConstants.SCOPE_DATA_ENGINE));
+		}
 
-		return Page.of(
-			TransformUtil.transform(
-				_ddlRecordSetLocalService.search(
-					group.getCompanyId(), siteId, keywords,
-					DDLRecordSetConstants.SCOPE_DATA_ENGINE,
-					pagination.getStartPosition(), pagination.getEndPosition(),
-					null),
-				_transformUnsafeFunction),
-			pagination,
-			_ddlRecordSetLocalService.searchCount(
-				group.getCompanyId(), siteId, keywords,
-				DDLRecordSetConstants.SCOPE_DATA_ENGINE));
+		return SearchUtil.search(
+			booleanQuery -> {
+			},
+			null, DDLRecordSet.class, keywords, pagination,
+			queryConfig -> queryConfig.setSelectedFieldNames(
+				Field.ENTRY_CLASS_PK),
+			searchContext -> {
+				searchContext.setAttribute(Field.DESCRIPTION, keywords);
+				searchContext.setAttribute(Field.NAME, keywords);
+				searchContext.setAttribute(
+					"scope", DDLRecordSetConstants.SCOPE_DATA_ENGINE);
+				searchContext.setCompanyId(company.getCompanyId());
+				searchContext.setGroupIds(new long[] {siteId});
+			},
+			document -> _transformUnsafeFunction.apply(
+				_ddlRecordSetLocalService.getRecordSet(
+					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)))),
+			null);
 	}
 
 	public T postDataDefinitionDataRecordCollection(

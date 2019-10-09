@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link BlogsStatsUser}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see BlogsStatsUser
  * @generated
  */
-@ProviderType
 public class BlogsStatsUserWrapper
 	extends BaseModelWrapper<BlogsStatsUser>
 	implements BlogsStatsUser, ModelWrapper<BlogsStatsUser> {
@@ -45,6 +42,7 @@ public class BlogsStatsUserWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("statsUserId", getStatsUserId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -60,6 +58,12 @@ public class BlogsStatsUserWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long statsUserId = (Long)attributes.get("statsUserId");
 
 		if (statsUserId != null) {
@@ -158,6 +162,16 @@ public class BlogsStatsUserWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this blogs stats user.
+	 *
+	 * @return the mvcc version of this blogs stats user
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this blogs stats user.
 	 *
 	 * @return the primary key of this blogs stats user
@@ -237,6 +251,11 @@ public class BlogsStatsUserWrapper
 		return model.getUserUuid();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a blogs stats user model instance should use the <code>BlogsStatsUser</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -280,6 +299,16 @@ public class BlogsStatsUserWrapper
 	@Override
 	public void setLastPostDate(Date lastPostDate) {
 		model.setLastPostDate(lastPostDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this blogs stats user.
+	 *
+	 * @param mvccVersion the mvcc version of this blogs stats user
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

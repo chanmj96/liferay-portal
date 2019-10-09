@@ -12,8 +12,6 @@
  * details.
  */
 
-/* eslint no-unused-vars: "warn" */
-
 import State, {Config} from 'metal-state';
 
 /**
@@ -67,7 +65,12 @@ class MarkerBase extends State {
 	 * @return {Object} Generated native marker
 	 * @review
 	 */
-	_getNativeMarker(location, map) {
+	_getNativeMarker(
+		/* eslint-disable no-unused-vars */
+		location,
+		map
+		/* eslint-enable no-unused-vars */
+	) {
 		throw new Error('Must be implemented');
 	}
 
@@ -79,7 +82,11 @@ class MarkerBase extends State {
 	 * @return {{ lat: number, lng: number }}
 	 * @review
 	 */
-	_getNormalizedEventData(nativeEvent) {
+	_getNormalizedEventData(
+		/* eslint-disable no-unused-vars */
+		nativeEvent
+		/* eslint-enable no-unused-vars */
+	) {
 		throw new Error('Must be implemented');
 	}
 
@@ -103,13 +110,6 @@ class MarkerBase extends State {
  */
 MarkerBase.STATE = {
 	/**
-	 * Map to be used
-	 * @review
-	 * @type {Object}
-	 */
-	map: Config.object().value({}),
-
-	/**
 	 * Location to be used
 	 * @review
 	 * @type {Object}
@@ -120,7 +120,14 @@ MarkerBase.STATE = {
 	}).value({
 		lat: 0,
 		lng: 0
-	})
+	}),
+
+	/**
+	 * Map to be used
+	 * @review
+	 * @type {Object}
+	 */
+	map: Config.object().value({})
 };
 
 window.Liferay = window.Liferay || {};

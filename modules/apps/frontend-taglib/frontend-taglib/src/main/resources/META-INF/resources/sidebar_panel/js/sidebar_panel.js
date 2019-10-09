@@ -39,25 +39,7 @@ AUI.add(
 			NAME: 'liferaysidebarpanel',
 
 			prototype: {
-				initializer: function(config) {
-					var instance = this;
-
-					instance._searchContainerRegisterHandle = Liferay.on(
-						'search-container:registered',
-						instance._onSearchContainerRegistered,
-						instance
-					);
-				},
-
-				destructor: function() {
-					var instance = this;
-
-					instance._detachSearchContainerRegisterHandle();
-
-					new A.EventHandle(instance._eventHandles).detach();
-				},
-
-				_bindUI: function() {
+				_bindUI() {
 					var instance = this;
 
 					instance._eventHandles = [
@@ -78,7 +60,7 @@ AUI.add(
 					];
 				},
 
-				_detachSearchContainerRegisterHandle: function() {
+				_detachSearchContainerRegisterHandle() {
 					var instance = this;
 
 					var searchContainerRegisterHandle =
@@ -91,22 +73,22 @@ AUI.add(
 					}
 				},
 
-				_getSidebarContent: function(event) {
+				_getSidebarContent() {
 					var instance = this;
 
-					A.io.request(instance.get('resourceUrl'), {
-						form: instance._searchContainer.getForm().getDOM(),
-						on: {
-							success: function(event, id, xhr) {
-								var response = xhr.responseText;
-
-								instance.get('targetNode').setContent(response);
-							}
-						}
-					});
+					Liferay.Util.fetch(instance.get('resourceUrl'), {
+						body: new FormData(
+							instance._searchContainer.getForm().getDOM()
+						),
+						method: 'POST'
+					})
+						.then(response => response.text())
+						.then(response =>
+							instance.get('targetNode').setContent(response)
+						);
 				},
 
-				_onSearchContainerRegistered: function(event) {
+				_onSearchContainerRegistered(event) {
 					var instance = this;
 
 					var searchContainer = event.searchContainer;
@@ -123,6 +105,24 @@ AUI.add(
 
 						instance._bindUI();
 					}
+				},
+
+				destructor() {
+					var instance = this;
+
+					instance._detachSearchContainerRegisterHandle();
+
+					new A.EventHandle(instance._eventHandles).detach();
+				},
+
+				initializer() {
+					var instance = this;
+
+					instance._searchContainerRegisterHandle = Liferay.on(
+						'search-container:registered',
+						instance._onSearchContainerRegistered,
+						instance
+					);
 				}
 			}
 		});
@@ -134,7 +134,6 @@ AUI.add(
 		requires: [
 			'aui-base',
 			'aui-debounce',
-			'aui-io-request',
 			'aui-parse-content',
 			'liferay-portlet-base'
 		]

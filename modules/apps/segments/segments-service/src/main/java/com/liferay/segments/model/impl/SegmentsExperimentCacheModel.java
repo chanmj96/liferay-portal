@@ -17,6 +17,7 @@ package com.liferay.segments.model.impl;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.segments.model.SegmentsExperiment;
 
 import java.io.Externalizable;
@@ -26,17 +27,14 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing SegmentsExperiment in entity cache.
  *
  * @author Eduardo Garcia
  * @generated
  */
-@ProviderType
 public class SegmentsExperimentCacheModel
-	implements CacheModel<SegmentsExperiment>, Externalizable {
+	implements CacheModel<SegmentsExperiment>, Externalizable, MVCCModel {
 
 	@Override
 	public boolean equals(Object obj) {
@@ -51,8 +49,9 @@ public class SegmentsExperimentCacheModel
 		SegmentsExperimentCacheModel segmentsExperimentCacheModel =
 			(SegmentsExperimentCacheModel)obj;
 
-		if (segmentsExperimentId ==
-				segmentsExperimentCacheModel.segmentsExperimentId) {
+		if ((segmentsExperimentId ==
+				segmentsExperimentCacheModel.segmentsExperimentId) &&
+			(mvccVersion == segmentsExperimentCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -62,14 +61,28 @@ public class SegmentsExperimentCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, segmentsExperimentId);
+		int hashCode = HashUtil.hash(0, segmentsExperimentId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(35);
+		StringBundler sb = new StringBundler(37);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", segmentsExperimentId=");
 		sb.append(segmentsExperimentId);
@@ -99,10 +112,10 @@ public class SegmentsExperimentCacheModel
 		sb.append(name);
 		sb.append(", description=");
 		sb.append(description);
-		sb.append(", status=");
-		sb.append(status);
 		sb.append(", typeSettings=");
 		sb.append(typeSettings);
+		sb.append(", status=");
+		sb.append(status);
 		sb.append("}");
 
 		return sb.toString();
@@ -112,6 +125,8 @@ public class SegmentsExperimentCacheModel
 	public SegmentsExperiment toEntityModel() {
 		SegmentsExperimentImpl segmentsExperimentImpl =
 			new SegmentsExperimentImpl();
+
+		segmentsExperimentImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			segmentsExperimentImpl.setUuid("");
@@ -174,14 +189,14 @@ public class SegmentsExperimentCacheModel
 			segmentsExperimentImpl.setDescription(description);
 		}
 
-		segmentsExperimentImpl.setStatus(status);
-
 		if (typeSettings == null) {
 			segmentsExperimentImpl.setTypeSettings("");
 		}
 		else {
 			segmentsExperimentImpl.setTypeSettings(typeSettings);
 		}
+
+		segmentsExperimentImpl.setStatus(status);
 
 		segmentsExperimentImpl.resetOriginalValues();
 
@@ -190,6 +205,7 @@ public class SegmentsExperimentCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		segmentsExperimentId = objectInput.readLong();
@@ -213,13 +229,15 @@ public class SegmentsExperimentCacheModel
 		classPK = objectInput.readLong();
 		name = objectInput.readUTF();
 		description = objectInput.readUTF();
+		typeSettings = objectInput.readUTF();
 
 		status = objectInput.readInt();
-		typeSettings = objectInput.readUTF();
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -274,16 +292,17 @@ public class SegmentsExperimentCacheModel
 			objectOutput.writeUTF(description);
 		}
 
-		objectOutput.writeInt(status);
-
 		if (typeSettings == null) {
 			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(typeSettings);
 		}
+
+		objectOutput.writeInt(status);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long segmentsExperimentId;
 	public long groupId;
@@ -299,7 +318,7 @@ public class SegmentsExperimentCacheModel
 	public long classPK;
 	public String name;
 	public String description;
-	public int status;
 	public String typeSettings;
+	public int status;
 
 }

@@ -36,6 +36,8 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -105,6 +107,7 @@ public class DataLayout {
 	protected String dataLayoutKey;
 
 	@Schema
+	@Valid
 	public DataLayoutPage[] getDataLayoutPages() {
 		return dataLayoutPages;
 	}
@@ -190,34 +193,7 @@ public class DataLayout {
 	protected Date dateModified;
 
 	@Schema
-	public String getDefaultLanguageId() {
-		return defaultLanguageId;
-	}
-
-	public void setDefaultLanguageId(String defaultLanguageId) {
-		this.defaultLanguageId = defaultLanguageId;
-	}
-
-	@JsonIgnore
-	public void setDefaultLanguageId(
-		UnsafeSupplier<String, Exception> defaultLanguageIdUnsafeSupplier) {
-
-		try {
-			defaultLanguageId = defaultLanguageIdUnsafeSupplier.get();
-		}
-		catch (RuntimeException re) {
-			throw re;
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String defaultLanguageId;
-
-	@Schema
+	@Valid
 	public Map<String, Object> getDescription() {
 		return description;
 	}
@@ -273,6 +249,7 @@ public class DataLayout {
 	protected Long id;
 
 	@Schema
+	@Valid
 	public Map<String, Object> getName() {
 		return name;
 	}
@@ -482,20 +459,6 @@ public class DataLayout {
 			sb.append("\"");
 
 			sb.append(liferayToJSONDateFormat.format(dateModified));
-
-			sb.append("\"");
-		}
-
-		if (defaultLanguageId != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"defaultLanguageId\": ");
-
-			sb.append("\"");
-
-			sb.append(_escape(defaultLanguageId));
 
 			sb.append("\"");
 		}

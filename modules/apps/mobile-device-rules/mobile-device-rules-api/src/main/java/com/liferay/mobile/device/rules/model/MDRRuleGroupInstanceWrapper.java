@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link MDRRuleGroupInstance}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see MDRRuleGroupInstance
  * @generated
  */
-@ProviderType
 public class MDRRuleGroupInstanceWrapper
 	extends BaseModelWrapper<MDRRuleGroupInstance>
 	implements MDRRuleGroupInstance, ModelWrapper<MDRRuleGroupInstance> {
@@ -48,6 +45,7 @@ public class MDRRuleGroupInstanceWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("ruleGroupInstanceId", getRuleGroupInstanceId());
 		attributes.put("groupId", getGroupId());
@@ -67,6 +65,12 @@ public class MDRRuleGroupInstanceWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -232,6 +236,16 @@ public class MDRRuleGroupInstanceWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this mdr rule group instance.
+	 *
+	 * @return the mvcc version of this mdr rule group instance
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this mdr rule group instance.
 	 *
 	 * @return the primary key of this mdr rule group instance
@@ -318,6 +332,11 @@ public class MDRRuleGroupInstanceWrapper
 		return model.getUuid();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a mdr rule group instance model instance should use the <code>MDRRuleGroupInstance</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -396,6 +415,16 @@ public class MDRRuleGroupInstanceWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this mdr rule group instance.
+	 *
+	 * @param mvccVersion the mvcc version of this mdr rule group instance
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

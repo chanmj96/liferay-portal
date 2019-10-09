@@ -12,10 +12,10 @@
  * details.
  */
 
-import Component from 'metal-component';
-import Soy from 'metal-soy';
 import {Align} from 'metal-position';
+import Component from 'metal-component';
 import {Config} from 'metal-state';
+import Soy from 'metal-soy';
 
 import getConnectedComponent from '../../store/ConnectedComponent.es';
 import templates from './FloatingToolbar.soy';
@@ -66,29 +66,31 @@ class FloatingToolbar extends Component {
 	 * Gets a suggested align of an element to an anchor, following this logic:
 	 * - Vertically, if the element fits at bottom, it's placed there, otherwise
 	 *   it is placed at top.
-	 * - Horizontally, if the element fits at right, it's placed there,
-	 *   otherwise it is placed at left. If language is RTL, this will happen
-	 *   the other way around.
+	 * - Horizontally, the element is placed depending on the anchor position
+	 *   relative to the wrapper.
+	 * @param {HTMLElement} wrapper
 	 * @param {HTMLElement|null} element
 	 * @param {HTMLElement|null} anchor
 	 * @private
 	 * @return {number} Selected align
 	 * @review
 	 */
-	static _getElementAlign(element, anchor) {
-		const languageId = Liferay.ThemeDisplay.getLanguageId();
-		const languageDirection = Liferay.Language.direction[languageId];
-		const isRtl = languageDirection === 'rtl';
-
-		const fallbackHorizontal = isRtl ? 'right' : 'left';
-		const fallbackVertical = 'top';
-		let horizontal = isRtl ? 'left' : 'right';
-		let vertical = 'bottom';
-
+	static _getElementAlign(wrapper, element, anchor) {
 		const alignFits = (align, availableAlign) =>
 			availableAlign.includes(
 				Align.suggestAlignBestRegion(element, anchor, align).position
 			);
+
+		const anchorRect = anchor.getBoundingClientRect();
+		const fragmentEntryLinkListWidth = wrapper.offsetWidth;
+
+		const horizontal =
+			anchorRect.right > fragmentEntryLinkListWidth / 2
+				? 'right'
+				: 'left';
+
+		const fallbackVertical = 'top';
+		let vertical = 'bottom';
 
 		if (
 			!alignFits(
@@ -101,19 +103,6 @@ class FloatingToolbar extends Component {
 			)
 		) {
 			vertical = fallbackVertical;
-		}
-
-		if (
-			!alignFits(
-				ELEMENT_POSITION[vertical][horizontal],
-				ELEMENT_AVAILABLE_POSITIONS[horizontal]
-			) &&
-			alignFits(
-				ELEMENT_POSITION[vertical][fallbackHorizontal],
-				ELEMENT_AVAILABLE_POSITIONS[fallbackHorizontal]
-			)
-		) {
-			horizontal = fallbackHorizontal;
 		}
 
 		return ELEMENT_POSITION[vertical][horizontal];
@@ -154,13 +143,11 @@ class FloatingToolbar extends Component {
 
 		window.addEventListener('resize', this._handleWindowResize);
 
-		const wrapper = document.querySelector(
+		this._wrapper = document.querySelector(
 			'.fragment-entry-link-list-wrapper'
 		);
 
-		if (wrapper) {
-			wrapper.addEventListener('scroll', this._handleWrapperScroll);
-		}
+		this._wrapper.addEventListener('scroll', this._handleWrapperScroll);
 	}
 
 	/**
@@ -177,13 +164,7 @@ class FloatingToolbar extends Component {
 	disposed() {
 		window.removeEventListener('resize', this._handleWindowResize);
 
-		const wrapper = document.querySelector(
-			'.fragment-entry-link-list-wrapper'
-		);
-
-		if (wrapper) {
-			wrapper.removeEventListener('scroll', this._handleWrapperScroll);
-		}
+		this._wrapper.removeEventListener('scroll', this._handleWrapperScroll);
 	}
 
 	/**
@@ -211,6 +192,24 @@ class FloatingToolbar extends Component {
 
 		requestAnimationFrame(() => {
 			this._align();
+		});
+	}
+
+	/**
+	 * @inheritdoc
+	 * @review
+	 */
+	syncSelectedPanelId() {
+		requestAnimationFrame(() => {
+			if (this.refs.selectedPanel) {
+				this.refs.selectedPanel.on('clearEditor', () =>
+					this.emit('clearEditor')
+				);
+
+				this.refs.selectedPanel.on('createProcessor', () =>
+					this.emit('createProcessor')
+				);
+			}
 		});
 	}
 
@@ -304,25 +303,28 @@ class FloatingToolbar extends Component {
 	 * @review
 	 */
 	_align() {
-		if (this.refs.buttons && this.anchorElement) {
-			const buttonsAlign = FloatingToolbar._getElementAlign(
-				this.refs.panel || this.refs.buttons,
-				this.anchorElement
-			);
+		AUI().use('portal-available-languages', () => {
+			if (this.refs.buttons && this.anchorElement) {
+				const buttonsAlign = FloatingToolbar._getElementAlign(
+					this._wrapper,
+					this.refs.panel || this.refs.buttons,
+					this.anchorElement
+				);
 
-			Align.align(
-				this.refs.buttons,
-				this.anchorElement,
-				buttonsAlign,
-				false
-			);
+				Align.align(
+					this.refs.buttons,
+					this.anchorElement,
+					buttonsAlign,
+					false
+				);
 
-			requestAnimationFrame(() => {
+				requestAnimationFrame(() => {
+					this._alignPanel();
+				});
+			} else if (this.anchorElement) {
 				this._alignPanel();
-			});
-		} else if (this.anchorElement) {
-			this._alignPanel();
-		}
+			}
+		});
 	}
 
 	/**
@@ -333,6 +335,7 @@ class FloatingToolbar extends Component {
 	_alignPanel() {
 		if (this.refs.panel && this.anchorElement) {
 			const panelAlign = FloatingToolbar._getElementAlign(
+				this._wrapper,
 				this.refs.panel,
 				this.refs.buttons || this.anchorElement
 			);
@@ -365,58 +368,6 @@ class FloatingToolbar extends Component {
  * @type {!Object}
  */
 FloatingToolbar.STATE = {
-	/**
-	 * Element where the floating toolbar is positioned with
-	 * @default undefined
-	 * @instance
-	 * @memberof FloatingToolbar
-	 * @review
-	 * @type {HTMLElement}
-	 */
-	anchorElement: Config.instanceOf(HTMLElement).required(),
-
-	/**
-	 * List of available buttons.
-	 * @default undefined
-	 * @instance
-	 * @memberOf FloatingToolbar
-	 * @review
-	 * @type {object[]}
-	 */
-	buttons: Config.arrayOf(
-		Config.shapeOf({
-			icon: Config.string(),
-			id: Config.string(),
-			panelId: Config.string(),
-			title: Config.string(),
-			type: Config.string()
-		})
-	).required(),
-
-	/**
-	 * If true, once a panel has been selected it cannot be changed
-	 * until selectedPanelId is set manually to null.
-	 * @default false
-	 * @instance
-	 * @memberof FloatingToolbar
-	 * @review
-	 * @type {boolean}
-	 */
-	fixSelectedPanel: Config.bool().value(false),
-
-	/**
-	 * Selected panel ID.
-	 * @default null
-	 * @instance
-	 * @memberOf FloatingToolbar
-	 * @private
-	 * @review
-	 * @type {string|null}
-	 */
-	selectedPanelId: Config.string()
-		.internal()
-		.value(null),
-
 	/**
 	 * Used for restoring the panel after hiding it
 	 * @default null
@@ -452,7 +403,72 @@ FloatingToolbar.STATE = {
 	 */
 	_productMenuHeight: Config.number()
 		.internal()
-		.value(0)
+		.value(0),
+
+	/**
+	 * @default null
+	 * @instance
+	 * @memberof FloatingToolbar
+	 * @private
+	 * @review
+	 * @type {object}
+	 */
+	_wrapper: Config.object()
+		.internal()
+		.value(null),
+
+	/**
+	 * Element where the floating toolbar is positioned with
+	 * @default undefined
+	 * @instance
+	 * @memberof FloatingToolbar
+	 * @review
+	 * @type {HTMLElement}
+	 */
+	anchorElement: Config.instanceOf(HTMLElement).required(),
+
+	/**
+	 * List of available buttons.
+	 * @default undefined
+	 * @instance
+	 * @memberOf FloatingToolbar
+	 * @review
+	 * @type {object[]}
+	 */
+	buttons: Config.arrayOf(
+		Config.shapeOf({
+			cssClass: Config.string(),
+			icon: Config.string(),
+			id: Config.string(),
+			panelId: Config.string(),
+			title: Config.string(),
+			type: Config.string()
+		})
+	).required(),
+
+	/**
+	 * If true, once a panel has been selected it cannot be changed
+	 * until selectedPanelId is set manually to null.
+	 * @default false
+	 * @instance
+	 * @memberof FloatingToolbar
+	 * @review
+	 * @type {boolean}
+	 */
+	fixSelectedPanel: Config.bool().value(false),
+
+	/**
+	 * Selected panel ID.
+	 * @default null
+	 * @instance
+	 * @memberOf FloatingToolbar
+	 * @private
+	 * @review
+	 * @type {string|null}
+	 */
+	selectedPanelId: Config.string()
+		.internal()
+		.value(null)
 };
 
 const ConnectedFloatingToolbar = getConnectedComponent(FloatingToolbar, [

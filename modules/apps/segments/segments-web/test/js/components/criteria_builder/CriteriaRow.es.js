@@ -12,10 +12,10 @@
  * details.
  */
 
-import CriteriaRow from 'components/criteria_builder/CriteriaRow.es';
+import {cleanup, render} from '@testing-library/react';
+import CriteriaRow from '../../../../src/main/resources/META-INF/resources/js/components/criteria_builder/CriteriaRow.es';
 import React from 'react';
-import {cleanup, render} from 'react-testing-library';
-import {PROPERTY_TYPES} from 'utils/constants.es';
+import {PROPERTY_TYPES} from '../../../../src/main/resources/META-INF/resources/js/utils/constants.es';
 
 const connectDnd = jest.fn(el => el);
 
@@ -35,13 +35,13 @@ describe('CriteriaRow', () => {
 					propertyName: 'test_prop',
 					value: 'test_val'
 				}}
-				groupId='group_01'
+				groupId="group_01"
 				index={0}
 				onAdd={jest.fn()}
 				onChange={jest.fn()}
 				onDelete={jest.fn()}
 				onMove={jest.fn()}
-				propertyKey='user'
+				propertyKey="user"
 				supportedProperties={[
 					{
 						label: 'Test Property',
@@ -68,13 +68,13 @@ describe('CriteriaRow', () => {
 					propertyName: 'unknown_prop',
 					value: 'test_val'
 				}}
-				groupId='group_01'
+				groupId="group_01"
 				index={0}
 				onAdd={jest.fn()}
 				onChange={jest.fn()}
 				onDelete={jest.fn()}
 				onMove={jest.fn()}
-				propertyKey='user'
+				propertyKey="user"
 				supportedProperties={[
 					{
 						label: 'Test Property',

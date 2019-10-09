@@ -257,6 +257,23 @@ public class JSONUtil {
 	}
 
 	public static <T> JSONArray toJSONArray(
+			Set<T> set, UnsafeFunction<T, Object, Exception> unsafeFunction)
+		throws Exception {
+
+		JSONArray jsonArray = _createJSONArray();
+
+		if (set == null) {
+			return jsonArray;
+		}
+
+		for (T t : set) {
+			jsonArray.put(unsafeFunction.apply(t));
+		}
+
+		return jsonArray;
+	}
+
+	public static <T> JSONArray toJSONArray(
 			T[] array, UnsafeFunction<T, Object, Exception> unsafeFunction)
 		throws Exception {
 
@@ -299,9 +316,7 @@ public class JSONUtil {
 		List<T> values = new ArrayList<>(jsonArray.length());
 
 		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject jsonObject = jsonArray.getJSONObject(i);
-
-			values.add(unsafeFunction.apply(jsonObject));
+			values.add(unsafeFunction.apply(jsonArray.getJSONObject(i)));
 		}
 
 		return values;

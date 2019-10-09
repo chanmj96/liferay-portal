@@ -12,6 +12,13 @@
  * details.
  */
 
+/**
+ * The XML Formatter Utility
+ *
+ * @deprecated As of Athanasius(7.3.x), replaced by Liferay.Util.formatXML
+ * @module liferay-xml-formatter
+ */
+
 AUI.add(
 	'liferay-xml-formatter',
 	function(A) {
@@ -35,7 +42,7 @@ AUI.add(
 			NAME: 'liferayxmlformatter',
 
 			prototype: {
-				format: function(content) {
+				format(content) {
 					var instance = this;
 
 					var tagIndent = instance.get('tagIndent');
@@ -43,8 +50,8 @@ AUI.add(
 					var lineIndent = instance.get('lineIndent');
 
 					return Liferay.Util.formatXML(content, {
-						tagIndent,
-						lineIndent
+						lineIndent,
+						tagIndent
 					});
 				}
 			}

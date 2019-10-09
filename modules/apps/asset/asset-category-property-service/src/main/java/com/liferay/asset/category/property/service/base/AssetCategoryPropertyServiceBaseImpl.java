@@ -45,10 +45,10 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class AssetCategoryPropertyServiceBaseImpl
 	extends BaseServiceImpl
-	implements AssetCategoryPropertyService, AopService,
+	implements AopService, AssetCategoryPropertyService,
 			   IdentifiableOSGiService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>AssetCategoryPropertyService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.asset.category.property.service.AssetCategoryPropertyServiceUtil</code>.

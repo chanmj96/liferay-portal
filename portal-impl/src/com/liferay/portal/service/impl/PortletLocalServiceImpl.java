@@ -578,7 +578,6 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 			}
 
 			portlet.setActive(true);
-			portlet.setReady(true);
 			portlet.setUndeployedPortlet(true);
 		}
 
@@ -620,9 +619,8 @@ public class PortletLocalServiceImpl extends PortletLocalServiceBaseImpl {
 	public List<Portlet> getPortlets(
 		long companyId, boolean showSystem, boolean showPortal) {
 
-		Map<String, Portlet> portletsMap = getPortletsMap(companyId);
-
-		List<Portlet> portlets = ListUtil.fromMapValues(portletsMap);
+		List<Portlet> portlets = ListUtil.fromMapValues(
+			getPortletsMap(companyId));
 
 		if (showSystem && showPortal) {
 			return portlets;

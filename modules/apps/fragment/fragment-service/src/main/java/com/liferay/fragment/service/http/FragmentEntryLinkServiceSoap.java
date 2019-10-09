@@ -20,8 +20,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import java.rmi.RemoteException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>FragmentEntryLinkServiceUtil</code> service
@@ -61,7 +59,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see FragmentEntryLinkServiceHttp
  * @generated
  */
-@ProviderType
 public class FragmentEntryLinkServiceSoap {
 
 	/**
@@ -153,6 +150,27 @@ public class FragmentEntryLinkServiceSoap {
 			com.liferay.fragment.model.FragmentEntryLink returnValue =
 				FragmentEntryLinkServiceUtil.updateFragmentEntryLink(
 					fragmentEntryLinkId, editableValues);
+
+			return com.liferay.fragment.model.FragmentEntryLinkSoap.toSoapModel(
+				returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.fragment.model.FragmentEntryLinkSoap
+			updateFragmentEntryLink(
+				long fragmentEntryLinkId, String editableValues,
+				boolean updateClassedModel)
+		throws RemoteException {
+
+		try {
+			com.liferay.fragment.model.FragmentEntryLink returnValue =
+				FragmentEntryLinkServiceUtil.updateFragmentEntryLink(
+					fragmentEntryLinkId, editableValues, updateClassedModel);
 
 			return com.liferay.fragment.model.FragmentEntryLinkSoap.toSoapModel(
 				returnValue);

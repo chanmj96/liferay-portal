@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link SegmentsExperimentRel}.
@@ -32,10 +30,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsExperimentRel
  * @generated
  */
-@ProviderType
 public class SegmentsExperimentRelWrapper
 	extends BaseModelWrapper<SegmentsExperimentRel>
-	implements SegmentsExperimentRel, ModelWrapper<SegmentsExperimentRel> {
+	implements ModelWrapper<SegmentsExperimentRel>, SegmentsExperimentRel {
 
 	public SegmentsExperimentRelWrapper(
 		SegmentsExperimentRel segmentsExperimentRel) {
@@ -47,6 +44,7 @@ public class SegmentsExperimentRelWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("segmentsExperimentRelId", getSegmentsExperimentRelId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -63,6 +61,12 @@ public class SegmentsExperimentRelWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long segmentsExperimentRelId = (Long)attributes.get(
 			"segmentsExperimentRelId");
 
@@ -168,6 +172,23 @@ public class SegmentsExperimentRelWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this segments experiment rel.
+	 *
+	 * @return the mvcc version of this segments experiment rel
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	@Override
+	public String getName(java.util.Locale locale)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getName(locale);
+	}
+
+	/**
 	 * Returns the primary key of this segments experiment rel.
 	 *
 	 * @return the primary key of this segments experiment rel
@@ -187,6 +208,11 @@ public class SegmentsExperimentRelWrapper
 		return model.getSegmentsExperienceId();
 	}
 
+	@Override
+	public String getSegmentsExperienceKey() {
+		return model.getSegmentsExperienceKey();
+	}
+
 	/**
 	 * Returns the segments experiment ID of this segments experiment rel.
 	 *
@@ -195,6 +221,13 @@ public class SegmentsExperimentRelWrapper
 	@Override
 	public long getSegmentsExperimentId() {
 		return model.getSegmentsExperimentId();
+	}
+
+	@Override
+	public String getSegmentsExperimentKey()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.getSegmentsExperimentKey();
 	}
 
 	/**
@@ -248,6 +281,25 @@ public class SegmentsExperimentRelWrapper
 	}
 
 	@Override
+	public boolean isActive()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.isActive();
+	}
+
+	@Override
+	public boolean isControl()
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return model.isControl();
+	}
+
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a segments experiment rel model instance should use the <code>SegmentsExperimentRel</code> interface instead.
+	 */
+	@Override
 	public void persist() {
 		model.persist();
 	}
@@ -290,6 +342,16 @@ public class SegmentsExperimentRelWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this segments experiment rel.
+	 *
+	 * @param mvccVersion the mvcc version of this segments experiment rel
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

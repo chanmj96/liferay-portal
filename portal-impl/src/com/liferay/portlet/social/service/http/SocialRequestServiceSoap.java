@@ -14,8 +14,6 @@
 
 package com.liferay.portlet.social.service.http;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>com.liferay.social.kernel.service.SocialRequestServiceUtil</code> service
@@ -55,6 +53,5 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SocialRequestServiceHttp
  * @generated
  */
-@ProviderType
 public class SocialRequestServiceSoap {
 }

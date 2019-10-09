@@ -6,13 +6,14 @@
 	bottom: calc(100% + #{$topperBorderWidth});
 	box-shadow: 0 0 0 $topperBorderWidth $topperBorderColor;
 	color: $topperColor;
+	cursor: pointer;
 	font-size: 12px;
 	height: 24px;
 	left: $topperBorderWidth;
 	line-height: 24px;
 	max-width: calc(100% - #{$topperBorderWidth * 2});
 	opacity: 0;
-	padding: 0 8px;
+	padding: 0 8px 0 4px;
 	position: absolute;
 	transform: translateY(100%);
 	transition: box-shadow ease $topperShowDuration,
@@ -20,9 +21,20 @@
 		opacity ease ($topperShowDuration * 0.667);
 	z-index: $topperZIndex;
 
+	.tbar-nav {
+		min-width: 44px;
+	}
+
+	&__drag-icon {
+		height: 16px;
+		width: 16px;
+	}
+
 	&__icon {
 		fill: $topperColor;
 		padding: 0;
+		position: relative;
+		top: 1px;
 	}
 
 	&__item {
@@ -61,13 +73,18 @@
 		outline: none;
 	}
 
+	&-wrapper--active > .fragments-editor__topper {
+		background-color: $topperActiveBackgroundColor;
+		box-shadow: 0 0 0 $topperBorderWidth $topperActiveBorderColor;
+	}
+
 	&-wrapper--active,
 	&-wrapper--hovered {
 		outline: none;
 		z-index: $topperHoverZIndex;
 
 		&:after {
-			box-shadow: inset 0 0 0 $topperBorderWidth $topperBorderColor;
+			box-shadow: inset 0 0 0 $topperHoveredBorderWidth $topperBorderColor;
 			transition: box-shadow ease ($topperShowDuration + $topperShowDelay);
 		}
 	}
@@ -79,7 +96,8 @@
 	}
 
 	&-wrapper--active:after {
-		box-shadow: inset 0 0 0 $topperFocusedBorderWidth $topperBorderColor;
+		box-shadow: inset 0 0 0 $topperFocusedBorderWidth
+			$topperActiveBorderColor;
 		transition: box-shadow ease ($topperShowDuration * 0.5);
 	}
 
@@ -87,7 +105,8 @@
 	&-wrapper--hovered > & {
 		opacity: 1;
 		transform: translateY(1px);
-		transition: box-shadow ease $topperShowDuration $topperShowDelay,
+		transition: background-color ease $topperShowDuration,
+			box-shadow ease $topperShowDuration,
 			transform ease ($topperShowDuration * 0.667) $topperShowDelay,
 			opacity ease $topperShowDuration $topperShowDelay,
 			z-index linear 1ms ($topperShowDuration + $topperShowDelay);

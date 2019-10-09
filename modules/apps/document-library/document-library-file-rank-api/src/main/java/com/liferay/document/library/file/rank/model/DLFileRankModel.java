@@ -15,6 +15,7 @@
 package com.liferay.document.library.file.rank.model;
 
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 
 import java.util.Date;
@@ -33,9 +34,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @ProviderType
-public interface DLFileRankModel extends BaseModel<DLFileRank>, ShardedModel {
+public interface DLFileRankModel
+	extends BaseModel<DLFileRank>, MVCCModel, ShardedModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. All methods that expect a document library file rank model instance should use the {@link DLFileRank} interface instead.
@@ -54,6 +56,22 @@ public interface DLFileRankModel extends BaseModel<DLFileRank>, ShardedModel {
 	 * @param primaryKey the primary key of this document library file rank
 	 */
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this document library file rank.
+	 *
+	 * @return the mvcc version of this document library file rank
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this document library file rank.
+	 *
+	 * @param mvccVersion the mvcc version of this document library file rank
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
 
 	/**
 	 * Returns the file rank ID of this document library file rank.

@@ -22,16 +22,10 @@ import {
 	getRowIndex
 } from '../utils/FragmentsEditorGetUtils.es';
 import {MAX_COLUMNS} from '../utils/rowConstants';
-import {
-	removeFragmentEntryLinks,
-	updatePageEditorLayoutData
-} from '../utils/FragmentsEditorFetchUtils.es';
+import {updatePageEditorLayoutData} from '../utils/FragmentsEditorFetchUtils.es';
 import {setIn, updateIn} from '../utils/FragmentsEditorUpdateUtils.es';
-import {
-	UPDATE_ROW_COLUMNS_NUMBER_ERROR,
-	UPDATE_ROW_COLUMNS_NUMBER_LOADING,
-	UPDATE_ROW_COLUMNS_NUMBER_SUCCESS
-} from './actions.es';
+import {UPDATE_ROW_COLUMNS_NUMBER_SUCCESS} from './actions.es';
+import {removeFragmentEntryLinksAction} from './removeFragmentEntryLinks.es';
 
 /**
  * @param {number} numberOfColumns
@@ -73,15 +67,12 @@ function updateRowColumnsNumberAction(numberOfColumns, rowId) {
 			});
 		}
 
-		dispatch(updateRowColumnsNumberLoadingAction());
 		dispatch(enableSavingChangesStatusAction());
 
 		updatePageEditorLayoutData(nextData, state.segmentsExperienceId)
 			.then(() =>
-				removeFragmentEntryLinks(
-					nextData,
-					fragmentEntryLinkIdsToRemove,
-					state.segmentsExperienceId
+				dispatch(
+					removeFragmentEntryLinksAction(fragmentEntryLinkIdsToRemove)
 				)
 			)
 			.then(() => {
@@ -96,29 +87,8 @@ function updateRowColumnsNumberAction(numberOfColumns, rowId) {
 				dispatch(disableSavingChangesStatusAction());
 			})
 			.catch(() => {
-				dispatch(updateRowColumnsNumberErrorAction());
 				dispatch(disableSavingChangesStatusAction());
 			});
-	};
-}
-
-/**
- * @return {object}
- * @review
- */
-function updateRowColumnsNumberErrorAction() {
-	return {
-		type: UPDATE_ROW_COLUMNS_NUMBER_ERROR
-	};
-}
-
-/**
- * @return {object}
- * @review
- */
-function updateRowColumnsNumberLoadingAction() {
-	return {
-		type: UPDATE_ROW_COLUMNS_NUMBER_LOADING
 	};
 }
 

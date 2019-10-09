@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link SegmentsExperience}.
@@ -33,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsExperience
  * @generated
  */
-@ProviderType
 public class SegmentsExperienceWrapper
 	extends BaseModelWrapper<SegmentsExperience>
-	implements SegmentsExperience, ModelWrapper<SegmentsExperience> {
+	implements ModelWrapper<SegmentsExperience>, SegmentsExperience {
 
 	public SegmentsExperienceWrapper(SegmentsExperience segmentsExperience) {
 		super(segmentsExperience);
@@ -46,6 +43,7 @@ public class SegmentsExperienceWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("segmentsExperienceId", getSegmentsExperienceId());
 		attributes.put("groupId", getGroupId());
@@ -68,6 +66,12 @@ public class SegmentsExperienceWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -268,6 +272,16 @@ public class SegmentsExperienceWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this segments experience.
+	 *
+	 * @return the mvcc version of this segments experience
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this segments experience.
 	 *
 	 * @return the name of this segments experience
@@ -433,6 +447,11 @@ public class SegmentsExperienceWrapper
 		return model.getUuid();
 	}
 
+	@Override
+	public boolean hasSegmentsExperiment() {
+		return model.hasSegmentsExperiment();
+	}
+
 	/**
 	 * Returns <code>true</code> if this segments experience is active.
 	 *
@@ -443,6 +462,11 @@ public class SegmentsExperienceWrapper
 		return model.isActive();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a segments experience model instance should use the <code>SegmentsExperience</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -546,6 +570,16 @@ public class SegmentsExperienceWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this segments experience.
+	 *
+	 * @param mvccVersion the mvcc version of this segments experience
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

@@ -71,11 +71,13 @@ export default class LocalizedInput extends React.Component {
 
 		let hasError = false;
 
+		const value = event.target.value;
+
 		this.setState(
 			prevState => {
 				const newValues = {
 					...prevState.values,
-					[prevState.currentLang]: event.target.value
+					[prevState.currentLang]: value
 				};
 
 				hasError = !this._validateValues(newValues);
@@ -87,13 +89,13 @@ export default class LocalizedInput extends React.Component {
 							if (lang.key === prevState.currentLang) {
 								newLang = {
 									...lang,
-									hasValue: event.target.value !== ''
+									hasValue: value !== ''
 								};
 							}
 							return newLang;
 						}
 					),
-					currentValue: event.target.value,
+					currentValue: value,
 					hasError,
 					values: newValues
 				};
@@ -127,7 +129,7 @@ export default class LocalizedInput extends React.Component {
 		});
 
 		return (
-			<div className='input-group input-localized input-localized-input'>
+			<div className="input-group input-localized input-localized-input">
 				<LocalizedDropdown
 					availableLanguages={availableLanguages}
 					defaultLang={defaultLang}
@@ -137,12 +139,12 @@ export default class LocalizedInput extends React.Component {
 				/>
 				<div className={inputGroupItemClasses}>
 					<input
-						className='rounded form-control language-value field form-control-inline form-control'
-						data-testid='localized-main-input'
+						className="rounded form-control language-value field form-control-inline form-control"
+						data-testid="localized-main-input"
 						onChange={this._handleInputChange}
 						placeholder={placeholder}
 						readOnly={readOnly}
-						type='text'
+						type="text"
 						value={currentValue}
 					/>
 				</div>

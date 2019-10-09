@@ -19,9 +19,9 @@ import com.liferay.gradle.util.OSDetector;
 import groovy.json.JsonSlurper;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -29,22 +29,14 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.gradle.api.Action;
-import org.gradle.api.GradleException;
 import org.gradle.api.Project;
-import org.gradle.api.UncheckedIOException;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.logging.Logger;
-import org.gradle.internal.hash.HashUtil;
-import org.gradle.internal.hash.HashValue;
 import org.gradle.process.ExecResult;
 import org.gradle.process.ExecSpec;
 
@@ -73,43 +65,32 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 		}
 	}
 
-	public static String getDigest(Iterable<File> files) {
-		StringBuilder sb = new StringBuilder();
+	public static File[] getFiles(
+		File dir, final String prefix, final String suffix) {
 
-		SortedSet<File> sortedFiles = null;
+		return dir.listFiles(
+			new FileFilter() {
 
-		try {
-			sortedFiles = _flattenAndSort(files);
-		}
-		catch (IOException ioe) {
-			throw new GradleException("Unable to flatten files", ioe);
-		}
+				@Override
+				public boolean accept(File file) {
+					if (file.isDirectory()) {
+						return false;
+					}
 
-		for (File file : sortedFiles) {
-			if (!file.exists()) {
-				continue;
-			}
+					String name = file.getName();
 
-			try {
-				List<String> lines = Files.readAllLines(
-					file.toPath(), StandardCharsets.UTF_8);
+					if (!name.startsWith(prefix)) {
+						return false;
+					}
 
-				sb.append(Integer.toHexString(lines.hashCode()));
-			}
-			catch (IOException ioe) {
-				HashValue hashValue = HashUtil.sha1(file);
+					if (!name.endsWith(suffix)) {
+						return false;
+					}
 
-				sb.append(hashValue.asHexString());
-			}
+					return true;
+				}
 
-			sb.append('-');
-		}
-
-		if (sb.length() > 0) {
-			sb.setLength(sb.length() - 1);
-		}
-
-		return sb.toString();
+			});
 	}
 
 	public static void removeBinDirLinks(Logger logger, File nodeModulesDir)
@@ -186,6 +167,16 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 		}
 	}
 
+	public static void write(File file, byte[] bytes) throws IOException {
+		File dir = file.getParentFile();
+
+		if (dir != null) {
+			Files.createDirectories(dir.toPath());
+		}
+
+		Files.write(file.toPath(), bytes);
+	}
+
 	private static void _createBinDirLinks(
 			Logger logger, File nodeModulesBinDir)
 		throws IOException {
@@ -252,42 +243,6 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 		}
 	}
 
-	private static SortedSet<File> _flattenAndSort(Iterable<File> files)
-		throws IOException {
-
-		final SortedSet<File> sortedFiles = new TreeSet<>(new FileComparator());
-
-		if (files == null) {
-			return sortedFiles;
-		}
-
-		for (File file : files) {
-			if (file.isDirectory()) {
-				Files.walkFileTree(
-					file.toPath(),
-					new SimpleFileVisitor<Path>() {
-
-						@Override
-						public FileVisitResult visitFile(
-								Path path,
-								BasicFileAttributes basicFileAttributes)
-							throws IOException {
-
-							sortedFiles.add(path.toFile());
-
-							return FileVisitResult.CONTINUE;
-						}
-
-					});
-			}
-			else {
-				sortedFiles.add(file);
-			}
-		}
-
-		return sortedFiles;
-	}
-
 	private static Set<File> _getNodeModulesBinDirs(File nodeModulesDir)
 		throws IOException {
 
@@ -329,36 +284,5 @@ public class FileUtil extends com.liferay.gradle.util.FileUtil {
 			}
 
 		};
-
-	private static class FileComparator implements Comparator<File> {
-
-		@Override
-		public int compare(File file1, File file2) {
-			String canonicalPath1 = _getCanonicalPath(file1);
-			String canonicalPath2 = _getCanonicalPath(file2);
-
-			return canonicalPath1.compareTo(canonicalPath2);
-		}
-
-		private static String _getCanonicalPath(File file) {
-			String canonicalPath = null;
-
-			try {
-				canonicalPath = file.getCanonicalPath();
-			}
-			catch (IOException ioe) {
-				String message = "Unable to get canonical path of " + file;
-
-				throw new UncheckedIOException(message, ioe);
-			}
-
-			if (File.separatorChar != '/') {
-				canonicalPath = canonicalPath.replace(File.separatorChar, '/');
-			}
-
-			return canonicalPath;
-		}
-
-	}
 
 }

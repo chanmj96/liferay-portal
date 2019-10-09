@@ -12,40 +12,14 @@
  * details.
  */
 
-import {Component} from 'metal-component';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Soy from 'metal-soy';
-
-import {getConnectedComponent} from '../../../store/ConnectedComponent.es';
-import {SidebarComments} from './SidebarComments.es';
+import SidebarComments from './SidebarComments.es';
+import getConnectedReactComponentAdapter from '../../../store/ReactComponentAdapter.es';
 import templates from './SidebarCommentsPanel.soy';
 
-/* eslint no-unused-vars: "warn" */
-
-class SidebarCommentsPanel extends Component {
-	disposed() {
-		ReactDOM.unmountComponentAtNode(this.refs.app);
-	}
-
-	syncStore(store, prevStore) {
-		if (store && store !== prevStore) {
-			this._mountApp();
-		}
-	}
-
-	_mountApp() {
-		ReactDOM.unmountComponentAtNode(this.refs.app);
-		ReactDOM.render(<SidebarComments />, this.refs.app);
-	}
-}
-
-const ConnectedSidebarCommentsPanel = getConnectedComponent(
-	SidebarCommentsPanel,
-	[]
+const SidebarCommentsPanel = getConnectedReactComponentAdapter(
+	SidebarComments,
+	templates
 );
 
-Soy.register(ConnectedSidebarCommentsPanel, templates);
-
-export {ConnectedSidebarCommentsPanel, SidebarCommentsPanel};
-export default ConnectedSidebarCommentsPanel;
+export {SidebarCommentsPanel};
+export default SidebarCommentsPanel;

@@ -15,12 +15,9 @@
 import Component from 'metal-jsx';
 import Position from 'metal-position';
 import {Config} from 'metal-state';
+import dom from 'metal-dom';
 import {Drag} from 'metal-drag-drop';
-import {
-	focusedFieldStructure,
-	pageStructure,
-	ruleStructure
-} from '../../util/config.es';
+import {focusedFieldStructure, pageStructure} from '../../util/config.es';
 
 const withResizeableColumns = ChildComponent => {
 	class ResizeableColumns extends Component {
@@ -56,7 +53,7 @@ const withResizeableColumns = ChildComponent => {
 			return [...Array(12)].map((element, index) => {
 				return (
 					<div
-						class='ddm-resize-column'
+						class="ddm-resize-column"
 						data-resize-column={index}
 						key={index}
 						ref={`resizeColumn${index}`}
@@ -73,21 +70,45 @@ const withResizeableColumns = ChildComponent => {
 			});
 
 			this._resizeDrag.on(
-				Drag.Events.START,
-				this._handleResizeDragStartEvent.bind(this)
+				Drag.Events.END,
+				this._handleDragEnd.bind(this)
 			);
+
 			this._resizeDrag.on(
 				Drag.Events.DRAG,
-				this._handleResizeDragEvent.bind(this)
+				this._handleDragMove.bind(this)
+			);
+
+			this._resizeDrag.on(
+				Drag.Events.START,
+				this._handleDragStart.bind(this)
 			);
 		}
 
-		_handleResizeDragEvent(event) {
+		_handleDragEnd({source}) {
+			const {parentElement} = source;
+
+			if (parentElement) {
+				parentElement.classList.remove('dragging');
+			}
+		}
+
+		_handleDragStart() {
+			this._lastResizeColumn = -1;
+		}
+
+		_handleDragMove(event) {
 			const columnNodes = Object.keys(this.refs)
 				.filter(key => key.indexOf('resizeColumn') === 0)
 				.map(key => this.refs[key]);
 			const {source, x} = event;
 			const {store} = this.context;
+
+			const container = dom.closest(source, '.ddm-field-container');
+
+			if (container) {
+				container.classList.add('dragging');
+			}
 
 			let distance = Infinity;
 			let nearest;
@@ -122,10 +143,6 @@ const withResizeableColumns = ChildComponent => {
 				}
 			}
 		}
-
-		_handleResizeDragStartEvent() {
-			this._lastResizeColumn = -1;
-		}
 	}
 
 	ResizeableColumns.PROPS = {
@@ -157,9 +174,27 @@ const withResizeableColumns = ChildComponent => {
 		editingLanguageId: Config.string(),
 
 		/**
+		 * @default undefined
+		 * @instance
+		 * @memberof FormBuilder
+		 * @type {?string}
+		 */
+
+		fieldSetDefinitionURL: Config.string(),
+
+		/**
 		 * @default []
 		 * @instance
-		 * @memberof Sidebar
+		 * @memberof FormBuilder
+		 * @type {?(array|undefined)}
+		 */
+
+		fieldSets: Config.array().value([]),
+
+		/**
+		 * @default []
+		 * @instance
+		 * @memberof FormBuilder
 		 * @type {?(array|undefined)}
 		 */
 
@@ -200,21 +235,34 @@ const withResizeableColumns = ChildComponent => {
 		portletNamespace: Config.string().required(),
 
 		/**
+		 * @default undefined
 		 * @instance
 		 * @memberof FormBuilder
-		 * @type {string}
+		 * @type {!string}
 		 */
 
-		rules: Config.arrayOf(ruleStructure).required(),
+		spritemap: Config.string().required(),
+
+		/**
+		 * @instance
+		 * @memberof FormBuilder
+		 * @type {object}
+		 */
+
+		successPageSettings: Config.shapeOf({
+			body: Config.object(),
+			enabled: Config.bool(),
+			title: Config.object()
+		}).value({}),
 
 		/**
 		 * @default undefined
 		 * @instance
-		 * @memberof FormRenderer
-		 * @type {!string}
+		 * @memberof FormBuilder
+		 * @type {?string}
 		 */
 
-		spritemap: Config.string().required()
+		view: Config.string()
 	};
 
 	return ResizeableColumns;

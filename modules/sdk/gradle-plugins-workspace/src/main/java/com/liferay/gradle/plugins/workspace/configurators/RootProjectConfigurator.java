@@ -24,6 +24,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import com.bmuschko.gradle.docker.tasks.image.DockerPullImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 
+import com.liferay.gradle.plugins.LiferayBasePlugin;
 import com.liferay.gradle.plugins.workspace.WorkspaceExtension;
 import com.liferay.gradle.plugins.workspace.WorkspacePlugin;
 import com.liferay.gradle.plugins.workspace.internal.configurators.TargetPlatformRootProjectConfigurator;
@@ -150,7 +151,7 @@ public class RootProjectConfigurator implements Plugin<Project> {
 	public RootProjectConfigurator(Settings settings) {
 		_defaultRepositoryEnabled = GradleUtil.getProperty(
 			settings,
-			WorkspacePlugin.PROPERTY_PREFIX + ".default.repository.enabled",
+			WorkspacePlugin.PROPERTY_PREFIX + "default.repository.enabled",
 			_DEFAULT_REPOSITORY_ENABLED);
 	}
 
@@ -277,6 +278,8 @@ public class RootProjectConfigurator implements Plugin<Project> {
 			"Builds the Docker image with all modules/configs deployed.");
 		dockerBuildImage.setGroup(DOCKER_GROUP);
 		dockerBuildImage.setInputDir(workspaceExtension.getDockerDir());
+		dockerBuildImage.setTag(
+			project.getName() + ":" + workspaceExtension.getEnvironment());
 
 		return dockerBuildImage;
 	}
@@ -433,6 +436,10 @@ public class RootProjectConfigurator implements Plugin<Project> {
 				public void execute(Task task) {
 					try {
 						File destinationDir = workspaceExtension.getDockerDir();
+
+						destinationDir.delete();
+
+						destinationDir.mkdirs();
 
 						File dir = new File(destinationDir, "files");
 
@@ -615,7 +622,46 @@ public class RootProjectConfigurator implements Plugin<Project> {
 				@Override
 				public File call() throws Exception {
 					return new File(
+						workspaceExtension.getConfigsDir(), "common");
+				}
+
+			},
+			new Closure<Void>(project) {
+
+				@SuppressWarnings("unused")
+				public void doCall(CopySpec copySpec) {
+					copySpec.into("files");
+				}
+
+			});
+
+		copy.from(
+			new Callable<File>() {
+
+				@Override
+				public File call() throws Exception {
+					return new File(
 						workspaceExtension.getConfigsDir(), "docker");
+				}
+
+			},
+			new Closure<Void>(project) {
+
+				@SuppressWarnings("unused")
+				public void doCall(CopySpec copySpec) {
+					copySpec.into("files");
+				}
+
+			});
+
+		copy.from(
+			new Callable<File>() {
+
+				@Override
+				public File call() throws Exception {
+					return new File(
+						workspaceExtension.getConfigsDir(),
+						workspaceExtension.getEnvironment());
 				}
 
 			},
@@ -638,6 +684,11 @@ public class RootProjectConfigurator implements Plugin<Project> {
 				}
 
 			});
+
+		Task deployTask = GradleUtil.addTask(
+			project, LiferayBasePlugin.DEPLOY_TASK_NAME, Copy.class);
+
+		deployTask.finalizedBy(copy);
 
 		return copy;
 	}

@@ -242,11 +242,10 @@ public class JournalEditDDMStructuresDisplayContext {
 		String storageType = StorageType.JSON.getValue();
 
 		try {
-			long companyId = CompanyThreadLocal.getCompanyId();
-
 			JournalServiceConfiguration journalServiceConfiguration =
 				ConfigurationProviderUtil.getCompanyConfiguration(
-					JournalServiceConfiguration.class, companyId);
+					JournalServiceConfiguration.class,
+					CompanyThreadLocal.getCompanyId());
 
 			storageType =
 				journalServiceConfiguration.journalArticleStorageType();
@@ -256,6 +255,10 @@ public class JournalEditDDMStructuresDisplayContext {
 		}
 
 		return storageType;
+	}
+
+	public boolean isStructureFieldIndexableEnable() {
+		return _journalWebConfiguration.structureFieldIndexableEnable();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

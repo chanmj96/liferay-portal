@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link DDMStructureLayout}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DDMStructureLayout
  * @generated
  */
-@ProviderType
 public class DDMStructureLayoutWrapper
 	extends BaseModelWrapper<DDMStructureLayout>
 	implements DDMStructureLayout, ModelWrapper<DDMStructureLayout> {
@@ -46,6 +43,7 @@ public class DDMStructureLayoutWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("structureLayoutId", getStructureLayoutId());
 		attributes.put("groupId", getGroupId());
@@ -66,6 +64,12 @@ public class DDMStructureLayoutWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -314,6 +318,16 @@ public class DDMStructureLayoutWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this ddm structure layout.
+	 *
+	 * @return the mvcc version of this ddm structure layout
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this ddm structure layout.
 	 *
 	 * @return the name of this ddm structure layout
@@ -469,6 +483,11 @@ public class DDMStructureLayoutWrapper
 		return model.getUuid();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a ddm structure layout model instance should use the <code>DDMStructureLayout</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -619,6 +638,16 @@ public class DDMStructureLayoutWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this ddm structure layout.
+	 *
+	 * @param mvccVersion the mvcc version of this ddm structure layout
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

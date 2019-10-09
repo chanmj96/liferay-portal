@@ -18,7 +18,6 @@ import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializer;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeRequest;
 import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerSerializeResponse;
-import com.liferay.dynamic.data.mapping.io.DDMFormValuesSerializerTracker;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
@@ -61,6 +60,8 @@ import com.liferay.journal.util.JournalConverter;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.events.ServicePreAction;
+import com.liferay.portal.events.ThemeServicePreAction;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.Sort;
@@ -74,6 +75,7 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.servlet.DummyHttpServletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -95,6 +97,8 @@ import com.liferay.ratings.kernel.service.RatingsEntryLocalService;
 
 import java.io.Serializable;
 
+import java.net.URI;
+
 import java.time.LocalDateTime;
 
 import java.util.AbstractMap;
@@ -107,6 +111,7 @@ import java.util.Map;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriBuilder;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -254,8 +259,8 @@ public class StructuredContentResourceImpl
 	@Override
 	public Page<StructuredContent>
 			getStructuredContentFolderStructuredContentsPage(
-				Long structuredContentFolderId, String search, Filter filter,
-				Pagination pagination, Sort[] sorts)
+				Long structuredContentFolderId, Boolean flatten, String search,
+				Filter filter, Pagination pagination, Sort[] sorts)
 		throws Exception {
 
 		return _getStructuredContentsPage(
@@ -264,10 +269,16 @@ public class StructuredContentResourceImpl
 					BooleanFilter booleanFilter =
 						booleanQuery.getPreBooleanFilter();
 
+					String field =
+						com.liferay.portal.kernel.search.Field.FOLDER_ID;
+
+					if (GetterUtil.getBoolean(flatten)) {
+						field = "treePath";
+					}
+
 					booleanFilter.add(
 						new TermFilter(
-							com.liferay.portal.kernel.search.Field.FOLDER_ID,
-							structuredContentFolderId.toString()),
+							field, structuredContentFolderId.toString()),
 						BooleanClauseOccur.MUST);
 				}
 			},
@@ -291,22 +302,26 @@ public class StructuredContentResourceImpl
 		JournalArticle journalArticle = _journalArticleService.getLatestArticle(
 			structuredContentId);
 
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)contextHttpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		themeDisplay.setScopeGroupId(journalArticle.getGroupId());
-		themeDisplay.setSiteGroupId(journalArticle.getGroupId());
-
 		DDMTemplate ddmTemplate = _ddmTemplateService.getTemplate(templateId);
 
 		JournalArticleDisplay journalArticleDisplay =
 			_journalContent.getDisplay(
 				journalArticle.getGroupId(), journalArticle.getArticleId(),
 				ddmTemplate.getTemplateKey(), null,
-				contextAcceptLanguage.getPreferredLanguageId(), themeDisplay);
+				contextAcceptLanguage.getPreferredLanguageId(),
+				_getThemeDisplay(journalArticle));
 
 		String content = journalArticleDisplay.getContent();
+
+		UriBuilder uriBuilder = contextUriInfo.getBaseUriBuilder();
+
+		URI uri = uriBuilder.replacePath(
+			"/"
+		).build();
+
+		content = content.replaceAll(
+			" srcset=\"/o/", " srcset=\"" + uri + "o/");
+		content = content.replaceAll(" src=\"/", " src=\"" + uri);
 
 		return content.replaceAll("[\\t\\n]", "");
 	}
@@ -697,6 +712,33 @@ public class StructuredContentResourceImpl
 			sorts);
 	}
 
+	private ThemeDisplay _getThemeDisplay(JournalArticle journalArticle)
+		throws Exception {
+
+		ServicePreAction servicePreAction = new ServicePreAction();
+
+		DummyHttpServletResponse dummyHttpServletResponse =
+			new DummyHttpServletResponse();
+
+		servicePreAction.servicePre(
+			contextHttpServletRequest, dummyHttpServletResponse, false);
+
+		ThemeServicePreAction themeServicePreAction =
+			new ThemeServicePreAction();
+
+		themeServicePreAction.run(
+			contextHttpServletRequest, dummyHttpServletResponse);
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)contextHttpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		themeDisplay.setScopeGroupId(journalArticle.getGroupId());
+		themeDisplay.setSiteGroupId(journalArticle.getGroupId());
+
+		return themeDisplay;
+	}
+
 	private Fields _toFields(
 			ContentField[] contentFields, JournalArticle journalArticle)
 		throws Exception {
@@ -773,7 +815,8 @@ public class StructuredContentResourceImpl
 				contextAcceptLanguage.getPreferredLocale(),
 				value.getString(contextAcceptLanguage.getPreferredLocale()));
 
-			ContentField[] nestedContentFields = contentField.getNestedFields();
+			ContentField[] nestedContentFields =
+				contentField.getNestedContentFields();
 
 			if (nestedContentFields != null) {
 				_toPatchedFields(nestedContentFields, journalArticle);
@@ -789,16 +832,13 @@ public class StructuredContentResourceImpl
 	}
 
 	private String _toString(DDMFormValues ddmFormValues) {
-		DDMFormValuesSerializer ddmFormValuesSerializer =
-			_ddmFormValuesSerializerTracker.getDDMFormValuesSerializer("json");
-
 		DDMFormValuesSerializerSerializeRequest.Builder builder =
 			DDMFormValuesSerializerSerializeRequest.Builder.newBuilder(
 				ddmFormValues);
 
 		DDMFormValuesSerializerSerializeResponse
 			ddmFormValuesSerializerSerializeResponse =
-				ddmFormValuesSerializer.serialize(builder.build());
+				_jsonDDMFormValuesSerializer.serialize(builder.build());
 
 		return ddmFormValuesSerializerSerializeResponse.getContent();
 	}
@@ -833,7 +873,7 @@ public class StructuredContentResourceImpl
 			}
 
 			_validateContentFields(
-				contentField.getNestedFields(), ddmStructure);
+				contentField.getNestedContentFields(), ddmStructure);
 		}
 	}
 
@@ -849,9 +889,6 @@ public class StructuredContentResourceImpl
 
 	@Reference
 	private DDM _ddm;
-
-	@Reference
-	private DDMFormValuesSerializerTracker _ddmFormValuesSerializerTracker;
 
 	@Reference
 	private DDMFormValuesValidator _ddmFormValuesValidator;
@@ -894,6 +931,9 @@ public class StructuredContentResourceImpl
 
 	@Reference
 	private JournalFolderService _journalFolderService;
+
+	@Reference(target = "(ddm.form.values.serializer.type=json)")
+	private DDMFormValuesSerializer _jsonDDMFormValuesSerializer;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;

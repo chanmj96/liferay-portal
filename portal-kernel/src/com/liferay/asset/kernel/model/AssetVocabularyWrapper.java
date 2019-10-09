@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AssetVocabulary}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetVocabulary
  * @generated
  */
-@ProviderType
 public class AssetVocabularyWrapper
 	extends BaseModelWrapper<AssetVocabulary>
 	implements AssetVocabulary, ModelWrapper<AssetVocabulary> {
@@ -46,6 +43,7 @@ public class AssetVocabularyWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("vocabularyId", getVocabularyId());
@@ -66,6 +64,12 @@ public class AssetVocabularyWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -309,6 +313,16 @@ public class AssetVocabularyWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this asset vocabulary.
+	 *
+	 * @return the mvcc version of this asset vocabulary
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this asset vocabulary.
 	 *
 	 * @return the name of this asset vocabulary
@@ -545,6 +559,11 @@ public class AssetVocabularyWrapper
 		return model.isRequired(classNameId, classTypePK);
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a asset vocabulary model instance should use the <code>AssetVocabulary</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -690,6 +709,16 @@ public class AssetVocabularyWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset vocabulary.
+	 *
+	 * @param mvccVersion the mvcc version of this asset vocabulary
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

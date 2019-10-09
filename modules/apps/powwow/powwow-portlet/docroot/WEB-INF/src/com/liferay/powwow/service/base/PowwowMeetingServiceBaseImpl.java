@@ -47,9 +47,9 @@ import javax.sql.DataSource;
  */
 public abstract class PowwowMeetingServiceBaseImpl
 	extends BaseServiceImpl
-	implements PowwowMeetingService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, PowwowMeetingService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>PowwowMeetingService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.powwow.service.PowwowMeetingServiceUtil</code>.

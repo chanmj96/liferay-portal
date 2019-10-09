@@ -12,12 +12,38 @@
  * details.
  */
 
-/* eslint no-unused-vars: "warn" */
-
 import React from 'react';
-import {NoCommentsMessage} from './NoCommentsMessage.es';
 
-const SidebarComments = () => <NoCommentsMessage />;
+import {FragmentComments} from './FragmentComments.es';
+import {FragmentEntryLinksWithComments} from './FragmentEntryLinksWithComments.es';
+import {FRAGMENTS_EDITOR_ITEM_TYPES} from '../../../utils/constants';
+import {getItemPath} from '../../../utils/FragmentsEditorGetUtils.es';
+import useSelector from '../../../store/hooks/useSelector.es';
+
+const SidebarComments = () => {
+	const activeItemId = useSelector(state => state.activeItemId);
+	const activeItemType = useSelector(state => state.activeItemType);
+	const structure = useSelector(state => state.layoutData.structure);
+	const activeFragmentEntryLink = getItemPath(
+		activeItemId,
+		activeItemType,
+		structure
+	).find(
+		activeItem =>
+			activeItem.itemType === FRAGMENTS_EDITOR_ITEM_TYPES.fragment
+	);
+	const fragmentEntryLink = useSelector(state =>
+		activeFragmentEntryLink
+			? state.fragmentEntryLinks[activeFragmentEntryLink.itemId]
+			: null
+	);
+
+	if (fragmentEntryLink) {
+		return <FragmentComments fragmentEntryLink={fragmentEntryLink} />;
+	}
+
+	return <FragmentEntryLinksWithComments />;
+};
 
 export {SidebarComments};
 export default SidebarComments;

@@ -30,7 +30,10 @@ import java.util.Set;
  * </p>
  *
  * @author Michael C. Han
+ * @deprecated As of Mueller (7.2.x), replaced by {@link
+ *  		com.liferay.portal.messaging.internal.SerialDestination}
  */
+@Deprecated
 public class SerialDestination extends BaseAsyncDestination {
 
 	public SerialDestination() {

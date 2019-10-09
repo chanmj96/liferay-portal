@@ -12,10 +12,10 @@
  * details.
  */
 
-import IntegerInput from 'components/inputs/IntegerInput.es';
+import {cleanup, render} from '@testing-library/react';
+import IntegerInput from '../../../../src/main/resources/META-INF/resources/js/components/inputs/IntegerInput.es';
 import React from 'react';
-import {cleanup, render} from 'react-testing-library';
-import {testControlledInput} from 'test/utils';
+import {testControlledInput} from '../../utils';
 
 const INTEGER_NUMBER_INPUT_TESTID = 'integer-number';
 

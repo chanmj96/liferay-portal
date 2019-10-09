@@ -76,6 +76,7 @@ public class UpgradeContentImages extends UpgradeProcess {
 
 				String id = dynamicContentElement.attributeValue("id");
 
+				boolean emptyDynamicContentElement = false;
 				FileEntry fileEntry = null;
 
 				if (Validator.isNotNull(id)) {
@@ -89,18 +90,23 @@ public class UpgradeContentImages extends UpgradeProcess {
 					String data = String.valueOf(
 						dynamicContentElement.getData());
 
-					fileEntry =
-						_journalArticleImageUpgradeHelper.getFileEntryFromURL(
-							data);
+					if (Validator.isNull(data)) {
+						emptyDynamicContentElement = true;
+					}
+					else {
+						fileEntry =
+							_journalArticleImageUpgradeHelper.
+								getFileEntryFromURL(data);
+					}
 				}
 
 				dynamicContentElement.clearContent();
 
 				if (fileEntry == null) {
-					if (_log.isWarnEnabled()) {
+					if (!emptyDynamicContentElement && _log.isWarnEnabled()) {
 						_log.warn(
-							"Deleted dynamic content from file entry " +
-								fileEntryId);
+							"Deleted dynamic content because the file entry " +
+								"does not exist");
 					}
 
 					continue;
@@ -111,6 +117,8 @@ public class UpgradeContentImages extends UpgradeProcess {
 						"alt",
 						GetterUtil.getString(
 							dynamicContentElement.attributeValue("alt"))
+					).put(
+						"fileEntryId", fileEntry.getFileEntryId()
 					).put(
 						"groupId", fileEntry.getGroupId()
 					).put(

@@ -41,6 +41,8 @@ import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.layout.admin.web.internal.exportimport.data.handler.util.LayoutPageTemplateStructureDataHandlerUtil;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.seo.model.LayoutSEOEntry;
+import com.liferay.layout.seo.service.LayoutSEOEntryLocalService;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
@@ -324,6 +326,17 @@ public class LayoutStagedModelDataHandler
 				PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
 		}
 
+		LayoutSEOEntry layoutSEOEntry =
+			_layoutSEOEntryLocalService.fetchLayoutSEOEntry(
+				layout.getGroupId(), layout.isPrivateLayout(),
+				layout.getLayoutId());
+
+		if (layoutSEOEntry != null) {
+			StagedModelDataHandlerUtil.exportReferenceStagedModel(
+				portletDataContext, layout, layoutSEOEntry,
+				PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
+		}
+
 		if (layout.isIconImage()) {
 			exportLayoutIconImage(portletDataContext, layout, layoutElement);
 		}
@@ -376,8 +389,20 @@ public class LayoutStagedModelDataHandler
 		Layout existingLayout = _layoutLocalService.fetchLayoutByUuidAndGroupId(
 			uuid, groupId, privateLayout);
 
-		if ((existingLayout == null) ||
-			(existingLayout.getGroupId() != portletDataContext.getGroupId()) ||
+		if (existingLayout == null) {
+			return;
+		}
+
+		Map<Long, Long> layoutPlids =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				Layout.class);
+
+		long plid = GetterUtil.getLong(
+			referenceElement.attributeValue("class-pk"));
+
+		layoutPlids.put(plid, existingLayout.getPlid());
+
+		if ((existingLayout.getGroupId() != portletDataContext.getGroupId()) ||
 			(existingLayout.isPrivateLayout() !=
 				portletDataContext.isPrivateLayout())) {
 
@@ -392,15 +417,6 @@ public class LayoutStagedModelDataHandler
 			referenceElement.attributeValue("layout-id"));
 
 		layouts.put(layoutId, existingLayout);
-
-		Map<Long, Long> layoutPlids =
-			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-				Layout.class);
-
-		long plid = GetterUtil.getLong(
-			referenceElement.attributeValue("class-pk"));
-
-		layoutPlids.put(plid, existingLayout.getPlid());
 	}
 
 	@Override
@@ -554,7 +570,9 @@ public class LayoutStagedModelDataHandler
 		Layout importedLayout = null;
 
 		if (existingLayout == null) {
-			importedLayout = _layoutLocalService.create();
+			long plid = _counterLocalService.increment(Layout.class.getName());
+
+			importedLayout = _layoutLocalService.createLayout(plid);
 
 			if (layoutsImportMode.equals(
 					PortletDataHandlerKeys.
@@ -775,8 +793,6 @@ public class LayoutStagedModelDataHandler
 
 		_layoutLocalService.updateLayout(importedLayout);
 
-		_layoutSetLocalService.updatePageCount(groupId, privateLayout);
-
 		if ((Objects.equals(layout.getType(), LayoutConstants.TYPE_PORTLET) &&
 			 Validator.isNotNull(layout.getTypeSettings())) ||
 			Objects.equals(layout.getType(), LayoutConstants.TYPE_CONTENT)) {
@@ -792,6 +808,8 @@ public class LayoutStagedModelDataHandler
 		importLayoutPageTemplateStructures(
 			portletDataContext, layout, importedLayout);
 
+		importLayoutSEOEntries(portletDataContext, layout);
+
 		portletDataContext.importClassedModel(layout, importedLayout);
 	}
 
@@ -804,13 +822,10 @@ public class LayoutStagedModelDataHandler
 
 		if ((image != null) && (image.getTextObj() != null)) {
 			String iconPath = ExportImportPathUtil.getModelPath(
-				portletDataContext.getScopeGroupId(), Image.class.getName(),
-				image.getImageId());
+				layout,
+				image.getImageId() + StringPool.PERIOD + image.getType());
 
-			Element iconImagePathElement = layoutElement.addElement(
-				"icon-image-path");
-
-			iconImagePathElement.addText(iconPath);
+			layoutElement.addAttribute("icon-image-path", iconPath);
 
 			portletDataContext.addZipEntry(iconPath, image.getTextObj());
 		}
@@ -1334,7 +1349,7 @@ public class LayoutStagedModelDataHandler
 			Element layoutElement)
 		throws Exception {
 
-		String iconImagePath = layoutElement.elementText("icon-image-path");
+		String iconImagePath = layoutElement.attributeValue("icon-image-path");
 
 		byte[] iconBytes = portletDataContext.getZipEntryAsByteArray(
 			iconImagePath);
@@ -1355,6 +1370,13 @@ public class LayoutStagedModelDataHandler
 			PortletDataContext portletDataContext, Layout layout,
 			Layout importedLayout)
 		throws Exception {
+
+		if (!Objects.equals(layout.getType(), LayoutConstants.TYPE_CONTENT) &&
+			!Objects.equals(
+				layout.getType(), LayoutConstants.TYPE_ASSET_DISPLAY)) {
+
+			return;
+		}
 
 		importFragmentEntryLinks(portletDataContext, layout, importedLayout);
 
@@ -1607,6 +1629,27 @@ public class LayoutStagedModelDataHandler
 		portletDataContext.setOldPlid(originalOldPlid);
 		portletDataContext.setPlid(originalPlid);
 		portletDataContext.setPortletId(originalPortletId);
+	}
+
+	protected void importLayoutSEOEntries(
+			PortletDataContext portletDataContext, Layout layout)
+		throws PortletDataException {
+
+		List<Element> layoutSEOEntryElements =
+			portletDataContext.getReferenceDataElements(
+				layout, LayoutSEOEntry.class);
+
+		for (Element layoutSEOEntryElement : layoutSEOEntryElements) {
+			String layoutSEOEntryPath = layoutSEOEntryElement.attributeValue(
+				"path");
+
+			LayoutSEOEntry layoutSEOEntry =
+				(LayoutSEOEntry)portletDataContext.getZipEntryAsObject(
+					layoutSEOEntryPath);
+
+			StagedModelDataHandlerUtil.importStagedModel(
+				portletDataContext, layoutSEOEntry);
+		}
 	}
 
 	protected void importLinkedLayout(
@@ -1996,6 +2039,13 @@ public class LayoutStagedModelDataHandler
 			PortletDataContext portletDataContext, Layout layout)
 		throws PortletDataException {
 
+		if (!Objects.equals(layout.getType(), LayoutConstants.TYPE_CONTENT) &&
+			!Objects.equals(
+				layout.getType(), LayoutConstants.TYPE_ASSET_DISPLAY)) {
+
+			return;
+		}
+
 		List<FragmentEntryLink> fragmentEntryLinks =
 			_fragmentEntryLinkLocalService.getFragmentEntryLinks(
 				layout.getGroupId(), _portal.getClassNameId(Layout.class),
@@ -2101,6 +2151,10 @@ public class LayoutStagedModelDataHandler
 		_layoutPageTemplateStructureLocalService;
 
 	private LayoutPrototypeLocalService _layoutPrototypeLocalService;
+
+	@Reference
+	private LayoutSEOEntryLocalService _layoutSEOEntryLocalService;
+
 	private LayoutSetLocalService _layoutSetLocalService;
 	private LayoutTemplateLocalService _layoutTemplateLocalService;
 

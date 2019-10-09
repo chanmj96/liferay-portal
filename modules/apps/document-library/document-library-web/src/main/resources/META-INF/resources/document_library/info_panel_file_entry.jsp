@@ -120,20 +120,18 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 
 									<%
 									String[] conversions = DocumentConversionUtil.getConversions(fileVersion.getExtension());
-
-									String label = LanguageUtil.get(resourceBundle, "original");
 									%>
 
 									<c:choose>
 										<c:when test="<%= conversions.length > 0 %>">
 											<div class="btn-group-item" data-analytics-file-entry-id="<%= String.valueOf(fileEntry.getFileEntryId()) %>">
 												<clay:dropdown-menu
-													dropdownItems="<%=
+													dropdownItems='<%=
 														new JSPDropdownItemList(pageContext) {
 															{
 																ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(WebKeys.THEME_DISPLAY);
 
-																Map<String, Object> data = new HashMap<>(1);
+																Map<String, Object> data = new HashMap<>();
 
 																data.put("analytics-file-entry-id", String.valueOf(fileEntry.getFileEntryId()));
 
@@ -141,30 +139,42 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 																	dropdownItem -> {
 																		dropdownItem.setData(data);
 																		dropdownItem.setHref(DLURLHelperUtil.getDownloadURL(fileEntry, fileVersion, themeDisplay, StringPool.BLANK, false, true));
-																		dropdownItem.setLabel(label);
+																		dropdownItem.setLabel(LanguageUtil.get(request, "this-version"));
+																		dropdownItem.setSeparator(true);
 																	});
 
-																for (String conversion : conversions) {
-																	add(
-																		dropdownItem -> {
-																			dropdownItem.setData(data);
-																			dropdownItem.setHref(DLURLHelperUtil.getDownloadURL(fileEntry, fileVersion, themeDisplay, "&targetExtension=" + conversion));
-																			dropdownItem.setLabel(StringUtil.toUpperCase(conversion));
-																		});
-																}
+																addGroup(
+																	dropdownGroupItem -> {
+																		dropdownGroupItem.setDropdownItems(
+																			new DropdownItemList() {
+																				{
+																					for (String conversion : conversions) {
+																						add(
+																							dropdownItem -> {
+																								dropdownItem.setData(data);
+																								dropdownItem.setHref(DLURLHelperUtil.getDownloadURL(fileEntry, fileVersion, themeDisplay, "&targetExtension=" + conversion));
+																								dropdownItem.setLabel(StringUtil.toUpperCase(conversion));
+																							});
+																					}
+																				}
+																			});
+																		dropdownGroupItem.setLabel(LanguageUtil.get(request, "convert-to"));
+																	}
+																);
+
 															}
 														}
-													%>"
+													%>'
+													label='<%= LanguageUtil.get(request, "download") %>'
 													style="primary"
 													triggerCssClasses="btn-sm"
-													label="<%= LanguageUtil.get(request, "download-as") %>"
 												/>
 											</div>
 										</c:when>
 										<c:otherwise>
 
 											<%
-											Map<String, String> data = new HashMap<>(1);
+											Map<String, String> data = new HashMap<>();
 
 											data.put("analytics-file-entry-id", String.valueOf(fileEntry.getFileEntryId()));
 											%>
@@ -173,7 +183,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 												<clay:link
 													buttonStyle="primary"
 													data="<%= data %>"
-													elementClasses='<%= "btn-sm" %>'
+													elementClasses="btn-sm"
 													href="<%= DLURLHelperUtil.getDownloadURL(fileEntry, fileVersion, themeDisplay, StringPool.BLANK, false, true) %>"
 													label='<%= LanguageUtil.get(resourceBundle, "download") %>'
 													title='<%= LanguageUtil.format(resourceBundle, "file-size-x", TextFormatter.formatStorageSize(fileVersion.getSize(), locale), false) %>'
@@ -186,7 +196,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 									<div class="btn-group-item" data-analytics-file-entry-id="<%= String.valueOf(fileEntry.getFileEntryId()) %>">
 										<clay:link
 											buttonStyle="primary"
-											elementClasses='<%= "btn-sm" %>'
+											elementClasses="btn-sm"
 											href="<%= DLURLHelperUtil.getDownloadURL(fileEntry, fileVersion, themeDisplay, StringPool.BLANK, false, true) %>"
 											label='<%= LanguageUtil.get(resourceBundle, "download") %>'
 											title='<%= LanguageUtil.format(resourceBundle, "file-size-x", TextFormatter.formatStorageSize(fileVersion.getSize(), locale), false) %>'
@@ -238,9 +248,10 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 								<span class="input-group-append input-group-item input-group-item-shrink">
 									<clay:button
 										data="<%= urlButtonData %>"
-										elementClasses="btn-secondary dm-infopanel-copy-clipboard"
+										elementClasses="btn-secondary dm-infopanel-copy-clipboard lfr-portal-tooltip"
 										icon="paste"
 										style="secondary"
+										title='<%= LanguageUtil.get(resourceBundle, "copy-link") %>'
 									/>
 								</span>
 							</div>
@@ -280,9 +291,10 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 									<span class="input-group-append input-group-item input-group-item-shrink">
 										<clay:button
 											data="<%= webDavButtonData %>"
-											elementClasses="btn-secondary dm-infopanel-copy-clipboard"
+											elementClasses="btn-secondary dm-infopanel-copy-clipboard lfr-portal-tooltip"
 											icon="paste"
 											style="secondary"
+											title='<%= LanguageUtil.get(resourceBundle, "copy-link") %>'
 										/>
 									</span>
 								</div>
@@ -322,7 +334,7 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 					<liferay-ui:message key="size" />
 				</dt>
 				<dd class="sidebar-dd">
-					<%= HtmlUtil.escape(TextFormatter.formatStorageSize(fileEntry.getSize(), locale)) %>
+					<%= HtmlUtil.escape(TextFormatter.formatStorageSize(fileVersion.getSize(), locale)) %>
 				</dd>
 				<dt class="sidebar-dt">
 					<liferay-ui:message key="modified" />
@@ -336,6 +348,12 @@ long assetClassPK = DLAssetHelperUtil.getAssetClassPK(fileEntry, fileVersion);
 				<dd class="sidebar-dd">
 					<liferay-ui:message arguments="<%= new Object[] {dateFormatDateTime.format(fileVersion.getCreateDate()), HtmlUtil.escape(fileVersion.getUserName())} %>" key="x-by-x" translateArguments="<%= false %>" />
 				</dd>
+
+				<%
+				request.setAttribute("info_panel_location.jsp-parentFolder", fileEntry.getFolder());
+				%>
+
+				<liferay-util:include page="/document_library/info_panel_location.jsp" servletContext="<%= application %>" />
 
 				<liferay-asset:asset-tags-available
 					className="<%= DLFileEntryConstants.getClassName() %>"

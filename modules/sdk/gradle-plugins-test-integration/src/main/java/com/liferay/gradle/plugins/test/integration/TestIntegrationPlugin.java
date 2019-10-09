@@ -352,8 +352,6 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 
 			});
 
-		_configureJmxRemotePortSpec(
-			setUpTestableTomcatTask, testIntegrationTomcatExtension);
 		_configureManagerSpec(
 			setUpTestableTomcatTask, testIntegrationTomcatExtension);
 		_configureModuleFrameworkBaseDirSpec(
@@ -473,6 +471,7 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 		return startTestableTomcatTask;
 	}
 
+	@SuppressWarnings("serial")
 	private StopTestableTomcatTask _addTaskStopTestableTomcat(
 		Project project, Test testIntegrationTask,
 		TestIntegrationTomcatExtension testIntegrationTomcatExtension) {
@@ -703,6 +702,7 @@ public class TestIntegrationPlugin implements Plugin<Project> {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private void _configureTaskTestIntegration(
 		final Test test, final SourceSet testIntegrationSourceSet,
 		final TestIntegrationTomcatExtension testIntegrationTomcatExtension,

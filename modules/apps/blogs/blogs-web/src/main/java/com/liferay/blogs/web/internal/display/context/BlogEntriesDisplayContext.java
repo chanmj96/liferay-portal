@@ -42,7 +42,6 @@ import com.liferay.portal.kernel.search.SearchResult;
 import com.liferay.portal.kernel.search.SearchResultUtil;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -52,6 +51,7 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.trash.TrashHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,22 +88,18 @@ public class BlogEntriesDisplayContext {
 	public List<String> getAvailableActions(BlogsEntry blogsEntry)
 		throws PortalException {
 
-		List<String> availableActionDropdownItems = new ArrayList<>();
-
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)_httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		PermissionChecker permissionChecker =
-			themeDisplay.getPermissionChecker();
-
 		if (BlogsEntryPermission.contains(
-				permissionChecker, blogsEntry, ActionKeys.DELETE)) {
+				themeDisplay.getPermissionChecker(), blogsEntry,
+				ActionKeys.DELETE)) {
 
-			availableActionDropdownItems.add("deleteEntries");
+			return Collections.singletonList("deleteEntries");
 		}
 
-		return availableActionDropdownItems;
+		return Collections.emptyList();
 	}
 
 	public Map<String, Object> getComponentContext() throws PortalException {
@@ -111,13 +107,14 @@ public class BlogEntriesDisplayContext {
 			(ThemeDisplay)_httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		Map<String, Object> context = new HashMap<>();
-
-		context.put(
-			"trashEnabled",
-			_trashHelper.isTrashEnabled(themeDisplay.getScopeGroupId()));
-
-		return context;
+		return new HashMap<String, Object>() {
+			{
+				put(
+					"trashEnabled",
+					_trashHelper.isTrashEnabled(
+						themeDisplay.getScopeGroupId()));
+			}
+		};
 	}
 
 	public String getDisplayStyle() {
@@ -125,17 +122,16 @@ public class BlogEntriesDisplayContext {
 			_httpServletRequest, "displayStyle");
 
 		if (Validator.isNull(displayStyle)) {
-			displayStyle = _portalPreferences.getValue(
+			return _portalPreferences.getValue(
 				BlogsPortletKeys.BLOGS_ADMIN, "entries-display-style", "icon");
 		}
-		else {
-			_portalPreferences.setValue(
-				BlogsPortletKeys.BLOGS_ADMIN, "entries-display-style",
-				displayStyle);
 
-			_httpServletRequest.setAttribute(
-				WebKeys.SINGLE_PAGE_APPLICATION_CLEAR_CACHE, Boolean.TRUE);
-		}
+		_portalPreferences.setValue(
+			BlogsPortletKeys.BLOGS_ADMIN, "entries-display-style",
+			displayStyle);
+
+		_httpServletRequest.setAttribute(
+			WebKeys.SINGLE_PAGE_APPLICATION_CLEAR_CACHE, Boolean.TRUE);
 
 		return displayStyle;
 	}
@@ -179,30 +175,6 @@ public class BlogEntriesDisplayContext {
 		_populateResults(entriesSearchContainer);
 
 		return entriesSearchContainer;
-	}
-
-	private int _getStatus() {
-		if (_status != null) {
-			return _status;
-		}
-
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		PermissionChecker permissionChecker =
-			themeDisplay.getPermissionChecker();
-
-		if (permissionChecker.isContentReviewer(
-				themeDisplay.getCompanyId(), themeDisplay.getScopeGroupId())) {
-
-			_status = WorkflowConstants.STATUS_ANY;
-		}
-		else {
-			_status = WorkflowConstants.STATUS_APPROVED;
-		}
-
-		return _status;
 	}
 
 	private void _populateResults(SearchContainer searchContainer)
@@ -275,7 +247,8 @@ public class BlogEntriesDisplayContext {
 			SearchContext searchContext = SearchContextFactory.getInstance(
 				_httpServletRequest);
 
-			searchContext.setAttribute(Field.STATUS, _getStatus());
+			searchContext.setAttribute(
+				Field.STATUS, WorkflowConstants.STATUS_ANY);
 			searchContext.setEnd(searchContainer.getEnd());
 			searchContext.setIncludeDiscussions(true);
 			searchContext.setKeywords(keywords);
@@ -360,7 +333,6 @@ public class BlogEntriesDisplayContext {
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private final PortalPreferences _portalPreferences;
-	private Integer _status;
 	private final TrashHelper _trashHelper;
 
 }

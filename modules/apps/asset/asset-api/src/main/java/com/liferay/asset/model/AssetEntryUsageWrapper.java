@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link AssetEntryUsage}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AssetEntryUsage
  * @generated
  */
-@ProviderType
 public class AssetEntryUsageWrapper
 	extends BaseModelWrapper<AssetEntryUsage>
 	implements AssetEntryUsage, ModelWrapper<AssetEntryUsage> {
@@ -45,6 +42,7 @@ public class AssetEntryUsageWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("assetEntryUsageId", getAssetEntryUsageId());
 		attributes.put("groupId", getGroupId());
@@ -62,6 +60,12 @@ public class AssetEntryUsageWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -210,6 +214,16 @@ public class AssetEntryUsageWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this asset entry usage.
+	 *
+	 * @return the mvcc version of this asset entry usage
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the plid of this asset entry usage.
 	 *
 	 * @return the plid of this asset entry usage
@@ -249,6 +263,11 @@ public class AssetEntryUsageWrapper
 		return model.getUuid();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a asset entry usage model instance should use the <code>AssetEntryUsage</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -332,6 +351,16 @@ public class AssetEntryUsageWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this asset entry usage.
+	 *
+	 * @param mvccVersion the mvcc version of this asset entry usage
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

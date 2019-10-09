@@ -51,8 +51,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the CalendarNotificationTemplate service. Represents a row in the &quot;CalendarNotificationTemplate&quot; database table, with each column mapped to a property of this class.
  *
@@ -65,12 +63,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class CalendarNotificationTemplateModelImpl
 	extends BaseModelImpl<CalendarNotificationTemplate>
 	implements CalendarNotificationTemplateModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a calendar notification template model instance should use the <code>CalendarNotificationTemplate</code> interface instead.
@@ -78,7 +75,7 @@ public class CalendarNotificationTemplateModelImpl
 	public static final String TABLE_NAME = "CalendarNotificationTemplate";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR},
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
 		{"calendarNotificationTemplateId", Types.BIGINT},
 		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
 		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
@@ -93,6 +90,7 @@ public class CalendarNotificationTemplateModelImpl
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("calendarNotificationTemplateId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -111,7 +109,7 @@ public class CalendarNotificationTemplateModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table CalendarNotificationTemplate (uuid_ VARCHAR(75) null,calendarNotificationTemplateId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,calendarId LONG,notificationType VARCHAR(75) null,notificationTypeSettings VARCHAR(75) null,notificationTemplateType VARCHAR(75) null,subject VARCHAR(75) null,body TEXT null,lastPublishDate DATE null)";
+		"create table CalendarNotificationTemplate (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,calendarNotificationTemplateId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,calendarId LONG,notificationType VARCHAR(75) null,notificationTypeSettings VARCHAR(75) null,notificationTemplateType VARCHAR(75) null,subject VARCHAR(75) null,body TEXT null,lastPublishDate DATE null)";
 
 	public static final String TABLE_SQL_DROP =
 		"drop table CalendarNotificationTemplate";
@@ -167,6 +165,7 @@ public class CalendarNotificationTemplateModelImpl
 		CalendarNotificationTemplate model =
 			new CalendarNotificationTemplateImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
 		model.setCalendarNotificationTemplateId(
 			soapModel.getCalendarNotificationTemplateId());
@@ -346,6 +345,12 @@ public class CalendarNotificationTemplateModelImpl
 					<String, BiConsumer<CalendarNotificationTemplate, ?>>();
 
 		attributeGetterFunctions.put(
+			"mvccVersion", CalendarNotificationTemplate::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<CalendarNotificationTemplate, Long>)
+				CalendarNotificationTemplate::setMvccVersion);
+		attributeGetterFunctions.put(
 			"uuid", CalendarNotificationTemplate::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid",
@@ -446,6 +451,17 @@ public class CalendarNotificationTemplateModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -783,6 +799,7 @@ public class CalendarNotificationTemplateModelImpl
 		CalendarNotificationTemplateImpl calendarNotificationTemplateImpl =
 			new CalendarNotificationTemplateImpl();
 
+		calendarNotificationTemplateImpl.setMvccVersion(getMvccVersion());
 		calendarNotificationTemplateImpl.setUuid(getUuid());
 		calendarNotificationTemplateImpl.setCalendarNotificationTemplateId(
 			getCalendarNotificationTemplateId());
@@ -904,6 +921,8 @@ public class CalendarNotificationTemplateModelImpl
 		CalendarNotificationTemplateCacheModel
 			calendarNotificationTemplateCacheModel =
 				new CalendarNotificationTemplateCacheModel();
+
+		calendarNotificationTemplateCacheModel.mvccVersion = getMvccVersion();
 
 		calendarNotificationTemplateCacheModel.uuid = getUuid();
 
@@ -1098,6 +1117,7 @@ public class CalendarNotificationTemplateModelImpl
 	private static boolean _entityCacheEnabled;
 	private static boolean _finderCacheEnabled;
 
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _calendarNotificationTemplateId;

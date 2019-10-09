@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link UserIdMapperLocalService}.
  *
@@ -23,10 +21,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see UserIdMapperLocalService
  * @generated
  */
-@ProviderType
 public class UserIdMapperLocalServiceWrapper
-	implements UserIdMapperLocalService,
-			   ServiceWrapper<UserIdMapperLocalService> {
+	implements ServiceWrapper<UserIdMapperLocalService>,
+			   UserIdMapperLocalService {
 
 	public UserIdMapperLocalServiceWrapper(
 		UserIdMapperLocalService userIdMapperLocalService) {
@@ -221,7 +218,7 @@ public class UserIdMapperLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _userIdMapperLocalService.getOSGiServiceIdentifier();
 	}
 
@@ -250,7 +247,7 @@ public class UserIdMapperLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.UserIdMapper getUserIdMapper(
-			long userId, String type)
+			long userId, java.lang.String type)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _userIdMapperLocalService.getUserIdMapper(userId, type);
@@ -258,7 +255,8 @@ public class UserIdMapperLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.UserIdMapper
-			getUserIdMapperByExternalUserId(String type, String externalUserId)
+			getUserIdMapperByExternalUserId(
+				java.lang.String type, java.lang.String externalUserId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _userIdMapperLocalService.getUserIdMapperByExternalUserId(
@@ -302,7 +300,8 @@ public class UserIdMapperLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.UserIdMapper updateUserIdMapper(
-		long userId, String type, String description, String externalUserId) {
+		long userId, java.lang.String type, java.lang.String description,
+		java.lang.String externalUserId) {
 
 		return _userIdMapperLocalService.updateUserIdMapper(
 			userId, type, description, externalUserId);

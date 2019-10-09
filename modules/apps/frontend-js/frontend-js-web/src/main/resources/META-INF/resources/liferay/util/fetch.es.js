@@ -26,8 +26,19 @@ const DEFAULT_INIT = {
  */
 
 export default function defaultFetch(resource, init = {}) {
-	return fetch(resource, {
+	const headers = new Headers({'x-csrf-token': Liferay.authToken});
+
+	new Headers(init.headers || {}).forEach((value, key) => {
+		headers.set(key, value);
+	});
+
+	const mergedInit = {
 		...DEFAULT_INIT,
 		...init
-	});
+	};
+
+	mergedInit.headers = headers;
+
+	// eslint-disable-next-line liferay-portal/no-global-fetch
+	return fetch(resource, mergedInit);
 }

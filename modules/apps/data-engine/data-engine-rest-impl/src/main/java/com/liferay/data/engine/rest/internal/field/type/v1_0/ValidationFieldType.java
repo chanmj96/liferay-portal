@@ -40,7 +40,7 @@ import org.osgi.service.component.annotations.Component;
 	immediate = true,
 	property = {
 		"data.engine.field.type.icon=icon-font",
-		"data.engine.field.type.js.module=dynamic-data-mapping-form-field-type/metal/Validation/Validation.es",
+		"data.engine.field.type.js.module=dynamic-data-mapping-form-field-type/Validation/Validation.es",
 		"data.engine.field.type.system=true"
 	},
 	service = FieldType.class
@@ -64,7 +64,7 @@ public class ValidationFieldType extends BaseFieldType {
 	private Map<String, String> _getValue(
 		SPIDataDefinitionField spiDataDefinitionField) {
 
-		Map<String, String> value = new HashMap();
+		Map<String, String> value = new HashMap<>();
 
 		try {
 			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(

@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.model.AttachedModel;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.LocalizedModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
 
@@ -42,9 +43,9 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface CalendarResourceModel
 	extends AttachedModel, BaseModel<CalendarResource>, LocalizedModel,
-			ShardedModel, StagedGroupedModel {
+			MVCCModel, ShardedModel, StagedGroupedModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. All methods that expect a calendar resource model instance should use the {@link CalendarResource} interface instead.
@@ -63,6 +64,22 @@ public interface CalendarResourceModel
 	 * @param primaryKey the primary key of this calendar resource
 	 */
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this calendar resource.
+	 *
+	 * @return the mvcc version of this calendar resource
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this calendar resource.
+	 *
+	 * @param mvccVersion the mvcc version of this calendar resource
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
 
 	/**
 	 * Returns the uuid of this calendar resource.

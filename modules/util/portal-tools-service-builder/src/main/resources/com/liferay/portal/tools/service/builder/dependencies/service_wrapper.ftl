@@ -1,8 +1,13 @@
 package ${apiPackagePath}.service;
 
-import ${serviceBuilder.getCompatJavaClassName("ProviderType")};
-
 import com.liferay.portal.kernel.service.ServiceWrapper;
+
+<#if entity.isChangeTrackingEnabled()>
+	import ${apiPackagePath}.model.${entity.name};
+	import com.liferay.petra.function.UnsafeFunction;
+	import com.liferay.portal.kernel.service.change.tracking.CTService;
+	import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+</#if>
 
 /**
  * Provides a wrapper for {@link ${entity.name}${sessionTypeName}Service}.
@@ -18,8 +23,6 @@ import com.liferay.portal.kernel.service.ServiceWrapper;
 <#if classDeprecated>
 	@Deprecated
 </#if>
-
-@ProviderType
 public class ${entity.name}${sessionTypeName}ServiceWrapper implements ${entity.name}${sessionTypeName}Service, ServiceWrapper<${entity.name}${sessionTypeName}Service> {
 
 	public ${entity.name}${sessionTypeName}ServiceWrapper(${entity.name}${sessionTypeName}Service ${entity.varName}${sessionTypeName}Service) {
@@ -84,6 +87,23 @@ public class ${entity.name}${sessionTypeName}ServiceWrapper implements ${entity.
 			}
 		</#if>
 	</#list>
+
+	<#if entity.isChangeTrackingEnabled() && stringUtil.equals(sessionTypeName, "Local")>
+		@Override
+		public CTPersistence<${entity.name}> getCTPersistence() {
+			return _${entity.varName}LocalService.getCTPersistence();
+		}
+
+		@Override
+		public Class<${entity.name}> getModelClass() {
+			return _${entity.varName}LocalService.getModelClass();
+		}
+
+		@Override
+		public <R, E extends Throwable> R updateWithUnsafeFunction(UnsafeFunction<CTPersistence<${entity.name}>, R, E> updateUnsafeFunction) throws E {
+			return _${entity.varName}LocalService.updateWithUnsafeFunction(updateUnsafeFunction);
+		}
+	</#if>
 
 	@Override
 	public ${entity.name}${sessionTypeName}Service getWrappedService() {

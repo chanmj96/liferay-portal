@@ -46,9 +46,9 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class DDLRecordVersionServiceBaseImpl
 	extends BaseServiceImpl
-	implements DDLRecordVersionService, AopService, IdentifiableOSGiService {
+	implements AopService, DDLRecordVersionService, IdentifiableOSGiService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>DDLRecordVersionService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.dynamic.data.lists.service.DDLRecordVersionServiceUtil</code>.

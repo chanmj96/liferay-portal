@@ -49,7 +49,7 @@ import java.util.stream.Stream;
 public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	public SearchResponseImpl(SearchContext searchContext) {
-		_facetContext = new FacetContextImpl(searchContext);
+		_facetContextImpl = new FacetContextImpl(searchContext);
 		_searchContext = searchContext;
 	}
 
@@ -75,11 +75,19 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	@Override
 	public List<com.liferay.portal.kernel.search.Document> getDocuments71() {
+		if (_hits == null) {
+			return Collections.emptyList();
+		}
+
 		return Arrays.asList(_hits.getDocs());
 	}
 
 	@Override
 	public Stream<Document> getDocumentsStream() {
+		if (_searchHits == null) {
+			return Stream.empty();
+		}
+
 		List<SearchHit> list = _searchHits.getSearchHits();
 
 		return list.stream(
@@ -142,6 +150,10 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	@Override
 	public int getTotalHits() {
+		if (_hits == null) {
+			return 0;
+		}
+
 		return _hits.getLength();
 	}
 
@@ -195,14 +207,14 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 
 	@Override
 	public void withFacetContext(Consumer<FacetContext> facetContextConsumer) {
-		facetContextConsumer.accept(_facetContext);
+		facetContextConsumer.accept(_facetContextImpl);
 	}
 
 	@Override
 	public <T> T withFacetContextGet(
 		Function<FacetContext, T> facetContextFunction) {
 
-		return facetContextFunction.apply(_facetContext);
+		return facetContextFunction.apply(_facetContextImpl);
 	}
 
 	@Override
@@ -230,8 +242,8 @@ public class SearchResponseImpl implements SearchResponse, Serializable {
 	private final Map<String, AggregationResult> _aggregationResultsMap =
 		new LinkedHashMap<>();
 	private long _count;
-	private final FacetContextImpl _facetContext;
-	private String _federatedSearchKey;
+	private final FacetContextImpl _facetContextImpl;
+	private String _federatedSearchKey = StringPool.BLANK;
 	private final Map<String, SearchResponse> _federatedSearchResponsesMap =
 		new LinkedHashMap<>();
 	private final List<GroupByResponse> _groupByResponses = new ArrayList<>();

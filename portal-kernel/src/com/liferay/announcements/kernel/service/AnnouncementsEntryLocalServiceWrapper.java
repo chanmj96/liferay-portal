@@ -16,8 +16,6 @@ package com.liferay.announcements.kernel.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link AnnouncementsEntryLocalService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see AnnouncementsEntryLocalService
  * @generated
  */
-@ProviderType
 public class AnnouncementsEntryLocalServiceWrapper
 	implements AnnouncementsEntryLocalService,
 			   ServiceWrapper<AnnouncementsEntryLocalService> {
@@ -147,6 +144,11 @@ public class AnnouncementsEntryLocalServiceWrapper
 
 		return _announcementsEntryLocalService.deleteAnnouncementsEntry(
 			entryId);
+	}
+
+	@Override
+	public void deleteEntries(long companyId) {
+		_announcementsEntryLocalService.deleteEntries(companyId);
 	}
 
 	@Override

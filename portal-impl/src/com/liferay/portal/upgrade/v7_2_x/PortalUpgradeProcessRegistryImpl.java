@@ -44,6 +44,10 @@ public class PortalUpgradeProcessRegistryImpl
 		upgradeProcesses.put(new Version(5, 0, 3), new UpgradeModules());
 
 		upgradeProcesses.put(new Version(5, 0, 4), new UpgradeLayout());
+
+		upgradeProcesses.put(new Version(5, 0, 5), new UpgradeThemeId());
+
+		upgradeProcesses.put(new Version(5, 1, 0), new UpgradeMVCCVersion());
 	}
 
 }

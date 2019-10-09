@@ -121,7 +121,6 @@ import java.util.stream.Stream;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -140,7 +139,6 @@ import org.xml.sax.XMLReader;
 	configurationPid = "com.liferay.exportimport.configuration.ExportImportServiceConfiguration",
 	immediate = true, service = ExportImportHelper.class
 )
-@ProviderType
 public class ExportImportHelperImpl implements ExportImportHelper {
 
 	@Override
@@ -834,6 +832,10 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 		Portlet portlet = _portletLocalService.getPortletById(rootPortletId);
 
+		if (portlet == null) {
+			return true;
+		}
+
 		PortletDataHandler portletDataHandler =
 			portlet.getPortletDataHandlerInstance();
 
@@ -860,6 +862,21 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 		}
 
 		return false;
+	}
+
+	@Override
+	public boolean isExportPortletData(PortletDataContext portletDataContext) {
+		if (((portletDataContext.getScopeGroupId() ==
+				portletDataContext.getGroupId()) ||
+			 (portletDataContext.getScopeGroupId() ==
+				 portletDataContext.getCompanyGroupId())) &&
+			(ExportImportThreadLocal.isLayoutExportInProcess() ||
+			 ExportImportThreadLocal.isLayoutStagingInProcess())) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	public boolean isLayoutRevisionInReview(Layout layout) {
@@ -1501,13 +1518,11 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 
 		Property createDateProperty = PropertyFactoryUtil.forName("createDate");
 
-		Date startDate = portletDataContext.getStartDate();
+		dynamicQuery.add(
+			createDateProperty.ge(portletDataContext.getStartDate()));
 
-		dynamicQuery.add(createDateProperty.ge(startDate));
-
-		Date endDate = portletDataContext.getEndDate();
-
-		dynamicQuery.add(createDateProperty.le(endDate));
+		dynamicQuery.add(
+			createDateProperty.le(portletDataContext.getEndDate()));
 	}
 
 	protected void doAddCriteria(

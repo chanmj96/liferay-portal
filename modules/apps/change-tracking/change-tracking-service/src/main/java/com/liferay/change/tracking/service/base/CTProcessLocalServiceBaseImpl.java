@@ -17,10 +17,6 @@ package com.liferay.change.tracking.service.base;
 import com.liferay.change.tracking.model.CTProcess;
 import com.liferay.change.tracking.service.CTProcessLocalService;
 import com.liferay.change.tracking.service.persistence.CTCollectionPersistence;
-import com.liferay.change.tracking.service.persistence.CTEntryAggregatePersistence;
-import com.liferay.change.tracking.service.persistence.CTEntryFinder;
-import com.liferay.change.tracking.service.persistence.CTEntryPersistence;
-import com.liferay.change.tracking.service.persistence.CTPreferencesPersistence;
 import com.liferay.change.tracking.service.persistence.CTProcessFinder;
 import com.liferay.change.tracking.service.persistence.CTProcessPersistence;
 import com.liferay.portal.aop.AopService;
@@ -52,7 +48,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -66,12 +61,11 @@ import org.osgi.service.component.annotations.Reference;
  * @see com.liferay.change.tracking.service.impl.CTProcessLocalServiceImpl
  * @generated
  */
-@ProviderType
 public abstract class CTProcessLocalServiceBaseImpl
 	extends BaseLocalServiceImpl
-	implements CTProcessLocalService, AopService, IdentifiableOSGiService {
+	implements AopService, CTProcessLocalService, IdentifiableOSGiService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>CTProcessLocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.change.tracking.service.CTProcessLocalServiceUtil</code>.
@@ -121,13 +115,10 @@ public abstract class CTProcessLocalServiceBaseImpl
 	 *
 	 * @param ctProcess the ct process
 	 * @return the ct process that was removed
-	 * @throws PortalException
 	 */
 	@Indexable(type = IndexableType.DELETE)
 	@Override
-	public CTProcess deleteCTProcess(CTProcess ctProcess)
-		throws PortalException {
-
+	public CTProcess deleteCTProcess(CTProcess ctProcess) {
 		return ctProcessPersistence.remove(ctProcess);
 	}
 
@@ -387,21 +378,6 @@ public abstract class CTProcessLocalServiceBaseImpl
 		}
 	}
 
-	@Reference
-	protected CTCollectionPersistence ctCollectionPersistence;
-
-	@Reference
-	protected CTEntryPersistence ctEntryPersistence;
-
-	@Reference
-	protected CTEntryFinder ctEntryFinder;
-
-	@Reference
-	protected CTEntryAggregatePersistence ctEntryAggregatePersistence;
-
-	@Reference
-	protected CTPreferencesPersistence ctPreferencesPersistence;
-
 	protected CTProcessLocalService ctProcessLocalService;
 
 	@Reference
@@ -411,20 +387,15 @@ public abstract class CTProcessLocalServiceBaseImpl
 	protected CTProcessFinder ctProcessFinder;
 
 	@Reference
+	protected CTCollectionPersistence ctCollectionPersistence;
+
+	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
 		counterLocalService;
 
 	@Reference
-	protected com.liferay.portal.kernel.service.ClassNameLocalService
-		classNameLocalService;
-
-	@Reference
 	protected com.liferay.portal.kernel.service.CompanyLocalService
 		companyLocalService;
-
-	@Reference
-	protected com.liferay.portal.kernel.service.ResourceLocalService
-		resourceLocalService;
 
 	@Reference
 	protected com.liferay.portal.kernel.service.UserLocalService

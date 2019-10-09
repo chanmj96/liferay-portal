@@ -19,6 +19,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
 
 import java.io.IOException;
@@ -44,6 +45,10 @@ public class JSONWhitespaceCheck extends WhitespaceCheck {
 			String line = null;
 
 			while ((line = unsyncBufferedReader.readLine()) != null) {
+				if (Validator.isNull(line)) {
+					continue;
+				}
+
 				while (true) {
 					Matcher matcher = _leadingSpacesPattern.matcher(line);
 
@@ -67,7 +72,9 @@ public class JSONWhitespaceCheck extends WhitespaceCheck {
 			}
 		}
 
-		if (isAllowTrailingEmptyLines(fileName) && content.endsWith("\n")) {
+		if (isAllowTrailingEmptyLines(fileName, absolutePath) &&
+			content.endsWith("\n")) {
+
 			content = sb.toString();
 		}
 		else {
@@ -91,7 +98,9 @@ public class JSONWhitespaceCheck extends WhitespaceCheck {
 	}
 
 	@Override
-	protected boolean isAllowTrailingEmptyLines(String fileName) {
+	protected boolean isAllowTrailingEmptyLines(
+		String fileName, String absolutePath) {
+
 		if (fileName.endsWith("/package.json")) {
 			return true;
 		}

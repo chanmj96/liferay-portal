@@ -18,14 +18,15 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.document.library.kernel.store.Store;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.store.test.util.BaseStoreTestCase;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portlet.documentlibrary.store.test.BaseStoreTestCase;
 
 import java.util.Dictionary;
 
@@ -76,7 +77,9 @@ public class AdvancedFileSystemStoreTest extends BaseStoreTestCase {
 
 	@Override
 	protected Store getStore() {
-		return _store;
+		Store store = ReflectionTestUtil.getFieldValue(_store, "_store");
+
+		return ReflectionTestUtil.getFieldValue(store, "_store");
 	}
 
 	private static Configuration _configuration;
@@ -90,7 +93,7 @@ public class AdvancedFileSystemStoreTest extends BaseStoreTestCase {
 	private static String _rootDir;
 
 	@Inject(
-		filter = "(&(service.ranking=0)(store.type=com.liferay.portal.store.file.system.AdvancedFileSystemStore))",
+		filter = "store.type=com.liferay.portal.store.file.system.AdvancedFileSystemStore",
 		type = Store.class
 	)
 	private Store _store;

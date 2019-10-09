@@ -315,6 +315,8 @@ definition {
 	macro flagPG {
 		var key_entryTitle = "${entryTitle}";
 
+		AssertElementPresent(locator1 = "BlogsEntry#FLAG_LINK");
+
 		Click(locator1 = "BlogsEntry#FLAG_LINK");
 
 		AssertElementPresent.assertVisible(locator1 = "BlogsEntry#FLAG_MODAL");
@@ -633,6 +635,17 @@ definition {
 			value1 = "${relatedAssetTitle}");
 	}
 
+	macro viewAutoTag {
+		var key_entryTitle = "${entryTitle}";
+		var tagName = StringUtil.lowerCase("${tagName}");
+
+		var key_tagName = "${tagName}";
+
+		AssertTextEquals(
+			locator1 = "BlogsEntry#TAG",
+			value1 = "${tagName}");
+	}
+
 	macro viewContent {
 		var key_entryTitle = "${entryTitle}";
 
@@ -829,14 +842,16 @@ definition {
 		if (isSet(tagNameList)) {
 			for (var tagName : list "${tagNameList}") {
 				AssertElementNotPresent(
-					key_tagName = StringUtil.lowerCase("${tagName}"),
-					locator1 = "BlogsEntry#TAG");
+					key_tagName = "${tagName}",
+					locator1 = "BlogsEntry#TAG",
+					tagName = StringUtil.lowerCase("${tagName}"));
 			}
 		}
 		else {
 			AssertElementNotPresent(
-				key_tagName = StringUtil.lowerCase("${tagName}"),
-				locator1 = "BlogsEntry#TAG");
+				key_tagName = "${tagName}",
+				locator1 = "BlogsEntry#TAG",
+				tagName = StringUtil.lowerCase("${tagName}"));
 		}
 	}
 
@@ -967,6 +982,34 @@ definition {
 		AssertTextEquals(
 			locator1 = "RSS#ENTRY_CONTENT",
 			value1 = "${entryContent}");
+	}
+
+	macro viewSharedAsset {
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Shared Content");
+
+		if ("${contentSharingPermission}" == "View") {
+			AssertElementNotPresent(locator1 = "Button#EDIT");
+		}
+
+		else if ("${contentSharingPermission}" == "Comment") {
+			AssertElementNotPresent(locator1 = "Button#EDIT");
+		}
+
+		else {
+			AssertElementPresent(locator1 = "Comments#COMMENT_FIELD");
+		}
+
+		var key_entryTitle = "${entryTitle}";
+
+		AssertTextEquals(
+			locator1 = "Sharing#BLOGS_CONTENT",
+			value1 = "${entryContent}");
+
+		AssertTextEquals(
+			locator1 = "Sharing#BLOGS_TITLE",
+			value1 = "${entryTitle}");
 	}
 
 	macro viewStatus {

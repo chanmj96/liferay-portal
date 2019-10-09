@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalService;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.transaction.Isolation;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.Transactional;
@@ -57,7 +56,7 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface CTCollectionLocalService
 	extends BaseLocalService, PersistedModelLocalService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link CTCollectionLocalServiceUtil} to access the ct collection local service. Add custom service methods to <code>com.liferay.change.tracking.service.impl.CTCollectionLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -73,8 +72,7 @@ public interface CTCollectionLocalService
 	public CTCollection addCTCollection(CTCollection ctCollection);
 
 	public CTCollection addCTCollection(
-			long userId, String name, String description,
-			ServiceContext serviceContext)
+			long userId, String name, String description)
 		throws PortalException;
 
 	/**
@@ -94,11 +92,9 @@ public interface CTCollectionLocalService
 	 *
 	 * @param ctCollection the ct collection
 	 * @return the ct collection that was removed
-	 * @throws PortalException
 	 */
 	@Indexable(type = IndexableType.DELETE)
-	public CTCollection deleteCTCollection(CTCollection ctCollection)
-		throws PortalException;
+	public CTCollection deleteCTCollection(CTCollection ctCollection);
 
 	/**
 	 * Deletes the ct collection with the primary key from the database. Also notifies the appropriate model listeners.
@@ -220,6 +216,11 @@ public interface CTCollectionLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<CTCollection> getCTCollections(
+		long companyId, int status, int start, int end,
+		OrderByComparator<CTCollection> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<CTCollection> getCTCollections(
 		long companyId, QueryDefinition<CTCollection> queryDefinition);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -260,13 +261,11 @@ public interface CTCollectionLocalService
 	public CTCollection updateCTCollection(CTCollection ctCollection);
 
 	public CTCollection updateCTCollection(
-			long userId, long ctCollectionId, String name, String description,
-			ServiceContext serviceContext)
+			long userId, long ctCollectionId, String name, String description)
 		throws PortalException;
 
 	public CTCollection updateStatus(
-			long userId, CTCollection ctCollection, int status,
-			ServiceContext serviceContext)
+			long userId, CTCollection ctCollection, int status)
 		throws PortalException;
 
 }

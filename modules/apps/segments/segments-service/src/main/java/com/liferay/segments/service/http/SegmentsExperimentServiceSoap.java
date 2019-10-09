@@ -20,8 +20,6 @@ import com.liferay.segments.service.SegmentsExperimentServiceUtil;
 
 import java.rmi.RemoteException;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides the SOAP utility for the
  * <code>SegmentsExperimentServiceUtil</code> service
@@ -61,13 +59,12 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsExperimentServiceHttp
  * @generated
  */
-@ProviderType
 public class SegmentsExperimentServiceSoap {
 
 	public static com.liferay.segments.model.SegmentsExperimentSoap
 			addSegmentsExperiment(
 				long segmentsExperienceId, long classNameId, long classPK,
-				String name, String description,
+				String name, String description, String goal, String goalTarget,
 				com.liferay.portal.kernel.service.ServiceContext serviceContext)
 		throws RemoteException {
 
@@ -75,10 +72,112 @@ public class SegmentsExperimentServiceSoap {
 			com.liferay.segments.model.SegmentsExperiment returnValue =
 				SegmentsExperimentServiceUtil.addSegmentsExperiment(
 					segmentsExperienceId, classNameId, classPK, name,
-					description, serviceContext);
+					description, goal, goalTarget, serviceContext);
 
 			return com.liferay.segments.model.SegmentsExperimentSoap.
 				toSoapModel(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap
+			deleteSegmentsExperiment(long segmentsExperimentId)
+		throws RemoteException {
+
+		try {
+			com.liferay.segments.model.SegmentsExperiment returnValue =
+				SegmentsExperimentServiceUtil.deleteSegmentsExperiment(
+					segmentsExperimentId);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap
+			deleteSegmentsExperiment(String segmentsExperimentKey)
+		throws RemoteException {
+
+		try {
+			com.liferay.segments.model.SegmentsExperiment returnValue =
+				SegmentsExperimentServiceUtil.deleteSegmentsExperiment(
+					segmentsExperimentKey);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap
+			fetchSegmentsExperiment(
+				long segmentsExperienceId, long classNameId, long classPK,
+				int[] statuses)
+		throws RemoteException {
+
+		try {
+			com.liferay.segments.model.SegmentsExperiment returnValue =
+				SegmentsExperimentServiceUtil.fetchSegmentsExperiment(
+					segmentsExperienceId, classNameId, classPK, statuses);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap
+			fetchSegmentsExperiment(long groupId, String segmentsExperimentKey)
+		throws RemoteException {
+
+		try {
+			com.liferay.segments.model.SegmentsExperiment returnValue =
+				SegmentsExperimentServiceUtil.fetchSegmentsExperiment(
+					groupId, segmentsExperimentKey);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap[]
+			getSegmentsExperienceSegmentsExperiments(
+				long[] segmentsExperienceIds, long classNameId, long classPK,
+				int[] statuses, int start, int end)
+		throws RemoteException {
+
+		try {
+			java.util.List<com.liferay.segments.model.SegmentsExperiment>
+				returnValue =
+					SegmentsExperimentServiceUtil.
+						getSegmentsExperienceSegmentsExperiments(
+							segmentsExperienceIds, classNameId, classPK,
+							statuses, start, end);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModels(returnValue);
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -118,6 +217,135 @@ public class SegmentsExperimentServiceSoap {
 
 			return com.liferay.segments.model.SegmentsExperimentSoap.
 				toSoapModels(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap[]
+			getSegmentsExperiments(
+				long segmentsExperienceId, long classNameId, long classPK,
+				int[] statuses,
+				com.liferay.portal.kernel.util.OrderByComparator
+					<com.liferay.segments.model.SegmentsExperiment>
+						orderByComparator)
+		throws RemoteException {
+
+		try {
+			java.util.List<com.liferay.segments.model.SegmentsExperiment>
+				returnValue =
+					SegmentsExperimentServiceUtil.getSegmentsExperiments(
+						segmentsExperienceId, classNameId, classPK, statuses,
+						orderByComparator);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModels(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap
+			updateSegmentsExperiment(
+				long segmentsExperimentId, String name, String description,
+				String goal, String goalTarget)
+		throws RemoteException {
+
+		try {
+			com.liferay.segments.model.SegmentsExperiment returnValue =
+				SegmentsExperimentServiceUtil.updateSegmentsExperiment(
+					segmentsExperimentId, name, description, goal, goalTarget);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap
+			updateSegmentsExperimentStatus(
+				long segmentsExperimentId, int status)
+		throws RemoteException {
+
+		try {
+			com.liferay.segments.model.SegmentsExperiment returnValue =
+				SegmentsExperimentServiceUtil.updateSegmentsExperimentStatus(
+					segmentsExperimentId, status);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap
+			updateSegmentsExperimentStatus(
+				long segmentsExperimentId, long winnerSegmentsExperienceId,
+				int status)
+		throws RemoteException {
+
+		try {
+			com.liferay.segments.model.SegmentsExperiment returnValue =
+				SegmentsExperimentServiceUtil.updateSegmentsExperimentStatus(
+					segmentsExperimentId, winnerSegmentsExperienceId, status);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap
+			updateSegmentsExperimentStatus(
+				String segmentsExperimentKey, int status)
+		throws RemoteException {
+
+		try {
+			com.liferay.segments.model.SegmentsExperiment returnValue =
+				SegmentsExperimentServiceUtil.updateSegmentsExperimentStatus(
+					segmentsExperimentKey, status);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModel(returnValue);
+		}
+		catch (Exception e) {
+			_log.error(e, e);
+
+			throw new RemoteException(e.getMessage());
+		}
+	}
+
+	public static com.liferay.segments.model.SegmentsExperimentSoap
+			updateSegmentsExperimentStatus(
+				String segmentsExperimentKey,
+				String winnerSegmentsExperienceKey, int status)
+		throws RemoteException {
+
+		try {
+			com.liferay.segments.model.SegmentsExperiment returnValue =
+				SegmentsExperimentServiceUtil.updateSegmentsExperimentStatus(
+					segmentsExperimentKey, winnerSegmentsExperienceKey, status);
+
+			return com.liferay.segments.model.SegmentsExperimentSoap.
+				toSoapModel(returnValue);
 		}
 		catch (Exception e) {
 			_log.error(e, e);

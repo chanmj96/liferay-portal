@@ -2,6 +2,22 @@ definition {
 
 	var orgName = "Organization Name";
 
+	macro activateMemberCP {
+		Organization.gotoMemberActionsCmd(
+			memberName = "${userFirstName}",
+			orgName = "${orgName}");
+
+		MenuItem.clickNoError(menuItem = "Activate");
+
+		Alert.viewSuccessMessage();
+
+		var key_userFirstName = "${userFirstName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizations#USER_TABLE_STATUS",
+			value1 = "Active");
+	}
+
 	macro addCategorizationCP {
 		AssetCategorization.addTag(tagName = "${tagName}");
 
@@ -371,6 +387,24 @@ definition {
 		Click(locator1 = "Icon#CLOSE");
 	}
 
+	macro deactivateMemberCP {
+		Organization.gotoMemberActionsCmd(
+			memberName = "${userFirstName}",
+			orgName = "${orgName}");
+
+		MenuItem.clickNoError(menuItem = "Deactivate");
+
+		AssertConfirm(value1 = "Are you sure you want to deactivate this?");
+
+		Alert.viewSuccessMessage();
+
+		var key_userFirstName = "${userFirstName}";
+
+		AssertTextEquals(
+			locator1 = "UsersAndOrganizations#USER_TABLE_STATUS",
+			value1 = "Inactive");
+	}
+
 	macro deleteCP {
 		Organization.gotoActionsCmd(orgName = "${orgName}");
 
@@ -487,6 +521,16 @@ definition {
 		Breadcrumb.viewActiveEntry(breadcrumbName = "${orgName}");
 	}
 
+	macro gotoMemberActionsCmd {
+		Organization.gotoCP(
+			orgName = "${orgName}",
+			searchToken = "${orgName}");
+
+		Search.searchCP(searchTerm = "${memberName}");
+
+		LexiconEntry.openEntryMenu(rowEntry = "${memberName}");
+	}
+
 	macro manageMembershipOptionsInSites {
 		Organization.gotoActionsCmd(orgName = "${orgName}");
 
@@ -512,21 +556,9 @@ definition {
 	}
 
 	macro removeMemberCP {
-		Organization.gotoCP(
-			orgName = "${orgName}",
-			searchToken = "${orgName}");
-
-		Search.searchCP(searchTerm = "${userFullName}");
-
-		AssertVisible(locator1 = "UsersAndOrganizations#USERS_AND_SUBORGANIZATIONS_TABLE_NAME_GENERIC");
-
-		var key_userFullName = "${userFullName}";
-
-		AssertTextEquals(
-			locator1 = "UsersAndOrganizations#USERS_AND_SUBORGANIZATIONS_TABLE_NAME",
-			value1 = "${userFullName}");
-
-		LexiconEntry.openEntryMenu(rowEntry = "${userFullName}");
+		Organization.gotoMemberActionsCmd(
+			memberName = "${userFullName}",
+			orgName = "${orgName}");
 
 		MenuItem.click(menuItem = "Remove");
 

@@ -21,27 +21,11 @@ boolean settingsMapPrivateLayout = MapUtil.getBoolean(exportImportConfigurationS
 
 String publicPagesDescription = (settingsMapPrivateLayout) ? LanguageUtil.get(request, "private-pages") : LanguageUtil.get(request, "public-pages");
 
-long layoutSetBranchId = MapUtil.getLong(parameterMap, "layoutSetBranchId");
+LayoutSetBranch layoutSetBranch = LayoutSetBranchLocalServiceUtil.fetchLayoutSetBranch(MapUtil.getLong(parameterMap, "layoutSetBranchId"));
 
-LayoutSetBranch layoutSetBranch = null;
+long[] selectedLayoutIds = GetterUtil.getLongValues(exportImportConfigurationSettingsMap.get("layoutIds"));
 
-long[] selectedLayoutIds = null;
-
-List<String> pageNames = new ArrayList<>();
-
-if (Validator.isNotNull(MapUtil.getString(parameterMap, "layoutSetBranchId"))) {
-	layoutSetBranch = LayoutSetBranchLocalServiceUtil.getLayoutSetBranch(layoutSetBranchId);
-
-	selectedLayoutIds = GetterUtil.getLongValues(exportImportConfigurationSettingsMap.get("layoutIds"));
-
-	String layoutsJSONString = LayoutsTreeUtil.getLayoutsJSON(request, groupId, settingsMapPrivateLayout, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, selectedLayoutIds, false, "asd");
-
-	JSONObject layoutsJSONObject = JSONFactoryUtil.createJSONObject(layoutsJSONString);
-
-	JSONArray layoutsJSONArray = layoutsJSONObject.getJSONArray("layouts");
-
-	pageNames = processSummaryDisplayContext.getPageNames(layoutsJSONArray);
-}
+List<String> pageNames = processSummaryDisplayContext.getPageNames(groupId, settingsMapPrivateLayout, selectedLayoutIds, themeDisplay.getLanguageId());
 
 boolean deleteMissingLayouts = MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.DELETE_MISSING_LAYOUTS);
 boolean layoutSetSettings = MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.LAYOUT_SET_SETTINGS);

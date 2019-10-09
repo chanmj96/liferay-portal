@@ -190,20 +190,18 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 
 	@Override
 	public void disableStaging(long groupId) throws PortalException {
-		Group group = groupLocalService.getGroup(groupId);
-
 		GroupPermissionUtil.check(
-			getPermissionChecker(), group, ActionKeys.UPDATE);
+			getPermissionChecker(), groupLocalService.getGroup(groupId),
+			ActionKeys.UPDATE);
 
 		groupLocalService.disableStaging(groupId);
 	}
 
 	@Override
 	public void enableStaging(long groupId) throws PortalException {
-		Group group = groupLocalService.getGroup(groupId);
-
 		GroupPermissionUtil.check(
-			getPermissionChecker(), group, ActionKeys.UPDATE);
+			getPermissionChecker(), groupLocalService.getGroup(groupId),
+			ActionKeys.UPDATE);
 
 		groupLocalService.enableStaging(groupId);
 	}
@@ -427,9 +425,7 @@ public class GroupServiceImpl extends GroupServiceBaseImpl {
 			int size)
 		throws PortalException {
 
-		PermissionChecker permissionChecker = getPermissionChecker();
-
-		GroupPermissionUtil.check(permissionChecker, ActionKeys.VIEW);
+		GroupPermissionUtil.check(getPermissionChecker(), ActionKeys.VIEW);
 
 		return groupPersistence.findByG_C_P_S(
 			gtGroupId, companyId, parentGroupId, site, 0, size,

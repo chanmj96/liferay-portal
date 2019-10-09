@@ -54,19 +54,161 @@
 		'</svg>';
 
 	var Window = {
-		getById: function(id) {
+		_map: {},
+
+		getById(id) {
 			var instance = this;
 
 			return instance._map[id];
-		},
-
-		_map: {}
+		}
 	};
 
 	var Util = {
-		submitCountdown: 0,
+		_defaultSubmitFormFn(event) {
+			var form = event.form;
 
-		addInputCancel: function() {
+			var hasErrors = false;
+
+			if (event.validate) {
+				var liferayForm = Liferay.Form.get(form.attr('id'));
+
+				if (liferayForm) {
+					var validator = liferayForm.formValidator;
+
+					if (A.instanceOf(validator, A.FormValidator)) {
+						validator.validate();
+
+						hasErrors = validator.hasErrors();
+
+						if (hasErrors) {
+							validator.focusInvalidField();
+						}
+					}
+				}
+			}
+
+			if (!hasErrors) {
+				var action = event.action || form.attr('action');
+
+				var singleSubmit = event.singleSubmit;
+
+				var inputs = form.all(
+					'button[type=submit], input[type=button], input[type=image], input[type=reset], input[type=submit]'
+				);
+
+				Util.disableFormButtons(inputs, form);
+
+				if (singleSubmit === false) {
+					Util._submitLocked = A.later(
+						1000,
+						Util,
+						Util.enableFormButtons,
+						[inputs, form]
+					);
+				} else {
+					Util._submitLocked = true;
+				}
+
+				var baseURL;
+				var queryString;
+				var searchParamsIndex = action.indexOf('?');
+
+				if (searchParamsIndex === -1) {
+					baseURL = action;
+					queryString = '';
+				} else {
+					baseURL = action.slice(0, searchParamsIndex);
+					queryString = action.slice(searchParamsIndex + 1);
+				}
+
+				var searchParams = new URLSearchParams(queryString);
+
+				var authToken = searchParams.get('p_auth') || '';
+
+				form.append(
+					'<input name="p_auth" type="hidden" value="' +
+						authToken +
+						'" />'
+				);
+
+				if (authToken) {
+					searchParams.delete('p_auth');
+
+					action = baseURL + '?' + searchParams.toString();
+				}
+
+				form.attr('action', action);
+
+				Util.submitForm(form);
+
+				form.attr('target', '');
+
+				Util._submitLocked = null;
+			}
+		},
+
+		_getEditableInstance(title) {
+			var editable = Util._EDITABLE;
+
+			if (!editable) {
+				editable = new A.Editable({
+					after: {
+						contentTextChange(event) {
+							var instance = this;
+
+							if (!event.initial) {
+								var title = instance.get('node');
+
+								var portletTitleEditOptions = title.getData(
+									'portletTitleEditOptions'
+								);
+
+								Util.savePortletTitle({
+									doAsUserId:
+										portletTitleEditOptions.doAsUserId,
+									plid: portletTitleEditOptions.plid,
+									portletId:
+										portletTitleEditOptions.portletId,
+									title: event.newVal
+								});
+							}
+						},
+						startEditing() {
+							var instance = this;
+
+							var Layout = Liferay.Layout;
+
+							if (Layout) {
+								instance._dragListener = Layout.getLayoutHandler().on(
+									'drag:start',
+									function() {
+										instance.fire('save');
+									}
+								);
+							}
+						},
+						stopEditing() {
+							var instance = this;
+
+							if (instance._dragListener) {
+								instance._dragListener.detach();
+							}
+						}
+					},
+					cssClass: 'lfr-portlet-title-editable',
+					node: title
+				});
+
+				editable.get('cancelButton').icon = 'times';
+				editable.get('saveButton').icon = 'check';
+
+				Util._EDITABLE = editable;
+			}
+
+			return editable;
+		},
+
+		addInputCancel() {
 			A.use('aui-button-search-cancel', function(A) {
 				new A.ButtonSearchCancel({
 					trigger:
@@ -77,7 +219,7 @@
 			Util.addInputCancel = function() {};
 		},
 
-		addParams: function(params, url) {
+		addParams(params, url) {
 			if (typeof params === 'object') {
 				var paramKeys = Object.keys(params);
 
@@ -129,7 +271,7 @@
 			return finalUrl;
 		},
 
-		checkAll: function(form, name, allBox, selectClassName) {
+		checkAll(form, name, allBox, selectClassName) {
 			if (form) {
 				form = Util.getDOM(form);
 				allBox = Util.getDOM(allBox);
@@ -166,7 +308,7 @@
 			}
 		},
 
-		checkAllBox: function(form, name, allBox) {
+		checkAllBox(form, name, allBox) {
 			var totalOn = 0;
 
 			if (form) {
@@ -210,7 +352,7 @@
 			return totalOn;
 		},
 
-		checkTab: function(box) {
+		checkTab(box) {
 			if (document.all && window.event.keyCode == 9) {
 				box.selection = document.selection.createRange();
 
@@ -220,7 +362,7 @@
 			}
 		},
 
-		disableElements: function(el) {
+		disableElements(el) {
 			var currentElement = $(el)[0];
 
 			if (currentElement) {
@@ -251,30 +393,30 @@
 			}
 		},
 
-		disableEsc: function() {
+		disableEsc() {
 			if (document.all && window.event.keyCode == 27) {
 				window.event.returnValue = false;
 			}
 		},
 
-		disableFormButtons: function(inputs, form) {
+		disableFormButtons(inputs, form) {
 			inputs.attr('disabled', true);
 			inputs.setStyle('opacity', 0.5);
 
 			if (A.UA.gecko) {
-				A.getWin().on('unload', function(event) {
+				A.getWin().on('unload', function() {
 					inputs.attr('disabled', false);
 				});
 			} else if (A.UA.safari) {
 				A.use('node-event-html5', function(A) {
-					A.getWin().on('pagehide', function(event) {
+					A.getWin().on('pagehide', function() {
 						Util.enableFormButtons(inputs, form);
 					});
 				});
 			}
 		},
 
-		disableToggleBoxes: function(checkBoxId, toggleBoxId, checkDisabled) {
+		disableToggleBoxes(checkBoxId, toggleBoxId, checkDisabled) {
 			var checkBox = $('#' + checkBoxId);
 			var toggleBox = $('#' + toggleBoxId);
 
@@ -288,13 +430,13 @@
 			});
 		},
 
-		enableFormButtons: function(inputs) {
+		enableFormButtons(inputs) {
 			Util._submitLocked = null;
 
 			Util.toggleDisabled(inputs, false);
 		},
 
-		escapeCDATA: function(str) {
+		escapeCDATA(str) {
 			return str.replace(/<!\[CDATA\[|\]\]>/gi, function(match) {
 				var str = '';
 
@@ -308,7 +450,7 @@
 			});
 		},
 
-		focusFormField: function(el) {
+		focusFormField(el) {
 			var doc = $(document);
 
 			var interacting = false;
@@ -317,7 +459,7 @@
 
 			el = $(el);
 
-			doc.on('click.focusFormField', function(event) {
+			doc.on('click.focusFormField', function() {
 				interacting = true;
 
 				doc.off('click.focusFormField');
@@ -357,7 +499,7 @@
 			}
 		},
 
-		forcePost: function(link) {
+		forcePost(link) {
 			link = Util.getDOM(link);
 
 			link = $(link);
@@ -379,9 +521,7 @@
 			}
 		},
 
-		getAttributes: function(el, attributeGetter) {
-			var instance = this;
-
+		getAttributes(el, attributeGetter) {
 			var result = null;
 
 			if (el) {
@@ -425,13 +565,13 @@
 			return result;
 		},
 
-		getColumnId: function(str) {
+		getColumnId(str) {
 			var columnId = str.replace(/layout-column_/, '');
 
 			return columnId;
 		},
 
-		getDOM: function(el) {
+		getDOM(el) {
 			if (el._node || el._nodes) {
 				el = el.getDOM();
 			}
@@ -439,7 +579,7 @@
 			return el;
 		},
 
-		getGeolocation: function(success, fallback, options) {
+		getGeolocation(success, fallback, options) {
 			if (success && navigator.geolocation) {
 				navigator.geolocation.getCurrentPosition(
 					function(position) {
@@ -457,19 +597,17 @@
 			}
 		},
 
-		getLexiconIcon: function(icon, cssClass) {
+		getLexiconIcon(icon, cssClass) {
 			var instance = this;
 
 			return $(instance.getLexiconIconTpl(icon, cssClass))[0];
 		},
 
-		getLexiconIconTpl: function(icon, cssClass) {
-			var instance = this;
-
+		getLexiconIconTpl(icon, cssClass) {
 			return Liferay.Util.sub(TPL_LEXICON_ICON, icon, cssClass || '');
 		},
 
-		getOpener: function() {
+		getOpener() {
 			var openingWindow = Window._opener;
 
 			if (!openingWindow) {
@@ -489,15 +627,11 @@
 			return openingWindow || window.opener || window.parent;
 		},
 
-		getPortletId: function(portletId) {
+		getPortletId(portletId) {
 			return String(portletId).replace(REGEX_PORTLET_ID, '$1');
 		},
 
-		getPortletNamespace: function(portletId) {
-			return '_' + portletId + '_';
-		},
-
-		getTop: function() {
+		getTop() {
 			var topWindow = Util._topWindow;
 
 			if (!topWindow) {
@@ -543,7 +677,7 @@
 			return topWindow;
 		},
 
-		getURLWithSessionId: function(url) {
+		getURLWithSessionId(url) {
 			if (!themeDisplay.isAddSessionIdToURL()) {
 				return url;
 			}
@@ -580,7 +714,7 @@
 			return url + sessionId;
 		},
 
-		getWindow: function(id) {
+		getWindow(id) {
 			if (!id) {
 				id = Util.getWindowName();
 			}
@@ -588,15 +722,15 @@
 			return Util.getTop().Liferay.Util.Window.getById(id);
 		},
 
-		getWindowName: function() {
+		getWindowName() {
 			return window.name || Window._name || '';
 		},
 
-		getWindowWidth: function() {
+		getWindowWidth() {
 			return window.innerWidth > 0 ? window.innerWidth : screen.width;
 		},
 
-		inBrowserView: function(node, win, nodeRegion) {
+		inBrowserView(node, win, nodeRegion) {
 			var viewable = false;
 
 			node = $(node);
@@ -657,23 +791,23 @@
 			return viewable;
 		},
 
-		isFunction: function(val) {
+		isFunction(val) {
 			return typeof val === 'function';
 		},
 
-		isPhone: function() {
+		isPhone() {
 			var instance = this;
 
 			return instance.getWindowWidth() < Liferay.BREAKPOINTS.PHONE;
 		},
 
-		isTablet: function() {
+		isTablet() {
 			var instance = this;
 
 			return instance.getWindowWidth() < Liferay.BREAKPOINTS.TABLET;
 		},
 
-		listCheckboxesExcept: function(form, except, name, checked) {
+		listCheckboxesExcept(form, except, name, checked) {
 			form = Util.getDOM(form);
 
 			var selector = 'input[type=checkbox]';
@@ -685,7 +819,7 @@
 			return $(form)
 				.find(selector)
 				.toArray()
-				.reduce(function(prev, item, index) {
+				.reduce(function(prev, item) {
 					item = $(item);
 
 					var val = item.val();
@@ -704,17 +838,17 @@
 				.join();
 		},
 
-		listCheckedExcept: function(form, except, name) {
+		listCheckedExcept(form, except, name) {
 			return Util.listCheckboxesExcept(form, except, name, true);
 		},
 
-		listSelect: function(select, delimeter) {
+		listSelect(select, delimeter) {
 			select = Util.getDOM(select);
 
 			return $(select)
 				.find('option')
 				.toArray()
-				.reduce(function(prev, item, index) {
+				.reduce(function(prev, item) {
 					var val = $(item).val();
 
 					if (val) {
@@ -726,11 +860,11 @@
 				.join(delimeter || ',');
 		},
 
-		listUncheckedExcept: function(form, except, name) {
+		listUncheckedExcept(form, except, name) {
 			return Util.listCheckboxesExcept(form, except, name, false);
 		},
 
-		normalizeFriendlyURL: function(text) {
+		normalizeFriendlyURL(text) {
 			var newText = text.replace(/[^a-zA-Z0-9_-]/g, '-');
 
 			if (newText[0] === '-') {
@@ -742,7 +876,7 @@
 			return newText.toLowerCase();
 		},
 
-		openInDialog: function(event, config) {
+		openInDialog(event, config) {
 			event.preventDefault();
 
 			var currentTarget = Util.getDOM(event.currentTarget);
@@ -763,7 +897,7 @@
 			Liferay.Util.openWindow(config);
 		},
 
-		openWindow: function(config, callback) {
+		openWindow(config, callback) {
 			config.openingWindow = window;
 
 			var top = Util.getTop();
@@ -773,16 +907,16 @@
 			topUtil._openWindowProvider(config, callback);
 		},
 
-		processTab: function(id) {
+		processTab(id) {
 			document.all[id].selection.text = String.fromCharCode(9);
 			document.all[id].focus();
 		},
 
-		randomInt: function() {
+		randomInt() {
 			return Math.ceil(Math.random() * new Date().getTime());
 		},
 
-		removeEntitySelection: function(
+		removeEntitySelection(
 			entityIdString,
 			entityNameString,
 			removeEntityButton,
@@ -797,7 +931,7 @@
 			Liferay.fire('entitySelectionRemoved');
 		},
 
-		reorder: function(box, down) {
+		reorder(box, down) {
 			box = Util.getDOM(box);
 
 			box = $(box);
@@ -811,7 +945,7 @@
 					selectedItems
 						.get()
 						.reverse()
-						.forEach(function(item, index) {
+						.forEach(function(item) {
 							item = $(item);
 
 							var itemIndex = item.prop('index');
@@ -825,7 +959,7 @@
 							}
 						});
 				} else {
-					selectedItems.get().forEach(function(item, index) {
+					selectedItems.get().forEach(function(item) {
 						item = $(item);
 
 						var itemIndex = item.prop('index');
@@ -840,7 +974,7 @@
 			}
 		},
 
-		rowCheckerCheckAllBox: function(
+		rowCheckerCheckAllBox(
 			ancestorTable,
 			ancestorRow,
 			checkboxesIds,
@@ -854,7 +988,7 @@
 			}
 		},
 
-		savePortletTitle: function(params) {
+		savePortletTitle(params) {
 			params = Object.assign(
 				{
 					doAsUserId: 0,
@@ -879,11 +1013,7 @@
 			});
 		},
 
-		selectEntityHandler: function(
-			container,
-			selectEventName,
-			disableButton
-		) {
+		selectEntityHandler(container, selectEventName, disableButton) {
 			container = $(container);
 
 			var openingLiferay = Util.getOpener().Liferay;
@@ -918,12 +1048,12 @@
 				}
 			});
 
-			openingLiferay.on('entitySelectionRemoved', function(event) {
+			openingLiferay.on('entitySelectionRemoved', function() {
 				selectorButtons.prop('disabled', false);
 			});
 		},
 
-		selectFolder: function(folderData, namespace) {
+		selectFolder(folderData, namespace) {
 			$('#' + namespace + folderData.idString).val(folderData.idValue);
 
 			var name = Liferay.Util.unescape(folderData.nameValue);
@@ -935,15 +1065,13 @@
 			Liferay.Util.toggleDisabled(button, false);
 		},
 
-		setCursorPosition: function(el, position) {
+		setCursorPosition(el, position) {
 			var instance = this;
 
 			instance.setSelectionRange(el, position, position);
 		},
 
-		setSelectionRange: function(el, selectionStart, selectionEnd) {
-			var instance = this;
-
+		setSelectionRange(el, selectionStart, selectionEnd) {
 			el = Util.getDOM(el);
 
 			if (el.jquery) {
@@ -966,7 +1094,7 @@
 			}
 		},
 
-		showCapsLock: function(event, span) {
+		showCapsLock(event, span) {
 			var keyCode = event.keyCode ? event.keyCode : event.which;
 
 			var shiftKeyCode = keyCode === 16;
@@ -985,7 +1113,7 @@
 			$('#' + span).css('display', display);
 		},
 
-		sortByAscending: function(a, b) {
+		sortByAscending(a, b) {
 			a = a[1].toLowerCase();
 			b = b[1].toLowerCase();
 
@@ -1000,7 +1128,7 @@
 			return 0;
 		},
 
-		sub: function(string, data) {
+		sub(string, data) {
 			if (
 				arguments.length > 2 ||
 				(typeof data !== 'object' && typeof data !== 'function')
@@ -1015,11 +1143,17 @@
 				: string;
 		},
 
-		submitForm: function(form) {
+		submitCountdown: 0,
+
+		submitForm(form) {
 			form.submit();
 		},
 
-		toggleBoxes: function(
+		toNumber(value) {
+			return parseInt(value, 10) || 0;
+		},
+
+		toggleBoxes(
 			checkBoxId,
 			toggleBoxId,
 			displayWhenUnchecked,
@@ -1052,7 +1186,7 @@
 			});
 		},
 
-		toggleDisabled: function(button, state) {
+		toggleDisabled(button, state) {
 			button = Util.getDOM(button);
 
 			button = $(button);
@@ -1066,7 +1200,7 @@
 			});
 		},
 
-		toggleRadio: function(radioId, showBoxIds, hideBoxIds) {
+		toggleRadio(radioId, showBoxIds, hideBoxIds) {
 			var radioButton = $('#' + radioId);
 
 			var showBoxes;
@@ -1096,7 +1230,7 @@
 			});
 		},
 
-		toggleSearchContainerButton: function(
+		toggleSearchContainerButton(
 			buttonId,
 			searchContainerId,
 			form,
@@ -1114,7 +1248,7 @@
 			);
 		},
 
-		toggleSelectBox: function(selectBoxId, value, toggleBoxId) {
+		toggleSelectBox(selectBoxId, value, toggleBoxId) {
 			var selectBox = $('#' + selectBoxId);
 			var toggleBox = $('#' + toggleBoxId);
 
@@ -1135,149 +1269,6 @@
 			toggle();
 
 			selectBox.on('change', toggle);
-		},
-
-		toNumber: function(value) {
-			return parseInt(value, 10) || 0;
-		},
-
-		_defaultSubmitFormFn: function(event) {
-			var form = event.form;
-
-			var hasErrors = false;
-
-			if (event.validate) {
-				var liferayForm = Liferay.Form.get(form.attr('id'));
-
-				if (liferayForm) {
-					var validator = liferayForm.formValidator;
-
-					if (A.instanceOf(validator, A.FormValidator)) {
-						validator.validate();
-
-						hasErrors = validator.hasErrors();
-
-						if (hasErrors) {
-							validator.focusInvalidField();
-						}
-					}
-				}
-			}
-
-			if (!hasErrors) {
-				var action = event.action || form.attr('action');
-
-				var singleSubmit = event.singleSubmit;
-
-				var inputs = form.all(
-					'button[type=submit], input[type=button], input[type=image], input[type=reset], input[type=submit]'
-				);
-
-				Util.disableFormButtons(inputs, form);
-
-				if (singleSubmit === false) {
-					Util._submitLocked = A.later(
-						1000,
-						Util,
-						Util.enableFormButtons,
-						[inputs, form]
-					);
-				} else {
-					Util._submitLocked = true;
-				}
-
-				var searchParamsIndex = action.indexOf('?');
-
-				if (searchParamsIndex === -1) {
-					var baseURL = action;
-					var queryString = '';
-				} else {
-					var baseURL = action.slice(0, searchParamsIndex);
-					var queryString = action.slice(searchParamsIndex + 1);
-				}
-
-				var searchParams = new URLSearchParams(queryString);
-
-				var authToken = searchParams.get('p_auth') || '';
-
-				form.append(
-					'<input name="p_auth" type="hidden" value="' +
-						authToken +
-						'" />'
-				);
-
-				if (authToken) {
-					searchParams.delete('p_auth');
-
-					action = baseURL + '?' + searchParams.toString();
-				}
-
-				form.attr('action', action);
-
-				Util.submitForm(form);
-
-				form.attr('target', '');
-
-				Util._submitLocked = null;
-			}
-		},
-
-		_getEditableInstance: function(title) {
-			var editable = Util._EDITABLE;
-
-			if (!editable) {
-				editable = new A.Editable({
-					after: {
-						contentTextChange: function(event) {
-							var instance = this;
-
-							if (!event.initial) {
-								var title = instance.get('node');
-
-								var portletTitleEditOptions = title.getData(
-									'portletTitleEditOptions'
-								);
-
-								Util.savePortletTitle({
-									doAsUserId:
-										portletTitleEditOptions.doAsUserId,
-									plid: portletTitleEditOptions.plid,
-									portletId:
-										portletTitleEditOptions.portletId,
-									title: event.newVal
-								});
-							}
-						},
-						startEditing: function(event) {
-							var instance = this;
-
-							var Layout = Liferay.Layout;
-
-							if (Layout) {
-								instance._dragListener = Layout.getLayoutHandler().on(
-									'drag:start',
-									function(event) {
-										instance.fire('save');
-									}
-								);
-							}
-						},
-						stopEditing: function(event) {
-							var instance = this;
-
-							if (instance._dragListener) {
-								instance._dragListener.detach();
-							}
-						}
-					},
-					cssClass: 'lfr-portlet-title-editable',
-					node: title
-				});
-
-				Util._EDITABLE = editable;
-			}
-
-			return editable;
 		}
 	};
 
@@ -1359,130 +1350,79 @@
 		Util,
 		'openDDMPortlet',
 		function(config, callback) {
-			var instance = this;
-
 			var defaultValues = {
 				eventName: 'selectStructure'
 			};
 
 			config = A.merge(defaultValues, config);
 
-			var ddmURL;
-
-			if (config.basePortletURL) {
-				ddmURL = Liferay.PortletURL.createURL(config.basePortletURL);
-			} else {
-				ddmURL = Liferay.PortletURL.createRenderURL();
-			}
-
-			ddmURL.setEscapeXML(false);
-
-			ddmURL.setDoAsGroupId(
-				config.doAsGroupId || themeDisplay.getScopeGroupId()
-			);
-
-			ddmURL.setParameter('classNameId', config.classNameId);
-			ddmURL.setParameter('classPK', config.classPK);
-			ddmURL.setParameter(
-				'resourceClassNameId',
-				config.resourceClassNameId
-			);
-			ddmURL.setParameter('eventName', config.eventName);
-			ddmURL.setParameter('groupId', config.groupId);
-			ddmURL.setParameter('mode', config.mode);
-
-			if (config.mvcPath) {
-				ddmURL.setParameter('mvcPath', config.mvcPath);
-			} else {
-				ddmURL.setParameter('mvcPath', '/view.jsp');
-			}
+			var params = {
+				classNameId: config.classNameId,
+				classPK: config.classPK,
+				doAsGroupId:
+					config.doAsGroupId || themeDisplay.getScopeGroupId(),
+				eventName: config.eventName,
+				groupId: config.groupId,
+				mode: config.mode,
+				mvcPath: config.mvcPath || '/view.jsp',
+				p_p_state: 'pop_up',
+				portletResourceNamespace: config.portletResourceNamespace,
+				resourceClassNameId: config.resourceClassNameId,
+				scopeTitle: config.title,
+				structureAvailableFields: config.structureAvailableFields,
+				templateId: config.templateId
+			};
 
 			if ('navigationStartsOn' in config) {
-				ddmURL.setParameter(
-					'navigationStartsOn',
-					config.navigationStartsOn
-				);
+				params.navigationStartsOn = config.navigationStartsOn;
 			}
 
-			ddmURL.setParameter(
-				'portletResourceNamespace',
-				config.portletResourceNamespace
-			);
-
 			if ('redirect' in config) {
-				ddmURL.setParameter('redirect', config.redirect);
+				params.redirect = config.redirect;
 			}
 
 			if ('refererPortletName' in config) {
-				ddmURL.setParameter(
-					'refererPortletName',
-					config.refererPortletName
-				);
+				params.refererPortletName = config.refererPortletName;
 			}
 
 			if ('refererWebDAVToken' in config) {
-				ddmURL.setParameter(
-					'refererWebDAVToken',
-					config.refererWebDAVToken
-				);
+				params.refererWebDAVToken = config.refererWebDAVToken;
 			}
 
-			ddmURL.setParameter('scopeTitle', config.title);
-
 			if ('searchRestriction' in config) {
-				ddmURL.setParameter(
-					'searchRestriction',
-					config.searchRestriction
-				);
-				ddmURL.setParameter(
-					'searchRestrictionClassNameId',
-					config.searchRestrictionClassNameId
-				);
-				ddmURL.setParameter(
-					'searchRestrictionClassPK',
-					config.searchRestrictionClassPK
-				);
+				params.searchRestriction = config.searchRestriction;
+				params.searchRestrictionClassNameId =
+					config.searchRestrictionClassNameId;
+				params.searchRestrictionClassPK =
+					config.searchRestrictionClassPK;
 			}
 
 			if ('showAncestorScopes' in config) {
-				ddmURL.setParameter(
-					'showAncestorScopes',
-					config.showAncestorScopes
-				);
+				params.showAncestorScopes = config.showAncestorScopes;
 			}
 
 			if ('showBackURL' in config) {
-				ddmURL.setParameter('showBackURL', config.showBackURL);
+				params.showBackURL = config.showBackURL;
 			}
 
 			if ('showCacheableInput' in config) {
-				ddmURL.setParameter(
-					'showCacheableInput',
-					config.showCacheableInput
-				);
+				params.showCacheableInput = config.showCacheableInput;
 			}
 
 			if ('showHeader' in config) {
-				ddmURL.setParameter('showHeader', config.showHeader);
+				params.showHeader = config.showHeader;
 			}
 
 			if ('showManageTemplates' in config) {
-				ddmURL.setParameter(
-					'showManageTemplates',
-					config.showManageTemplates
-				);
+				params.showManageTemplates = config.showManageTemplates;
 			}
 
-			ddmURL.setParameter(
-				'structureAvailableFields',
-				config.structureAvailableFields
+			var url = Liferay.Util.PortletURL.createRenderURL(
+				config.basePortletURL,
+				params
 			);
-			ddmURL.setParameter('templateId', config.templateId);
 
-			ddmURL.setPortletId(Liferay.PortletKeys.DYNAMIC_DATA_MAPPING);
-			ddmURL.setWindowState('pop_up');
-
-			config.uri = ddmURL.toString();
+			config.uri = url.toString();
 
 			var dialogConfig = config.dialog;
 
@@ -1509,7 +1449,7 @@
 				);
 			});
 		},
-		['liferay-portlet-url']
+		['aui-base']
 	);
 
 	Liferay.provide(
@@ -1565,6 +1505,20 @@
 						}
 
 						editable._startEditing(event);
+
+						if (!rendered) {
+							var defaultIconsTpl =
+								A.ToolbarRenderer.prototype.TEMPLATES.icon;
+
+							A.ToolbarRenderer.prototype.TEMPLATES.icon = Liferay.Util.getLexiconIconTpl(
+								'{cssClass}'
+							);
+
+							editable._comboBox.icons.destroy();
+							editable._comboBox._renderIcons();
+
+							A.ToolbarRenderer.prototype.TEMPLATES.icon = defaultIconsTpl;
+						}
 					});
 
 					title.setData('portletTitleEditOptions', options);
@@ -1615,11 +1569,11 @@
 					}
 				};
 
-				var editURL = new Liferay.PortletURL.createURL(
+				var editURL = new Liferay.Util.PortletURL.createPortletURL(
 					config.uri,
 					A.merge(
 						{
-							eventName: eventName
+							eventName
 						},
 						config.urlParams
 					)
@@ -1646,7 +1600,7 @@
 				});
 			}
 		},
-		['aui-base', 'liferay-portlet-url', 'liferay-util-window']
+		['aui-base', 'liferay-util-window']
 	);
 
 	Liferay.provide(
@@ -1681,7 +1635,7 @@
 						'.lfr-search-container-wrapper .selector-button'
 					);
 
-					A.some(selectorButtons, function(item, index) {
+					A.some(selectorButtons, function(item) {
 						var assetEntryId =
 							item.attr('data-entityid') ||
 							item.attr('data-entityname');
@@ -1773,7 +1727,7 @@
 					enabled: controlsVisible
 				});
 
-				trigger.on('tap', function(event) {
+				trigger.on('tap', function() {
 					controlsVisible = !controlsVisible;
 
 					var prevState = currentState;
@@ -1806,7 +1760,7 @@
 
 					Liferay._editControlsState = editControlsState;
 
-					Liferay.Store(
+					Liferay.Util.Session.set(
 						'com.liferay.frontend.js.web_toggleControls',
 						editControlsState
 					);
@@ -1818,7 +1772,7 @@
 				});
 			}
 		},
-		['event-tap', 'liferay-store']
+		['event-tap']
 	);
 
 	Liferay.provide(
@@ -1831,9 +1785,9 @@
 				}
 
 				Liferay.fire('submitForm', {
-					action: action,
+					action,
 					form: A.one(form),
-					singleSubmit: singleSubmit,
+					singleSubmit,
 					validate: validate !== false
 				});
 			}

@@ -175,7 +175,7 @@ definition {
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
-		DMNavigator.gotoAddDocumentType(dmDocumentTypeName = "DM Document Type Name");
+		DMNavigator.gotoAddDocumentTypeCP(dmDocumentTypeName = "DM Document Type Name");
 
 		AssertElementPresent(
 			key_fieldFieldLabel = "Date",
@@ -282,7 +282,7 @@ definition {
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
-		DMNavigator.gotoAddDocumentType(dmDocumentTypeName = "${dmDocumentTypeName}");
+		DMNavigator.gotoAddDocumentTypeCP(dmDocumentTypeName = "${dmDocumentTypeName}");
 
 		AssertTextEquals(
 			locator1 = "Message#INFO",
@@ -444,7 +444,7 @@ definition {
 			layoutName = "Documents and Media Page");
 
 		JSONLayout.addWidgetToPublicLayout(
-			column = "1",
+			column = "2",
 			groupName = "Site Name",
 			layoutName = "Documents and Media Page",
 			widgetName = "Documents and Media");
@@ -533,8 +533,6 @@ definition {
 			dmDocumentTitle = "DM Document Title");
 
 		DMDocument.enableActionsMenuOnPortlet();
-
-		Refresh();
 
 		DMDocument.checkoutPG(dmDocumentTitle = "DM Document Title");
 
@@ -704,10 +702,7 @@ definition {
 		property test.assert.warning.exceptions = "false";
 		property test.name.skip.portal.instance = "DocumentsadministrationUsecase#ConfigureXugglerVideoPreviewSizePG";
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin();
 
 		ServerAdministration.configureExternalServices(installXuggler = "true");
 
@@ -715,10 +710,7 @@ definition {
 
 		Portlet.startServer(deleteLiferayHome = "false");
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Server Administration");
+		ServerAdministration.openServerAdmin();
 
 		ServerAdministration.configureExternalServices(enableXuggler = "true");
 
@@ -793,7 +785,9 @@ definition {
 
 		JSONGroup.addGroup(groupName = "Moon Rocks 101");
 
-		ProductMenu.gotoSite(site = "Moon Rocks 101");
+		JSONLayout.addPublicLayout(
+			groupName = "Moon Rocks 101",
+			layoutName = "Moon Rocks Page");
 
 		ProductMenu.gotoPortlet(
 			category = "Users",
@@ -817,7 +811,7 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoSite(site = "Moon Rocks 101");
+		SitePages.openPagesAdmin(siteURLKey = "Moon Rocks 101");
 
 		ProductMenu.gotoPortlet(
 			category = "People",
@@ -900,7 +894,7 @@ definition {
 
 		Refresh();
 
-		ProductMenu.gotoSite(site = "Moon Rocks 101");
+		SitePages.openPagesAdmin(siteURLKey = "Moon Rocks 101");
 
 		User.logoutPG();
 
@@ -966,6 +960,7 @@ definition {
 		DMPortlet.configureDisplaySettingsPG(currentDisplayStyleViews = "");
 	}
 
+	@description = "This test covers LPS-91597. It ensures that a user can delete multiple documents simultaneously."
 	@priority = "4"
 	test SelectMultipleDocumentsAndDeleteViaActionsButton {
 		JSONLayout.addPublicLayout(
@@ -1233,7 +1228,7 @@ definition {
 			layoutName = "Documents and Media Page - Global",
 			widgetName = "Documents and Media");
 
-		ProductMenu.gotoSite(site = "Global");
+		SitePages.openPagesAdmin(siteURLKey = "global");
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
@@ -1250,7 +1245,7 @@ definition {
 			dmFolderDescription = "DM SubFolder Description",
 			dmFolderName = "DM SubFolder Name");
 
-		ProductMenu.gotoSite(site = "Global");
+		SitePages.openPagesAdmin(siteURLKey = "global");
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
@@ -1325,7 +1320,7 @@ definition {
 			siteName = "DM Site Name",
 			siteTemplateName = "Site Template Name");
 
-		ProductMenu.gotoSite(site = "DM Site Name");
+		SitePages.openPagesAdmin(siteURLKey = "DM Site Name");
 
 		Navigator.gotoSitePage(
 			pageName = "DM Site Page Name - Global",
@@ -1510,7 +1505,7 @@ definition {
 			userName = "userfn userln",
 			userScreenName = "usersn");
 
-		ProductMenu.gotoSite(site = "Organization Name");
+		SitePages.openPagesAdmin(siteURLKey = "Organization Name");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
@@ -1604,6 +1599,64 @@ definition {
 		DMDocument.addPG(
 			dmDocumentFile = "Document_1.doc",
 			dmDocumentTitle = "Document_1.doc");
+	}
+
+	@description = "This test covers LPS-93601 and LPS-91661. It ensures that the user can check all files in the current pagination using the DM toolbar and can move documents not on the current pagination to another folder."
+	@priority = "4"
+	test ViewPaginationToolbarCheckboxAndMoveMultiplePaginationDocuments {
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Documents and Media Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Documents and Media Page",
+			widgetName = "Documents and Media");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMFolder.addCP(
+			dmFolderDescription = "DM Folder Description",
+			dmFolderName = "DM Folder Name");
+
+		DMFolder.gotoEntry(dmFolderName = "DM Folder Name");
+
+		DMDocument.addMultipleCP(dmDocumentFileList = "Document_1.doc,Document_2.jpg,Document_3.xls,Document_4.txt,Document_1.txt,Document_2.xls,Document_3.jpg,Document_4.jpg,Document_1.xls,Document_2.doc");
+
+		Pagination.changePagination(itemsPerPage = "5");
+
+		Pagination.viewResults(results = "Showing 1 to 5 of 10 entries.");
+
+		DMDocument.moveToFolderCP(
+			dmFolderName = "Home",
+			selectAll = "true");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		Pagination.viewResults(results = "Showing 1 to 11 of 11 entries.");
+
+		Navigator.gotoPage(pageName = "Documents and Media Page");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "List");
+
+		Pagination.changePagination(itemsPerPage = "5");
+
+		Pagination.viewResults(results = "Showing 1 to 5 of 11 entries.");
+
+		DMDocument.checkDocumentCheckboxPG(dmDocumentTitle = "Document_2.jpg");
+
+		AssertTextEquals(
+			locator1 = "ManagementBar#NAVBAR_TEXT",
+			value1 = "1 of 11 Selected");
+
+		Click(locator1 = "Pagination#NEXT_LINK");
+
+		Click(locator1 = "DocumentsAndMedia#TOOLBAR_SELECT_ALL_CHECKBOX");
+
+		AssertTextEquals(
+			locator1 = "ManagementBar#NAVBAR_TEXT",
+			value1 = "6 of 11 Selected");
 	}
 
 	@priority = "4"

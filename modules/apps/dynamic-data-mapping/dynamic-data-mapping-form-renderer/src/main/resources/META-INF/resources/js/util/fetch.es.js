@@ -12,20 +12,23 @@
  * details.
  */
 
+import {fetch, objectToFormData} from 'frontend-js-web';
+
 const defaultHeaders = {
 	Accept: 'application/json'
 };
 
 export const makeFetch = ({
-	url,
 	body,
 	headers = defaultHeaders,
-	method = 'POST'
+	method = 'POST',
+	url,
+	...otherProps
 }) => {
 	const fetchData = {
-		credentials: 'include',
 		headers,
-		method
+		method,
+		...otherProps
 	};
 
 	if (method === 'POST') {
@@ -39,24 +42,24 @@ export const makeFetch = ({
 
 			if (sessionStatus === 'expired' || error.status === 401) {
 				window.location.reload();
+			} else {
+				throw error;
 			}
 		});
 };
 
 export const convertToFormData = body => {
-	if (body instanceof HTMLFormElement) {
-		return new FormData(body);
-	} else if (body instanceof FormData) {
-		return body;
+	let requestBody = body;
+
+	if (body instanceof FormData) {
+		requestBody = body;
+	} else if (body instanceof HTMLFormElement) {
+		requestBody = new FormData(body);
 	} else if (typeof body === 'object') {
-		const formData = new FormData();
-
-		Object.entries(body).forEach(([key, value]) =>
-			formData.append(key, value)
-		);
-
-		return formData;
+		requestBody = objectToFormData(body);
+	} else {
+		requestBody = body;
 	}
 
-	throw new Error('Unsupported body type.');
+	return requestBody;
 };

@@ -31,6 +31,11 @@ import java.util.function.BiFunction;
 
 import javax.annotation.Generated;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import javax.ws.rs.core.UriInfo;
+
 import org.osgi.service.component.ComponentServiceObjects;
 
 /**
@@ -48,8 +53,13 @@ public class Query {
 			statusResourceComponentServiceObjects;
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {status{actionInProgress}}"}' -u 'test@liferay.com:test'
+	 */
 	@GraphQLField
-	public Status getStatus() throws Exception {
+	public Status status() throws Exception {
 		return _applyComponentServiceObjects(
 			_statusResourceComponentServiceObjects,
 			this::_populateResourceContext,
@@ -104,6 +114,9 @@ public class Query {
 
 		statusResource.setContextAcceptLanguage(_acceptLanguage);
 		statusResource.setContextCompany(_company);
+		statusResource.setContextHttpServletRequest(_httpServletRequest);
+		statusResource.setContextHttpServletResponse(_httpServletResponse);
+		statusResource.setContextUriInfo(_uriInfo);
 		statusResource.setContextUser(_user);
 	}
 
@@ -114,6 +127,9 @@ public class Query {
 	private BiFunction<Object, String, Filter> _filterBiFunction;
 	private BiFunction<Object, String, Sort[]> _sortsBiFunction;
 	private Company _company;
+	private HttpServletRequest _httpServletRequest;
+	private HttpServletResponse _httpServletResponse;
+	private UriInfo _uriInfo;
 	private User _user;
 
 }

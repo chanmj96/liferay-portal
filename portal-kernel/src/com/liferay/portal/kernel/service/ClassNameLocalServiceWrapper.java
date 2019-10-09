@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link ClassNameLocalService}.
  *
@@ -23,7 +21,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see ClassNameLocalService
  * @generated
  */
-@ProviderType
 public class ClassNameLocalServiceWrapper
 	implements ClassNameLocalService, ServiceWrapper<ClassNameLocalService> {
 
@@ -48,7 +45,7 @@ public class ClassNameLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.ClassName addClassName(
-		String value) {
+		java.lang.String value) {
 
 		return _classNameLocalService.addClassName(value);
 	}
@@ -216,7 +213,7 @@ public class ClassNameLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.ClassName fetchClassName(
-		String value) {
+		java.lang.String value) {
 
 		return _classNameLocalService.fetchClassName(value);
 	}
@@ -245,18 +242,18 @@ public class ClassNameLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.ClassName getClassName(
-		String value) {
+		java.lang.String value) {
 
 		return _classNameLocalService.getClassName(value);
 	}
 
 	@Override
-	public long getClassNameId(Class<?> clazz) {
+	public long getClassNameId(java.lang.Class<?> clazz) {
 		return _classNameLocalService.getClassNameId(clazz);
 	}
 
 	@Override
-	public long getClassNameId(String value) {
+	public long getClassNameId(java.lang.String value) {
 		return _classNameLocalService.getClassNameId(value);
 	}
 
@@ -301,7 +298,7 @@ public class ClassNameLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _classNameLocalService.getOSGiServiceIdentifier();
 	}
 
@@ -314,7 +311,7 @@ public class ClassNameLocalServiceWrapper
 	}
 
 	@Override
-	public String getRegistryName() {
+	public java.lang.String getRegistryName() {
 		return _classNameLocalService.getRegistryName();
 	}
 

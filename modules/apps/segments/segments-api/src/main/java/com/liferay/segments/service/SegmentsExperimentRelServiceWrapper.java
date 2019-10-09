@@ -16,8 +16,6 @@ package com.liferay.segments.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link SegmentsExperimentRelService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsExperimentRelService
  * @generated
  */
-@ProviderType
 public class SegmentsExperimentRelServiceWrapper
 	implements SegmentsExperimentRelService,
 			   ServiceWrapper<SegmentsExperimentRelService> {
@@ -37,6 +34,31 @@ public class SegmentsExperimentRelServiceWrapper
 	}
 
 	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this interface directly. Always use {@link SegmentsExperimentRelServiceUtil} to access the segments experiment rel remote service. Add custom service methods to <code>com.liferay.segments.service.impl.SegmentsExperimentRelServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 */
+	@Override
+	public com.liferay.segments.model.SegmentsExperimentRel
+			addSegmentsExperimentRel(
+				long segmentsExperimentId, long segmentsExperienceId,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _segmentsExperimentRelService.addSegmentsExperimentRel(
+			segmentsExperimentId, segmentsExperienceId, serviceContext);
+	}
+
+	@Override
+	public com.liferay.segments.model.SegmentsExperimentRel
+			deleteSegmentsExperimentRel(long segmentsExperimentRelId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _segmentsExperimentRelService.deleteSegmentsExperimentRel(
+			segmentsExperimentRelId);
+	}
+
+	/**
 	 * Returns the OSGi service identifier.
 	 *
 	 * @return the OSGi service identifier
@@ -44,6 +66,46 @@ public class SegmentsExperimentRelServiceWrapper
 	@Override
 	public String getOSGiServiceIdentifier() {
 		return _segmentsExperimentRelService.getOSGiServiceIdentifier();
+	}
+
+	@Override
+	public com.liferay.segments.model.SegmentsExperimentRel
+			getSegmentsExperimentRel(
+				long segmentsExperimentId, long segmentsExperienceId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _segmentsExperimentRelService.getSegmentsExperimentRel(
+			segmentsExperimentId, segmentsExperienceId);
+	}
+
+	@Override
+	public java.util.List<com.liferay.segments.model.SegmentsExperimentRel>
+			getSegmentsExperimentRels(long segmentsExperimentId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _segmentsExperimentRelService.getSegmentsExperimentRels(
+			segmentsExperimentId);
+	}
+
+	@Override
+	public com.liferay.segments.model.SegmentsExperimentRel
+			updateSegmentsExperimentRel(
+				long segmentsExperimentRelId, double split)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _segmentsExperimentRelService.updateSegmentsExperimentRel(
+			segmentsExperimentRelId, split);
+	}
+
+	@Override
+	public com.liferay.segments.model.SegmentsExperimentRel
+			updateSegmentsExperimentRel(
+				long segmentsExperimentRelId, String name,
+				com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _segmentsExperimentRelService.updateSegmentsExperimentRel(
+			segmentsExperimentRelId, name, serviceContext);
 	}
 
 	@Override

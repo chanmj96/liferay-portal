@@ -1,9 +1,10 @@
-@component-name = "portal-staging"
+@component-name = "portal-change-list"
+@ignore = "true"
 definition {
 
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Change Lists";
+	property testray.main.component.name = "Change List";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -54,7 +55,6 @@ definition {
 				locator1 = "ChangeListSettings#SUPPORTED_CONTENT_TYPES",
 				value1 = "${changeListContentType}");
 		}
-
 	}
 
 	@description = "Enable Change List and go to Overview"

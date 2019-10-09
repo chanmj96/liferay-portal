@@ -16,7 +16,7 @@
 	var NAMESPACE = '_com_liferay_reading_time_web_portlet_ReadingTimePortlet_';
 
 	CKEDITOR.plugins.add('readingtime', {
-		init: function(editor) {
+		init(editor) {
 			AUI().use('aui-debounce', function(A) {
 				editor.on(
 					'change',
@@ -33,7 +33,7 @@
 							'text/html'
 						);
 
-						fetch(editor.config.readingTime.url, {
+						Liferay.Util.fetch(editor.config.readingTime.url, {
 							body: formData,
 							credentials: 'same-origin',
 							method: 'POST'

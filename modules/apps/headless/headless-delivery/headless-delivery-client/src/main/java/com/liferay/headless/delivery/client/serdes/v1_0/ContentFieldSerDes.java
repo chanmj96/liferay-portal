@@ -17,11 +17,11 @@ package com.liferay.headless.delivery.client.serdes.v1_0;
 import com.liferay.headless.delivery.client.dto.v1_0.ContentField;
 import com.liferay.headless.delivery.client.json.BaseJSONParser;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import javax.annotation.Generated;
@@ -112,19 +112,22 @@ public class ContentFieldSerDes {
 			sb.append("\"");
 		}
 
-		if (contentField.getNestedFields() != null) {
+		if (contentField.getNestedContentFields() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"nestedFields\": ");
+			sb.append("\"nestedContentFields\": ");
 
 			sb.append("[");
 
-			for (int i = 0; i < contentField.getNestedFields().length; i++) {
-				sb.append(String.valueOf(contentField.getNestedFields()[i]));
+			for (int i = 0; i < contentField.getNestedContentFields().length;
+				 i++) {
 
-				if ((i + 1) < contentField.getNestedFields().length) {
+				sb.append(
+					String.valueOf(contentField.getNestedContentFields()[i]));
+
+				if ((i + 1) < contentField.getNestedContentFields().length) {
 					sb.append(", ");
 				}
 			}
@@ -169,7 +172,7 @@ public class ContentFieldSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		if (contentField.getDataType() == null) {
 			map.put("dataType", null);
@@ -200,12 +203,13 @@ public class ContentFieldSerDes {
 			map.put("name", String.valueOf(contentField.getName()));
 		}
 
-		if (contentField.getNestedFields() == null) {
-			map.put("nestedFields", null);
+		if (contentField.getNestedContentFields() == null) {
+			map.put("nestedContentFields", null);
 		}
 		else {
 			map.put(
-				"nestedFields", String.valueOf(contentField.getNestedFields()));
+				"nestedContentFields",
+				String.valueOf(contentField.getNestedContentFields()));
 		}
 
 		if (contentField.getRepeatable() == null) {
@@ -225,44 +229,7 @@ public class ContentFieldSerDes {
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		string = string.replace("\\", "\\\\");
-
-		return string.replace("\"", "\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class ContentFieldJSONParser
+	public static class ContentFieldJSONParser
 		extends BaseJSONParser<ContentField> {
 
 		@Override
@@ -300,9 +267,11 @@ public class ContentFieldSerDes {
 					contentField.setName((String)jsonParserFieldValue);
 				}
 			}
-			else if (Objects.equals(jsonParserFieldName, "nestedFields")) {
+			else if (Objects.equals(
+						jsonParserFieldName, "nestedContentFields")) {
+
 				if (jsonParserFieldValue != null) {
-					contentField.setNestedFields(
+					contentField.setNestedContentFields(
 						Stream.of(
 							toStrings((Object[])jsonParserFieldValue)
 						).map(
@@ -329,6 +298,70 @@ public class ContentFieldSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		string = string.replace("\\", "\\\\");
+
+		return string.replace("\"", "\\\"");
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

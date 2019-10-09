@@ -210,6 +210,7 @@ class Options extends Component {
 		return (
 			defaultLanguageId === editingLanguageId &&
 			(option.value === '' ||
+				option.value === Liferay.Language.get('option') ||
 				new RegExp(`^${normalizeFieldName(option.label)}\\d*$`).test(
 					option.value
 				))
@@ -324,13 +325,6 @@ class Options extends Component {
 		});
 	}
 
-	_handleOptionBlurred(event) {
-		const {value} = this;
-		const normalizedValue = this.normalizeValue(value, true);
-
-		this._handleFieldEdited(event, normalizedValue);
-	}
-
 	_handleOptionDeleted(event) {
 		const {delegateTarget} = event;
 		const deletedIndex = this.getFieldIndex(delegateTarget);
@@ -368,7 +362,7 @@ class Options extends Component {
 		}
 
 		if (property === 'label') {
-			options = this.normalizeOptions(options);
+			options = this.normalizeOptions(options, true);
 		}
 
 		let newValue = {
@@ -455,7 +449,7 @@ Options.STATE = {
 	 * @type {?string}
 	 */
 
-	defaultLanguageId: Config.string(),
+	defaultLanguageId: Config.string().value(themeDisplay.getLanguageId()),
 
 	/**
 	 * @default false
@@ -475,7 +469,7 @@ Options.STATE = {
 	 * @type {?string}
 	 */
 
-	editingLanguageId: Config.string(),
+	editingLanguageId: Config.string().value(themeDisplay.getLanguageId()),
 
 	/**
 	 * @default 'boolean'

@@ -16,6 +16,7 @@ package com.liferay.knowledge.base.model;
 
 import com.liferay.portal.kernel.bean.AutoEscape;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.ResourcedModel;
 import com.liferay.portal.kernel.model.ShardedModel;
 import com.liferay.portal.kernel.model.StagedGroupedModel;
@@ -38,10 +39,10 @@ import org.osgi.annotation.versioning.ProviderType;
  */
 @ProviderType
 public interface KBArticleModel
-	extends BaseModel<KBArticle>, ResourcedModel, ShardedModel,
+	extends BaseModel<KBArticle>, MVCCModel, ResourcedModel, ShardedModel,
 			StagedGroupedModel, WorkflowedModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. All methods that expect a kb article model instance should use the {@link KBArticle} interface instead.
@@ -60,6 +61,22 @@ public interface KBArticleModel
 	 * @param primaryKey the primary key of this kb article
 	 */
 	public void setPrimaryKey(long primaryKey);
+
+	/**
+	 * Returns the mvcc version of this kb article.
+	 *
+	 * @return the mvcc version of this kb article
+	 */
+	@Override
+	public long getMvccVersion();
+
+	/**
+	 * Sets the mvcc version of this kb article.
+	 *
+	 * @param mvccVersion the mvcc version of this kb article
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion);
 
 	/**
 	 * Returns the uuid of this kb article.

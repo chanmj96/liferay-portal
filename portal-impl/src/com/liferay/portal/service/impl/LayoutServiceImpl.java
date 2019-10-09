@@ -51,7 +51,6 @@ import com.liferay.portal.kernel.util.Digester;
 import com.liferay.portal.kernel.util.DigesterUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -67,7 +66,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.portlet.PortletPreferences;
 
@@ -354,9 +352,7 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 	public List<Layout> getAncestorLayouts(long plid) throws PortalException {
 		Layout layout = layoutLocalService.getLayout(plid);
 
-		List<Layout> ancestors = layout.getAncestors();
-
-		return filterLayouts(ancestors);
+		return filterLayouts(layout.getAncestors());
 	}
 
 	/**
@@ -644,8 +640,7 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 
 	@Override
 	public List<Layout> getLayouts(long groupId, boolean privateLayout) {
-		return layoutPersistence.filterFindByG_P_Head(
-			groupId, privateLayout, false);
+		return layoutPersistence.filterFindByG_P(groupId, privateLayout);
 	}
 
 	@Override
@@ -684,29 +679,27 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 
 	@Override
 	public List<Layout> getLayouts(long groupId, String type) {
-		return layoutPersistence.filterFindByG_T_Head(groupId, type, false);
+		return layoutPersistence.filterFindByG_T(groupId, type);
 	}
 
 	@Override
 	public List<Layout> getLayouts(
 		long groupId, String type, int start, int end) {
 
-		return layoutPersistence.filterFindByG_T_Head(
-			groupId, type, false, start, end);
+		return layoutPersistence.filterFindByG_T(groupId, type, start, end);
 	}
 
 	@Override
 	public int getLayoutsCount(long groupId, boolean privateLayout) {
-		return layoutPersistence.filterCountByG_P_Head(
-			groupId, privateLayout, false);
+		return layoutPersistence.filterCountByG_P(groupId, privateLayout);
 	}
 
 	@Override
 	public int getLayoutsCount(
 		long groupId, boolean privateLayout, long parentLayoutId) {
 
-		return layoutPersistence.filterCountByG_P_P_Head(
-			groupId, privateLayout, parentLayoutId, false);
+		return layoutPersistence.filterCountByG_P_P(
+			groupId, privateLayout, parentLayoutId);
 	}
 
 	@Override
@@ -714,13 +707,13 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 		long groupId, boolean privateLayout, long parentLayoutId,
 		int priority) {
 
-		return layoutPersistence.filterCountByG_P_P_LtP_Head(
-			groupId, privateLayout, parentLayoutId, priority, false);
+		return layoutPersistence.filterCountByG_P_P_LtP(
+			groupId, privateLayout, parentLayoutId, priority);
 	}
 
 	@Override
 	public int getLayoutsCount(long groupId, String type) {
-		return layoutPersistence.filterCountByG_T_Head(groupId, type, false);
+		return layoutPersistence.filterCountByG_T(groupId, type);
 	}
 
 	@Override
@@ -816,9 +809,7 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 
 		Trigger trigger = TriggerFactoryUtil.createTrigger(
 			PortalUUIDUtil.generate(), groupName, schedulerStartDate,
-			schedulerEndDate, cronText,
-			TimeZone.getTimeZone(
-				MapUtil.getString(parameterMap, "timeZoneId")));
+			schedulerEndDate, cronText);
 
 		User user = userPersistence.findByPrimaryKey(getUserId());
 
@@ -886,9 +877,7 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 
 		Trigger trigger = TriggerFactoryUtil.createTrigger(
 			PortalUUIDUtil.generate(), groupName, schedulerStartDate,
-			schedulerEndDate, cronText,
-			TimeZone.getTimeZone(
-				MapUtil.getString(parameterMap, "timeZoneId")));
+			schedulerEndDate, cronText);
 
 		User user = userPersistence.findByPrimaryKey(getUserId());
 
@@ -1293,6 +1282,15 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 			getPermissionChecker(), plid, ActionKeys.UPDATE);
 
 		return layoutLocalService.updatePriority(plid, priority);
+	}
+
+	@Override
+	public Layout updateType(long plid, String type) throws PortalException {
+		LayoutPermissionUtil.check(
+			getPermissionChecker(), layoutLocalService.getLayout(plid),
+			ActionKeys.UPDATE);
+
+		return layoutLocalService.updateType(plid, type);
 	}
 
 	protected void checkLayoutTypeSettings(

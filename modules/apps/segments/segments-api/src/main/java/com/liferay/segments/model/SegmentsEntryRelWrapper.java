@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link SegmentsEntryRel}.
@@ -32,10 +30,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsEntryRel
  * @generated
  */
-@ProviderType
 public class SegmentsEntryRelWrapper
 	extends BaseModelWrapper<SegmentsEntryRel>
-	implements SegmentsEntryRel, ModelWrapper<SegmentsEntryRel> {
+	implements ModelWrapper<SegmentsEntryRel>, SegmentsEntryRel {
 
 	public SegmentsEntryRelWrapper(SegmentsEntryRel segmentsEntryRel) {
 		super(segmentsEntryRel);
@@ -45,6 +42,7 @@ public class SegmentsEntryRelWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("segmentsEntryRelId", getSegmentsEntryRelId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -61,6 +59,12 @@ public class SegmentsEntryRelWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long segmentsEntryRelId = (Long)attributes.get("segmentsEntryRelId");
 
 		if (segmentsEntryRelId != null) {
@@ -193,6 +197,16 @@ public class SegmentsEntryRelWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this segments entry rel.
+	 *
+	 * @return the mvcc version of this segments entry rel
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this segments entry rel.
 	 *
 	 * @return the primary key of this segments entry rel
@@ -252,6 +266,11 @@ public class SegmentsEntryRelWrapper
 		return model.getUserUuid();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a segments entry rel model instance should use the <code>SegmentsEntryRel</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -320,6 +339,16 @@ public class SegmentsEntryRelWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this segments entry rel.
+	 *
+	 * @param mvccVersion the mvcc version of this segments entry rel
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

@@ -62,7 +62,14 @@ import javax.ws.rs.core.UriInfo;
 @Path("/${openAPIYAML.info.version}")
 public abstract class Base${schemaName}ResourceImpl implements ${schemaName}Resource {
 
-	<#list freeMarkerTool.getResourceJavaMethodSignatures(configYAML, openAPIYAML, schemaName) as javaMethodSignature>
+	<#assign
+		javaMethodSignatures = freeMarkerTool.getResourceTestCaseJavaMethodSignatures(configYAML, openAPIYAML, schemaName)
+	/>
+
+	<#list javaMethodSignatures as javaMethodSignature>
+		/**
+		* ${freeMarkerTool.getRESTMethodJavadoc(configYAML, javaMethodSignature, openAPIYAML)}
+		*/
 		@Override
 		${freeMarkerTool.getResourceMethodAnnotations(javaMethodSignature)}
 		public ${javaMethodSignature.returnType} ${javaMethodSignature.methodName}(${freeMarkerTool.getResourceParameters(javaMethodSignature.javaMethodParameters, openAPIYAML, javaMethodSignature.operation, true)}) throws Exception {
@@ -77,7 +84,7 @@ public abstract class Base${schemaName}ResourceImpl implements ${schemaName}Reso
 			<#elseif stringUtil.equals(javaMethodSignature.returnType, "void")>
 			<#elseif javaMethodSignature.returnType?contains("Page<")>
 				return Page.of(Collections.emptyList());
-			<#elseif freeMarkerTool.hasHTTPMethod(javaMethodSignature, "patch") && !javaMethodSignature.operation.requestBody.content?keys?seq_contains("multipart/form-data")>
+			<#elseif freeMarkerTool.hasHTTPMethod(javaMethodSignature, "patch") && freeMarkerTool.hasJavaMethodSignature(javaMethodSignatures, "get" + javaMethodSignature.methodName?remove_beginning("patch")) && !javaMethodSignature.operation.requestBody.content?keys?seq_contains("multipart/form-data")>
 				<#assign firstJavaMethodParameter = javaMethodSignature.javaMethodParameters[0] />
 
 				${schemaName} existing${schemaName} = get${schemaName}(${firstJavaMethodParameter.parameterName});
@@ -107,6 +114,20 @@ public abstract class Base${schemaName}ResourceImpl implements ${schemaName}Reso
 
 	public void setContextCompany(Company contextCompany) {
 		this.contextCompany = contextCompany;
+	}
+
+	public void setContextHttpServletRequest(
+		HttpServletRequest contextHttpServletRequest) {
+		this.contextHttpServletRequest = contextHttpServletRequest;
+	}
+
+	public void setContextHttpServletResponse(
+		HttpServletResponse contextHttpServletResponse) {
+		this.contextHttpServletResponse = contextHttpServletResponse;
+	}
+
+	public void setContextUriInfo(UriInfo contextUriInfo) {
+		this.contextUriInfo = contextUriInfo;
 	}
 
 	public void setContextUser(User contextUser) {

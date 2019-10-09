@@ -14,7 +14,6 @@
 
 package com.liferay.wiki.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,13 +30,18 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see WikiPageLocalService
  * @generated
  */
-@ProviderType
 public class WikiPageLocalServiceUtil {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.wiki.service.impl.WikiPageLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
+	 */
+
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this interface directly. Always use {@link WikiPageLocalServiceUtil} to access the wiki page local service. Add custom service methods to <code>com.liferay.wiki.service.impl.WikiPageLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 	public static com.liferay.wiki.model.WikiPage addPage(
 			long userId, long nodeId, String title, double version,
@@ -1074,6 +1078,12 @@ public class WikiPageLocalServiceUtil {
 		getService().updateAsset(
 			userId, page, assetCategoryIds, assetTagNames, assetLinkEntryIds,
 			priority);
+	}
+
+	public static void updateLastPostDate(
+		long nodeId, java.util.Date lastPostDate) {
+
+		getService().updateLastPostDate(nodeId, lastPostDate);
 	}
 
 	public static com.liferay.wiki.model.WikiPage updatePage(

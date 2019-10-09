@@ -320,7 +320,7 @@ definition {
 
 		Navigator.openURL();
 
-		ProductMenu.gotoSite(site = "Global");
+		SitePages.openPagesAdmin(siteURLKey = "global");
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
@@ -432,6 +432,10 @@ definition {
 			portlet = "Sites");
 
 		Site.addBlankCP(siteName = "Form Site");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Form Site",
+			layoutName = "Form Page");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
@@ -558,10 +562,10 @@ definition {
 	test AddFormWithSpanishAsDefaultPortalLanguage {
 		property test.name.skip.portal.instance = "Forms#AddFormWithSpanishAsDefaultPortalLanguage";
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Instance Settings");
+		PortalSettings.gotoConfiguration(
+			configurationCategory = "Localization",
+			configurationName = "Language",
+			configurationScope = "Virtual Instance Scope");
 
 		PortalSettings.configureCurrentLanguagesCP(defaultPortalLanguage = "Spanish (Spain)");
 
@@ -2616,8 +2620,8 @@ definition {
 			fieldValue = "05/02/2016");
 
 		FormsAdmin.viewCheckboxEntry(
-			fieldLabel = "New Checkbox",
-			fieldName = "Checkbox");
+			fieldName = "NewCheckbox",
+			fieldValue = "Checkbox 1");
 
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
@@ -2688,8 +2692,8 @@ definition {
 			fieldValue = "05/02/2016");
 
 		FormsAdmin.viewCheckboxEntry(
-			fieldLabel = "New Checkbox",
-			fieldName = "Checkbox");
+			fieldName = "NewCheckbox",
+			fieldValue = "Checkbox 1");
 	}
 
 	@priority = "4"
@@ -3125,8 +3129,8 @@ definition {
 			fieldValue = "05/02/2016");
 
 		FormsAdmin.viewCheckboxEntry(
-			fieldLabel = "Checkbox",
-			fieldName = "Checkbox");
+			fieldName = "Checkbox",
+			fieldValue = "Checkbox 1");
 
 		FormPortlet.nextPage(
 			formPageCurrent = "Page 1",
@@ -3391,8 +3395,8 @@ definition {
 			fieldValue = "Text Field Value");
 
 		FormsAdmin.viewCheckboxEntry(
-			fieldLabel = "Checkbox Field",
-			fieldName = "CheckboxField");
+			fieldName = "CheckboxField",
+			fieldValue = "Checkbox 1");
 
 		FormsAdmin.viewRadioEntry(
 			fieldLabel = "Radio Field",
@@ -3892,8 +3896,8 @@ definition {
 		FormsAdminNavigator.gotoView();
 
 		FormsAdmin.viewCheckboxEntry(
-			fieldLabel = "Checkbox Field",
-			fieldName = "CheckboxField");
+			fieldName = "CheckboxField",
+			fieldValue = "Switcher 1");
 	}
 
 	@priority = "4"

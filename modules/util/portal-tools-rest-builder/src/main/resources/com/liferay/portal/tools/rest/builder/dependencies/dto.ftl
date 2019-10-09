@@ -32,6 +32,9 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -87,6 +90,7 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 	<#assign enumSchemas = freeMarkerTool.getDTOEnumSchemas(openAPIYAML, schema) />
 
 	<#list enumSchemas?keys as enumName>
+		@GraphQLName("${enumName}")
 		public static enum ${enumName} {
 
 			<#list enumSchemas[enumName].enumValues as enumValue>
@@ -135,6 +139,13 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 			propertyType = properties[propertyName]
 		/>
 
+		<#if propertySchema.maximum??>
+			@DecimalMax("${propertySchema.maximum}")
+		</#if>
+		<#if propertySchema.minimum??>
+			@DecimalMin("${propertySchema.minimum}")
+		</#if>
+
 		@Schema(
 			<#if propertySchema.description??>
 				description = "${propertySchema.description}"
@@ -148,6 +159,10 @@ public class ${schemaName} <#if dtoParentClassName?has_content>extends ${dtoPare
 				example = "${propertySchema.example}"
 			</#if>
 		)
+
+		<#if !["Boolean", "Boolean[]", "Date", "Date[]", "Double", "Double[]", "Integer", "Integer[]", "Long", "Long[]", "String", "String[]"]?seq_contains(propertyType)>
+			@Valid
+		</#if>
 
 		<#assign capitalizedPropertyName = propertyName?cap_first />
 

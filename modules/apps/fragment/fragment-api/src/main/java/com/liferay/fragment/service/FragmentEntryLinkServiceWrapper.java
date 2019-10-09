@@ -16,8 +16,6 @@ package com.liferay.fragment.service;
 
 import com.liferay.portal.kernel.service.ServiceWrapper;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link FragmentEntryLinkService}.
  *
@@ -25,7 +23,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see FragmentEntryLinkService
  * @generated
  */
-@ProviderType
 public class FragmentEntryLinkServiceWrapper
 	implements FragmentEntryLinkService,
 			   ServiceWrapper<FragmentEntryLinkService> {
@@ -102,6 +99,16 @@ public class FragmentEntryLinkServiceWrapper
 	}
 
 	@Override
+	public com.liferay.fragment.model.FragmentEntryLink updateFragmentEntryLink(
+			long fragmentEntryLinkId, String editableValues,
+			boolean updateClassedModel)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _fragmentEntryLinkService.updateFragmentEntryLink(
+			fragmentEntryLinkId, editableValues, updateClassedModel);
+	}
+
+	@Override
 	public void updateFragmentEntryLinks(
 			long groupId, long classNameId, long classPK,
 			long[] fragmentEntryIds, String editableValues,
@@ -111,6 +118,15 @@ public class FragmentEntryLinkServiceWrapper
 		_fragmentEntryLinkService.updateFragmentEntryLinks(
 			groupId, classNameId, classPK, fragmentEntryIds, editableValues,
 			serviceContext);
+	}
+
+	@Override
+	public void updateFragmentEntryLinks(
+			java.util.Map<Long, String> fragmentEntryLinksEditableValuesMap)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_fragmentEntryLinkService.updateFragmentEntryLinks(
+			fragmentEntryLinksEditableValuesMap);
 	}
 
 	@Override

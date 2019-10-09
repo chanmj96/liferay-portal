@@ -15,9 +15,8 @@
 package com.liferay.document.library.opener.google.drive.web.internal.portlet.toolbar.contributor;
 
 import com.liferay.document.library.kernel.model.DLFolderConstants;
-import com.liferay.document.library.opener.google.drive.DLOpenerGoogleDriveManager;
-import com.liferay.document.library.opener.google.drive.constants.DLOpenerGoogleDriveMimeTypes;
-import com.liferay.document.library.opener.google.drive.web.internal.constants.DLOpenerGoogleDriveWebConstants;
+import com.liferay.document.library.opener.constants.DLOpenerMimeTypes;
+import com.liferay.document.library.opener.google.drive.web.internal.DLOpenerGoogleDriveManager;
 import com.liferay.document.library.portlet.toolbar.contributor.DLPortletToolbarContributorContext;
 import com.liferay.portal.kernel.bean.BeanPropertiesUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -82,17 +81,17 @@ public class DLOpenerGoogleDriveDLPortletToolbarContributorContext
 			menuItems.add(
 				_createURLMenuItem(
 					portletRequest, folder, "google-doc",
-					DLOpenerGoogleDriveMimeTypes.APPLICATION_VND_DOCX,
-					_ICON_NAME_DOCUMENT, _ICON_COLOR_DOCUMENT));
+					DLOpenerMimeTypes.APPLICATION_VND_DOCX, _ICON_NAME_DOCUMENT,
+					_ICON_COLOR_DOCUMENT));
 			menuItems.add(
 				_createURLMenuItem(
 					portletRequest, folder, "google-slide",
-					DLOpenerGoogleDriveMimeTypes.APPLICATION_VND_PPTX,
+					DLOpenerMimeTypes.APPLICATION_VND_PPTX,
 					_ICON_NAME_PRESENTATION, _ICON_COLOR_PRESENTATION));
 			menuItems.add(
 				_createURLMenuItem(
 					portletRequest, folder, "google-sheet",
-					DLOpenerGoogleDriveMimeTypes.APPLICATION_VND_XSLX,
+					DLOpenerMimeTypes.APPLICATION_VND_XLSX,
 					_ICON_NAME_SPREADSHEET, _ICON_COLOR_SPREADSHEET));
 		}
 		catch (PortalException pe) {
@@ -107,7 +106,7 @@ public class DLOpenerGoogleDriveDLPortletToolbarContributorContext
 		URLMenuItem urlMenuItem = new URLMenuItem();
 
 		urlMenuItem.setIcon(icon);
-		urlMenuItem.setLabel(_translateKey(portletRequest, key));
+		urlMenuItem.setLabel(_translate(portletRequest, key));
 		urlMenuItem.setMethod(HttpMethods.POST);
 		urlMenuItem.setURL(_getActionURL(portletRequest, folder, contentType));
 		urlMenuItem.setData(
@@ -127,9 +126,7 @@ public class DLOpenerGoogleDriveDLPortletToolbarContributorContext
 			liferayPortletURL.setParameter(
 				ActionRequest.ACTION_NAME,
 				"/document_library/edit_in_google_docs");
-			liferayPortletURL.setParameter(
-				Constants.CMD,
-				DLOpenerGoogleDriveWebConstants.GOOGLE_DRIVE_ADD);
+			liferayPortletURL.setParameter(Constants.CMD, Constants.ADD);
 
 			long repositoryId = BeanPropertiesUtil.getLong(
 				folder, "repositoryId",
@@ -157,7 +154,7 @@ public class DLOpenerGoogleDriveDLPortletToolbarContributorContext
 		}
 	}
 
-	private String _translateKey(PortletRequest portletRequest, String key) {
+	private String _translate(PortletRequest portletRequest, String key) {
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
 			_portal.getLocale(portletRequest),
 			DLOpenerGoogleDriveDLPortletToolbarContributorContext.class);

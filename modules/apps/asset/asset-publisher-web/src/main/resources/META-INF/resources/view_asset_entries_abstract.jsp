@@ -56,9 +56,14 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 		String title = assetRenderer.getTitle(locale);
 
 		String viewURL = assetPublisherHelper.getAssetViewURL(liferayPortletRequest, liferayPortletResponse, assetRenderer, assetEntry, assetPublisherDisplayContext.isAssetLinkBehaviorViewInPortlet());
+
+		Map<String, Object> fragmentsEditorData = new HashMap<>();
+
+		fragmentsEditorData.put("fragments-editor-item-id", PortalUtil.getClassNameId(assetRenderer.getClassName()) + "-" + assetRenderer.getClassPK());
+		fragmentsEditorData.put("fragments-editor-item-type", "fragments-editor-mapped-item");
 %>
 
-		<div class="asset-abstract mb-5 <%= assetPublisherWebUtil.isDefaultAssetPublisher(layout, portletDisplay.getId(), assetPublisherDisplayContext.getPortletResource()) ? "default-asset-publisher" : StringPool.BLANK %> <%= (previewAssetEntryId == assetEntry.getEntryId()) ? "p-1 preview-asset-entry" : StringPool.BLANK %>">
+		<div class="asset-abstract mb-5 <%= assetPublisherWebUtil.isDefaultAssetPublisher(layout, portletDisplay.getId(), assetPublisherDisplayContext.getPortletResource()) ? "default-asset-publisher" : StringPool.BLANK %> <%= (previewAssetEntryId == assetEntry.getEntryId()) ? "p-1 preview-asset-entry" : StringPool.BLANK %>" <%= AUIUtil.buildData(fragmentsEditorData) %>>
 			<div class="mb-2">
 				<h4 class="component-title">
 					<c:choose>
@@ -83,26 +88,12 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 			<span class="asset-anchor lfr-asset-anchor" id="<%= assetEntry.getEntryId() %>"></span>
 
 			<c:if test="<%= assetPublisherDisplayContext.isShowAuthor() || (assetPublisherDisplayContext.isShowCreateDate() && (assetEntry.getCreateDate() != null)) || (assetPublisherDisplayContext.isShowPublishDate() && (assetEntry.getPublishDate() != null)) || (assetPublisherDisplayContext.isShowExpirationDate() && (assetEntry.getExpirationDate() != null)) || (assetPublisherDisplayContext.isShowModifiedDate() && (assetEntry.getModifiedDate() != null)) || assetPublisherDisplayContext.isShowViewCount() %>">
-
-				<%
-				User assetRendererUser = UserLocalServiceUtil.getUser(assetRenderer.getUserId());
-				%>
-
 				<div class="autofit-row mb-4 metadata-author">
 					<c:if test="<%= assetPublisherDisplayContext.isShowAuthor() %>">
 						<div class="asset-avatar autofit-col inline-item-before mr-3 pt-1">
-							<span class="user-avatar-image">
-								<div class="sticker sticker-circle sticker-light user-icon user-icon-default <%= LexiconUtil.getUserColorCssClass(assetRendererUser) %> ">
-									<c:choose>
-										<c:when test="<%= assetRendererUser.getPortraitId() <= 0 %>">
-											<aui:icon image="user" markupView="lexicon" />
-										</c:when>
-										<c:otherwise>
-											<img class="sticker-img" src="<%= HtmlUtil.escape(UserConstants.getPortraitURL(themeDisplay.getPathImage(), assetRendererUser.isMale(), assetRendererUser.getPortraitId(), assetRendererUser.getUserUuid())) %>" />
-										</c:otherwise>
-									</c:choose>
-								</div>
-							</span>
+							<liferay-ui:user-portrait
+								userId="<%= assetRenderer.getUserId() %>"
+							/>
 						</div>
 					</c:if>
 
@@ -111,7 +102,7 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 							<div class="autofit-col autofit-col-expand">
 								<c:if test="<%= assetPublisherDisplayContext.isShowAuthor() %>">
 									<div class="text-truncate-inline">
-										<span class="text-truncate user-info"><strong><%= HtmlUtil.escape(assetRendererUser.getFullName()) %></strong></span>
+										<span class="text-truncate user-info"><strong><%= HtmlUtil.escape(AssetRendererUtil.getAssetRendererUserFullName(assetRenderer, request)) %></strong></span>
 									</div>
 								</c:if>
 
@@ -323,14 +314,20 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 					<c:if test="<%= assetPublisherDisplayContext.isShowAvailableLocales() && assetRenderer.isLocalizable() %>">
 
 						<%
+						String languageId = LanguageUtil.getLanguageId(request);
+
 						String[] availableLanguageIds = assetRenderer.getAvailableLanguageIds();
+
+						if (ArrayUtil.isNotEmpty(availableLanguageIds) && !ArrayUtil.contains(availableLanguageIds, languageId)) {
+							languageId = assetRenderer.getDefaultLanguageId();
+						}
 						%>
 
 						<c:if test="<%= availableLanguageIds.length > 1 %>">
 							<div class="autofit-col locale-actions mr-3">
 								<liferay-ui:language
 									formAction="<%= currentURL %>"
-									languageId="<%= LanguageUtil.getLanguageId(request) %>"
+									languageId="<%= languageId %>"
 									languageIds="<%= availableLanguageIds %>"
 								/>
 							</div>

@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Map;
 
@@ -56,19 +57,17 @@ public class BaseCKEditorConfigContributor extends BaseEditorConfigContributor {
 					PortalUtil.getStaticResourceURL(
 						themeDisplay.getRequest(),
 						themeDisplay.getPathThemeCss() + "/main.css")))
+		).put(
+			"contentsLangDirection",
+			HtmlUtil.escapeJS(
+				getContentsLanguageDir(inputEditorTaglibAttributes))
 		);
-
-		String contentsLanguageDir = getContentsLanguageDir(
-			inputEditorTaglibAttributes);
-
-		jsonObject.put(
-			"contentsLangDirection", HtmlUtil.escapeJS(contentsLanguageDir));
 
 		String contentsLanguageId = getContentsLanguageId(
 			inputEditorTaglibAttributes);
 
-		contentsLanguageId = contentsLanguageId.replace("iw", "he");
-		contentsLanguageId = contentsLanguageId.replace("_", "-");
+		contentsLanguageId = StringUtil.replace(contentsLanguageId, "iw", "he");
+		contentsLanguageId = StringUtil.replace(contentsLanguageId, '_', '-');
 
 		jsonObject.put(
 			"contentsLanguage", contentsLanguageId
@@ -78,8 +77,8 @@ public class BaseCKEditorConfigContributor extends BaseEditorConfigContributor {
 
 		String languageId = getLanguageId(themeDisplay);
 
-		languageId = languageId.replace("iw", "he");
-		languageId = languageId.replace("_", "-");
+		languageId = StringUtil.replace(languageId, "iw", "he");
+		languageId = StringUtil.replace(languageId, '_', '-');
 
 		jsonObject.put("language", languageId);
 

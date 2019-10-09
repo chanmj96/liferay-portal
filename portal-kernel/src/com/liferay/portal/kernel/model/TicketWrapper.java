@@ -20,8 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link Ticket}.
@@ -31,9 +29,8 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Ticket
  * @generated
  */
-@ProviderType
 public class TicketWrapper
-	extends BaseModelWrapper<Ticket> implements Ticket, ModelWrapper<Ticket> {
+	extends BaseModelWrapper<Ticket> implements ModelWrapper<Ticket>, Ticket {
 
 	public TicketWrapper(Ticket ticket) {
 		super(ticket);
@@ -245,6 +242,11 @@ public class TicketWrapper
 		return model.isExpired();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a ticket model instance should use the <code>Ticket</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();

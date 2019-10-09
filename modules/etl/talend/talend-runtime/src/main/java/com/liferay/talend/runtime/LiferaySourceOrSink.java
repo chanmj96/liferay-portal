@@ -14,34 +14,24 @@
 
 package com.liferay.talend.runtime;
 
-import com.liferay.talend.avro.EndpointSchemaInferrer;
 import com.liferay.talend.common.exception.MalformedURLException;
-import com.liferay.talend.common.json.JsonFinder;
-import com.liferay.talend.common.oas.OASParameter;
-import com.liferay.talend.common.oas.constants.OASConstants;
-import com.liferay.talend.common.util.StringUtil;
+import com.liferay.talend.common.oas.OASSource;
 import com.liferay.talend.common.util.URIUtil;
 import com.liferay.talend.connection.LiferayConnectionProperties;
 import com.liferay.talend.connection.LiferayConnectionPropertiesProvider;
 import com.liferay.talend.properties.ExceptionUtils;
 import com.liferay.talend.runtime.client.RESTClient;
-import com.liferay.talend.runtime.client.ResponseEntityReader;
+import com.liferay.talend.runtime.client.ResponseHandler;
+import com.liferay.talend.runtime.client.exception.ResponseContentClientException;
 
 import java.io.IOException;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
-import javax.json.JsonArray;
 import javax.json.JsonObject;
 
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.ProcessingException;
+import javax.ws.rs.core.Response;
 
 import org.apache.avro.Schema;
 
@@ -66,8 +56,7 @@ import org.talend.daikon.properties.ValidationResultMutable;
  * @author Ivica Cardic
  */
 public class LiferaySourceOrSink
-	extends TranslatableImpl
-	implements LiferaySourceOrSinkRuntime, SourceOrSink {
+	extends TranslatableImpl implements OASSource, SourceOrSink {
 
 	public JsonObject doDeleteRequest(RuntimeContainer runtimeContainer) {
 		return doDeleteRequest(runtimeContainer, null);
@@ -78,8 +67,7 @@ public class LiferaySourceOrSink
 
 		RESTClient restClient = getRestClient(runtimeContainer, resourceURL);
 
-		return _responseEntityReader.asJsonObject(
-			restClient.executeDeleteRequest());
+		return _responseHandler.asJsonObject(restClient.executeDeleteRequest());
 	}
 
 	public JsonObject doDeleteRequest(String resourceURL) {
@@ -95,19 +83,11 @@ public class LiferaySourceOrSink
 
 		RESTClient restClient = getRestClient(runtimeContainer, resourceURL);
 
-		return _responseEntityReader.asJsonObject(
-			restClient.executeGetRequest());
+		return _responseHandler.asJsonObject(restClient.executeGetRequest());
 	}
 
 	public JsonObject doGetRequest(String resourceURL) {
 		return doGetRequest(null, resourceURL);
-	}
-
-	public JsonObject doPatchRequest(
-			RuntimeContainer runtimeContainer, JsonObject jsonObject)
-		throws IOException {
-
-		return doPatchRequest(runtimeContainer, null, jsonObject);
 	}
 
 	public JsonObject doPatchRequest(
@@ -116,14 +96,21 @@ public class LiferaySourceOrSink
 
 		RESTClient restClient = getRestClient(runtimeContainer, resourceURL);
 
-		return _responseEntityReader.asJsonObject(
-			restClient.executePatchRequest(jsonObject));
-	}
+		Response response = restClient.executePatchRequest(jsonObject);
 
-	public JsonObject doPatchRequest(
-		String resourceURL, JsonObject jsonObject) {
+		if (!_responseHandler.isSuccess(response)) {
+			throw new ResponseContentClientException(
+				"Request did not succeed", response.getStatus(), null);
+		}
 
-		return doPatchRequest(null, resourceURL, jsonObject);
+		if (!_responseHandler.isApplicationJsonContentType(response)) {
+			throw new ResponseContentClientException(
+				"Unable to decode response content type " +
+					_responseHandler.getContentType(response),
+				response.getStatus(), null);
+		}
+
+		return _responseHandler.asJsonObject(response);
 	}
 
 	public JsonObject doPostRequest(
@@ -138,7 +125,7 @@ public class LiferaySourceOrSink
 
 		RESTClient restClient = getRestClient(runtimeContainer, resourceURL);
 
-		return _responseEntityReader.asJsonObject(
+		return _responseHandler.asJsonObject(
 			restClient.executePostRequest(jsonObject));
 	}
 
@@ -203,39 +190,6 @@ public class LiferaySourceOrSink
 		return liferayConnectionProperties;
 	}
 
-	@Override
-	public Set<String> getEndpointList(String operation) {
-		LiferayConnectionProperties liferayConnectionProperties =
-			getEffectiveConnection(null);
-
-		JsonObject oasJsonObject = doGetRequest(
-			liferayConnectionProperties.getApiSpecURL());
-
-		return _extractEndpoints(operation, oasJsonObject);
-	}
-
-	@Override
-	public Map<String, String> getEndpointMap(String operation) {
-		Map<String, String> endpointMap = new TreeMap<>();
-
-		LiferayConnectionProperties liferayConnectionProperties =
-			getEffectiveConnection(null);
-
-		JsonObject oasJsonObject = doGetRequest(
-			liferayConnectionProperties.getApiSpecURL());
-
-		Set<String> endpoints = _extractEndpoints(operation, oasJsonObject);
-
-		for (String endpoint : endpoints) {
-			endpointMap.put(
-				endpoint,
-				_endpointSchemaInferrer.extractEndpointSchemaName(
-					endpoint, operation, oasJsonObject));
-		}
-
-		return endpointMap;
-	}
-
 	/**
 	 * @deprecated As of Mueller (7.2.x)
 	 */
@@ -248,42 +202,8 @@ public class LiferaySourceOrSink
 	}
 
 	@Override
-	public Schema getEndpointSchema(String endpoint, String operation) {
-		LiferayConnectionProperties liferayConnectionProperties =
-			getEffectiveConnection(null);
-
-		JsonObject oasJsonObject = doGetRequest(
-			liferayConnectionProperties.getApiSpecURL());
-
-		return _endpointSchemaInferrer.inferSchema(
-			endpoint, operation, oasJsonObject);
-	}
-
-	@Override
-	public List<OASParameter> getParameters(String endpoint, String operation) {
-		List<OASParameter> oasParameters = new ArrayList<>();
-
-		LiferayConnectionProperties liferayConnectionProperties =
-			getEffectiveConnection(null);
-
-		String apiSpecURLHref = liferayConnectionProperties.getApiSpecURL();
-
-		JsonObject oasJsonObject = doGetRequest(apiSpecURLHref);
-
-		String jsonFinderPath = StringUtil.replace(
-			OASConstants.PATH_ENDPOINT_OPERATION_PARAMETERS_PATTERN,
-			"ENDPOINT_TPL", endpoint, "OPERATION_TPL",
-			StringUtil.toLowerCase(operation));
-
-		JsonArray parametersJsonArray = _jsonFinder.getDescendantJsonArray(
-			jsonFinderPath, oasJsonObject);
-
-		for (int i = 0; i < parametersJsonArray.size(); i++) {
-			oasParameters.add(
-				_toParameter(parametersJsonArray.getJsonObject(i)));
-		}
-
-		return oasParameters;
+	public JsonObject getOASJsonObject(String oasURL) {
+		return doGetRequest(null, oasURL);
 	}
 
 	public RESTClient getRestClient(RuntimeContainer runtimeContainer) {
@@ -323,20 +243,18 @@ public class LiferaySourceOrSink
 		throw new UnsupportedOperationException();
 	}
 
-	public Set<String> getSupportedOperations(String endpoint) {
-		LiferayConnectionProperties liferayConnectionProperties =
-			getEffectiveConnection(null);
+	@Override
+	public ValidationResult initialize(
+		ComponentProperties componentProperties) {
 
-		JsonObject oasJsonObject = doGetRequest(
-			liferayConnectionProperties.getApiSpecURL());
+		ValidationResult validationResult = initialize(
+			null, componentProperties);
 
-		String jsonFinderPath = StringUtil.replace(
-			OASConstants.PATH_ENDPOINT_PATTERN, "ENDPOINT_TPL", endpoint);
+		if (validationResult.getStatus() == ValidationResult.Result.ERROR) {
+			return validationResult;
+		}
 
-		JsonObject endpointJsonObject = _jsonFinder.getDescendantJsonObject(
-			jsonFinderPath, oasJsonObject);
-
-		return endpointJsonObject.keySet();
+		return validate(null);
 	}
 
 	@Override
@@ -367,16 +285,15 @@ public class LiferaySourceOrSink
 		LiferayConnectionProperties liferayConnectionProperties =
 			getEffectiveConnection(runtimeContainer);
 
+		String target = liferayConnectionProperties.getApiSpecURL();
+
 		try {
-			URIUtil.validateOpenAPISpecURL(
-				liferayConnectionProperties.getApiSpecURL());
+			URIUtil.validateOpenAPISpecURL(target);
 		}
 		catch (MalformedURLException murle) {
 			return new ValidationResult(
 				ValidationResult.Result.ERROR, murle.getMessage());
 		}
-
-		String target = liferayConnectionProperties.getApiSpecURL();
 
 		if (_logger.isDebugEnabled()) {
 			_logger.debug(
@@ -387,29 +304,32 @@ public class LiferaySourceOrSink
 				liferayConnectionProperties.getUserId());
 		}
 
-		if (_isNullString(target)) {
-			return new ValidationResult(
-				ValidationResult.Result.ERROR,
-				i18nMessages.getMessage(
-					"error.validation.connection.apiSpecURL"));
+		if (liferayConnectionProperties.isBasicAuthorization()) {
+			if (_isNullString(liferayConnectionProperties.getUserId()) ||
+				_isNullString(liferayConnectionProperties.getPassword())) {
+
+				return new ValidationResult(
+					ValidationResult.Result.ERROR,
+					i18nMessages.getMessage(
+						"error.validation.connection.credentials"));
+			}
+		}
+		else {
+			if (_isNullString(liferayConnectionProperties.getOAuthClientId()) ||
+				_isNullString(
+					liferayConnectionProperties.getOAuthClientSecret())) {
+
+				return new ValidationResult(
+					ValidationResult.Result.ERROR,
+					i18nMessages.getMessage(
+						"error.validation.connection.credentials"));
+			}
 		}
 
-		if (_isNullString(liferayConnectionProperties.getUserId()) ||
-			_isNullString(liferayConnectionProperties.getPassword())) {
-
-			return new ValidationResult(
-				ValidationResult.Result.ERROR,
-				i18nMessages.getMessage(
-					"error.validation.connection.credentials"));
-		}
-
-		return validateConnection(
-			liferayConnectionProperties, runtimeContainer);
+		return validateConnection(runtimeContainer);
 	}
 
-	@Override
 	public ValidationResult validateConnection(
-		LiferayConnectionPropertiesProvider liferayConnectionPropertiesProvider,
 		RuntimeContainer runtimeContainer) {
 
 		try {
@@ -464,50 +384,6 @@ public class LiferaySourceOrSink
 		liferayConnectionPropertiesProvider;
 	protected RESTClient restClient;
 
-	private Set<String> _extractEndpoints(
-		String operation, JsonObject oasJsonObject) {
-
-		Set<String> endpoints = new TreeSet<>();
-
-		JsonObject pathsJsonObject = oasJsonObject.getJsonObject(
-			OASConstants.PATHS);
-
-		pathsJsonObject.forEach(
-			(path, operationsJsonValue) -> {
-				JsonObject operationsJsonObject =
-					operationsJsonValue.asJsonObject();
-
-				operationsJsonObject.forEach(
-					(operationName, operationJsonValue) -> {
-						if (!Objects.equals(
-								operation,
-								StringUtil.toUpperCase(operationName))) {
-
-							return;
-						}
-
-						if (!Objects.equals(operation, HttpMethod.GET)) {
-							endpoints.add(path);
-
-							return;
-						}
-
-						if (_jsonFinder.hasPath(
-								OASConstants.PATH_RESPONSE_SCHEMA_REFERENCE,
-								operationJsonValue.asJsonObject()) ||
-							_jsonFinder.hasPath(
-								OASConstants.
-									PATH_RESPONSE_SCHEMA_ITEMS_REFERENCE,
-								operationJsonValue.asJsonObject())) {
-
-							endpoints.add(path);
-						}
-					});
-			});
-
-		return endpoints;
-	}
-
 	private boolean _isNullString(String value) {
 		if (value == null) {
 			return true;
@@ -522,31 +398,11 @@ public class LiferaySourceOrSink
 		return false;
 	}
 
-	private OASParameter _toParameter(JsonObject jsonObject) {
-		OASParameter oasParameter = new OASParameter();
-
-		oasParameter.setType(
-			OASParameter.Type.valueOf(
-				StringUtil.toUpperCase(jsonObject.getString("in"))));
-
-		oasParameter.setName(jsonObject.getString("name"));
-
-		if (jsonObject.containsKey("required")) {
-			oasParameter.setRequired(jsonObject.getBoolean("required"));
-		}
-
-		return oasParameter;
-	}
-
 	private static final Logger _logger = LoggerFactory.getLogger(
 		LiferaySourceOrSink.class);
 
 	private static final long serialVersionUID = 3109815759807236523L;
 
-	private final EndpointSchemaInferrer _endpointSchemaInferrer =
-		new EndpointSchemaInferrer();
-	private final JsonFinder _jsonFinder = new JsonFinder();
-	private final ResponseEntityReader _responseEntityReader =
-		new ResponseEntityReader();
+	private final ResponseHandler _responseHandler = new ResponseHandler();
 
 }

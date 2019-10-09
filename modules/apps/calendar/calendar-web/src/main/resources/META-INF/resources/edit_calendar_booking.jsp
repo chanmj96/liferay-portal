@@ -245,6 +245,8 @@ while (manageableCalendarsIterator.hasNext()) {
 		function() {
 			var remoteServices = new Liferay.CalendarRemoteServices(
 				{
+					baseActionURL: '<%= PortletURLFactoryUtil.create(request, portletDisplay.getId(), PortletRequest.ACTION_PHASE) %>',
+					baseResourceURL: '<%= PortletURLFactoryUtil.create(request, portletDisplay.getId(), PortletRequest.RESOURCE_PHASE) %>',
 					invokerURL: themeDisplay.getPathContext() + '/api/jsonws/invoke',
 					namespace: '<portlet:namespace />'
 				}
@@ -528,7 +530,7 @@ while (manageableCalendarsIterator.hasNext()) {
 
 		<aui:button name="saveButton" primary="<%= false %>" type="submit" value="save-as-draft" />
 
-		<c:if test="<%= calendarBooking != null %>">
+		<c:if test="<%= (calendarBooking != null) && CalendarBookingPermission.contains(themeDisplay.getPermissionChecker(), calendarBooking, ActionKeys.PERMISSIONS) %>">
 			<liferay-security:permissionsURL
 				modelResource="<%= CalendarBooking.class.getName() %>"
 				modelResourceDescription="<%= calendarBooking.getTitle(locale) %>"

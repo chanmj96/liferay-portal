@@ -2,8 +2,16 @@ definition {
 
 	var dmDocumentTypeName = "File Upload";
 
-	macro gotoAddDocumentType {
+	macro gotoAddDocumentTypeCP {
 		LexiconEntry.gotoAdd();
+
+		var key_dmDocumentTypeName = "${dmDocumentTypeName}";
+
+		MenuItem.click(menuItem = "${dmDocumentTypeName}");
+	}
+
+	macro gotoAddDocumentTypePG {
+		Portlet.clickPortletPlusIconPG(portletName = "Documents and Media");
 
 		var key_dmDocumentTypeName = "${dmDocumentTypeName}";
 
@@ -160,7 +168,7 @@ definition {
 		var key_text = "Share";
 
 		AssertClick(
-			locator1 = "Button#ANY",
+			locator1 = "Button#SHARE_SIDENAV",
 			value1 = "Share");
 	}
 
@@ -175,9 +183,9 @@ definition {
 
 		Click.clickAt(locator1 = "Icon#INFO");
 
-		AssertElementPresent(locator1 = "Button#SHARE");
+		AssertElementPresent(locator1 = "Button#SHARE_SIDEBAR");
 
-		Click(locator1 = "Button#SHARE");
+		Click(locator1 = "Button#SHARE_SIDEBAR");
 	}
 
 	macro gotoShareViaSharedContent {

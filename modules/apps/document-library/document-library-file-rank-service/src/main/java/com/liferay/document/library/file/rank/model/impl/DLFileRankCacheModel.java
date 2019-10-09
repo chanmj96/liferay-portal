@@ -18,6 +18,7 @@ import com.liferay.document.library.file.rank.model.DLFileRank;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,17 +27,14 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing DLFileRank in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DLFileRankCacheModel
-	implements CacheModel<DLFileRank>, Externalizable {
+	implements CacheModel<DLFileRank>, Externalizable, MVCCModel {
 
 	@Override
 	public boolean equals(Object obj) {
@@ -50,7 +48,9 @@ public class DLFileRankCacheModel
 
 		DLFileRankCacheModel dlFileRankCacheModel = (DLFileRankCacheModel)obj;
 
-		if (fileRankId == dlFileRankCacheModel.fileRankId) {
+		if ((fileRankId == dlFileRankCacheModel.fileRankId) &&
+			(mvccVersion == dlFileRankCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -59,14 +59,28 @@ public class DLFileRankCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, fileRankId);
+		int hashCode = HashUtil.hash(0, fileRankId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(15);
+		StringBundler sb = new StringBundler(17);
 
-		sb.append("{fileRankId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", fileRankId=");
 		sb.append(fileRankId);
 		sb.append(", groupId=");
 		sb.append(groupId);
@@ -89,6 +103,7 @@ public class DLFileRankCacheModel
 	public DLFileRank toEntityModel() {
 		DLFileRankImpl dlFileRankImpl = new DLFileRankImpl();
 
+		dlFileRankImpl.setMvccVersion(mvccVersion);
 		dlFileRankImpl.setFileRankId(fileRankId);
 		dlFileRankImpl.setGroupId(groupId);
 		dlFileRankImpl.setCompanyId(companyId);
@@ -111,6 +126,8 @@ public class DLFileRankCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
 		fileRankId = objectInput.readLong();
 
 		groupId = objectInput.readLong();
@@ -127,6 +144,8 @@ public class DLFileRankCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		objectOutput.writeLong(fileRankId);
 
 		objectOutput.writeLong(groupId);
@@ -141,6 +160,7 @@ public class DLFileRankCacheModel
 		objectOutput.writeBoolean(active);
 	}
 
+	public long mvccVersion;
 	public long fileRankId;
 	public long groupId;
 	public long companyId;

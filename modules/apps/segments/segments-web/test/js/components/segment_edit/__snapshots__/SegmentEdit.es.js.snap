@@ -249,18 +249,18 @@ exports[`SegmentEdit renders with edit buttons if the user has update permission
             <div
               class="btn-group-item"
             >
-              <a
-                class="text-capitalize link-outline link-outline-secondary"
-                href="/test-url"
+              <button
+                class="text-capitalize btn btn-sm btn-secondary"
+                type="button"
               >
                 cancel
-              </a>
+              </button>
             </div>
             <div
               class="btn-group-item"
             >
               <button
-                class="text-capitalize btn btn-primary btn-sm"
+                class="text-capitalize btn btn-sm btn-primary"
                 disabled=""
                 type="submit"
               >
@@ -428,18 +428,18 @@ exports[`SegmentEdit renders with given values 1`] = `
             <div
               class="btn-group-item"
             >
-              <a
-                class="text-capitalize link-outline link-outline-secondary"
-                href="/test-url"
+              <button
+                class="text-capitalize btn btn-sm btn-secondary"
+                type="button"
               >
                 cancel
-              </a>
+              </button>
             </div>
             <div
               class="btn-group-item"
             >
               <button
-                class="text-capitalize btn btn-primary btn-sm"
+                class="text-capitalize btn btn-sm btn-primary"
                 type="submit"
               >
                 save
@@ -619,7 +619,7 @@ exports[`SegmentEdit renders with given values 1`] = `
                             </b>
                           </span>
                           <button
-                            class="btn btn-secondary btn-sm"
+                            class="btn btn-sm btn-secondary"
                             type="button"
                           >
                             view-members
@@ -706,7 +706,7 @@ exports[`SegmentEdit renders with given values 1`] = `
                               value="value"
                             />
                             <button
-                              class="btn-outline-borderless btn btn-secondary btn-monospaced"
+                              class="btn-outline-borderless btn btn-monospaced btn-secondary"
                               type="button"
                             >
                               <svg
@@ -719,7 +719,7 @@ exports[`SegmentEdit renders with given values 1`] = `
                               </svg>
                             </button>
                             <button
-                              class="btn-outline-borderless btn btn-secondary btn-monospaced"
+                              class="btn-outline-borderless btn btn-monospaced btn-secondary"
                               type="button"
                             >
                               <svg

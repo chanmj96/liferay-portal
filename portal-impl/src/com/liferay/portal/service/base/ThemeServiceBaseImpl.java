@@ -41,9 +41,9 @@ import javax.sql.DataSource;
  * @generated
  */
 public abstract class ThemeServiceBaseImpl
-	extends BaseServiceImpl implements ThemeService, IdentifiableOSGiService {
+	extends BaseServiceImpl implements IdentifiableOSGiService, ThemeService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>ThemeService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.ThemeServiceUtil</code>.

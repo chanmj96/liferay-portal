@@ -43,9 +43,9 @@ import javax.sql.DataSource;
  */
 public abstract class UADPartialEntryServiceBaseImpl
 	extends BaseServiceImpl
-	implements UADPartialEntryService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, UADPartialEntryService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>UADPartialEntryService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.tools.service.builder.test.service.UADPartialEntryServiceUtil</code>.

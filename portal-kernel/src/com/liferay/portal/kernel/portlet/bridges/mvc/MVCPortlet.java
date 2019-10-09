@@ -17,6 +17,7 @@ package com.liferay.portal.kernel.portlet.bridges.mvc;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.internal.util.ContextResourcePathsUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.PortletApp;
@@ -34,6 +35,8 @@ import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
 
+import java.net.URL;
+
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,7 +50,6 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.EventRequest;
 import javax.portlet.EventResponse;
-import javax.portlet.PortletConfig;
 import javax.portlet.PortletContext;
 import javax.portlet.PortletException;
 import javax.portlet.PortletPreferences;
@@ -246,10 +248,8 @@ public class MVCPortlet extends LiferayPortlet {
 			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 		throws IOException, PortletException {
 
-		PortletConfig portletConfig = getPortletConfig();
-
 		PortalUtil.invokeTaglibDiscussionPagination(
-			portletConfig, resourceRequest, resourceResponse);
+			getPortletConfig(), resourceRequest, resourceResponse);
 	}
 
 	@Override
@@ -665,9 +665,31 @@ public class MVCPortlet extends LiferayPortlet {
 	}
 
 	private Set<String> _getJspPaths(String path) {
-		Set<String> paths = new HashSet<>();
-
 		PortletContext portletContext = getPortletContext();
+
+		Set<String> pathsSet = ContextResourcePathsUtil.visitResources(
+			portletContext, path, "*.jsp",
+			enumeration -> {
+				Set<String> paths = new HashSet<>();
+
+				if (enumeration == null) {
+					return paths;
+				}
+
+				while (enumeration.hasMoreElements()) {
+					URL url = enumeration.nextElement();
+
+					paths.add(url.getPath());
+				}
+
+				return paths;
+			});
+
+		if (pathsSet != null) {
+			return pathsSet;
+		}
+
+		Set<String> paths = new HashSet<>();
 
 		Queue<String> queue = new ArrayDeque<>();
 

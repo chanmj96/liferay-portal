@@ -39,6 +39,7 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import java.io.Serializable;
 
 import java.util.List;
+import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -60,7 +61,7 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface FragmentEntryLinkLocalService
 	extends BaseLocalService, PersistedModelLocalService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link FragmentEntryLinkLocalServiceUtil} to access the fragment entry link local service. Add custom service methods to <code>com.liferay.fragment.service.impl.FragmentEntryLinkLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -351,6 +352,10 @@ public interface FragmentEntryLinkLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<FragmentEntryLink> getFragmentEntryLinks(String rendererKey);
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<FragmentEntryLink> getFragmentEntryLinksByFragmentEntryId(
+		long fragmentEntryId);
+
 	/**
 	 * Returns all the fragment entry links matching the UUID and company.
 	 *
@@ -396,6 +401,10 @@ public interface FragmentEntryLinkLocalService
 	public int getFragmentEntryLinksCount(
 		long groupId, long fragmentEntryId, long classNameId,
 		int layoutPageTemplateType);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getFragmentEntryLinksCountByFragmentEntryId(
+		long fragmentEntryId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
@@ -470,10 +479,19 @@ public interface FragmentEntryLinkLocalService
 			long fragmentEntryLinkId, String editableValues)
 		throws PortalException;
 
+	public FragmentEntryLink updateFragmentEntryLink(
+			long fragmentEntryLinkId, String editableValues,
+			boolean updateClassedModel)
+		throws PortalException;
+
 	public void updateFragmentEntryLinks(
 			long userId, long groupId, long classNameId, long classPK,
 			long[] fragmentEntryIds, String editableValues,
 			ServiceContext serviceContext)
+		throws PortalException;
+
+	public void updateFragmentEntryLinks(
+			Map<Long, String> fragmentEntryLinksEditableValuesMap)
 		throws PortalException;
 
 	public void updateLatestChanges(long fragmentEntryLinkId)

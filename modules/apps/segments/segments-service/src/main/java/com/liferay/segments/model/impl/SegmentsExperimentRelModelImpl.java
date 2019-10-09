@@ -26,7 +26,6 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.impl.BaseModelImpl;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.segments.model.SegmentsExperimentRel;
 import com.liferay.segments.model.SegmentsExperimentRelModel;
@@ -49,8 +48,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the SegmentsExperimentRel service. Represents a row in the &quot;SegmentsExperimentRel&quot; database table, with each column mapped to a property of this class.
  *
@@ -63,12 +60,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class SegmentsExperimentRelModelImpl
 	extends BaseModelImpl<SegmentsExperimentRel>
 	implements SegmentsExperimentRelModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a segments experiment rel model instance should use the <code>SegmentsExperimentRel</code> interface instead.
@@ -76,6 +72,7 @@ public class SegmentsExperimentRelModelImpl
 	public static final String TABLE_NAME = "SegmentsExperimentRel";
 
 	public static final Object[][] TABLE_COLUMNS = {
+		{"mvccVersion", Types.BIGINT},
 		{"segmentsExperimentRelId", Types.BIGINT}, {"groupId", Types.BIGINT},
 		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
 		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
@@ -88,6 +85,7 @@ public class SegmentsExperimentRelModelImpl
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("segmentsExperimentRelId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("companyId", Types.BIGINT);
@@ -101,7 +99,7 @@ public class SegmentsExperimentRelModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table SegmentsExperimentRel (segmentsExperimentRelId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,segmentsExperimentId LONG,segmentsExperienceId LONG,split DOUBLE)";
+		"create table SegmentsExperimentRel (mvccVersion LONG default 0 not null,segmentsExperimentRelId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,segmentsExperimentId LONG,segmentsExperienceId LONG,split DOUBLE)";
 
 	public static final String TABLE_SQL_DROP =
 		"drop table SegmentsExperimentRel";
@@ -118,24 +116,19 @@ public class SegmentsExperimentRelModelImpl
 
 	public static final String TX_MANAGER = "liferayTransactionManager";
 
-	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.segments.service.util.ServiceProps.get(
-			"value.object.entity.cache.enabled.com.liferay.segments.model.SegmentsExperimentRel"),
-		true);
+	public static final long SEGMENTSEXPERIENCEID_COLUMN_BITMASK = 1L;
 
-	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.segments.service.util.ServiceProps.get(
-			"value.object.finder.cache.enabled.com.liferay.segments.model.SegmentsExperimentRel"),
-		true);
+	public static final long SEGMENTSEXPERIMENTID_COLUMN_BITMASK = 2L;
 
-	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(
-		com.liferay.segments.service.util.ServiceProps.get(
-			"value.object.column.bitmask.enabled.com.liferay.segments.model.SegmentsExperimentRel"),
-		true);
+	public static final long SEGMENTSEXPERIMENTRELID_COLUMN_BITMASK = 4L;
 
-	public static final long SEGMENTSEXPERIMENTID_COLUMN_BITMASK = 1L;
+	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
+		_entityCacheEnabled = entityCacheEnabled;
+	}
 
-	public static final long SEGMENTSEXPERIMENTRELID_COLUMN_BITMASK = 2L;
+	public static void setFinderCacheEnabled(boolean finderCacheEnabled) {
+		_finderCacheEnabled = finderCacheEnabled;
+	}
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -152,6 +145,7 @@ public class SegmentsExperimentRelModelImpl
 
 		SegmentsExperimentRel model = new SegmentsExperimentRelImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setSegmentsExperimentRelId(
 			soapModel.getSegmentsExperimentRelId());
 		model.setGroupId(soapModel.getGroupId());
@@ -189,10 +183,6 @@ public class SegmentsExperimentRelModelImpl
 
 		return models;
 	}
-
-	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
-		com.liferay.segments.service.util.ServiceProps.get(
-			"lock.expiration.time.com.liferay.segments.model.SegmentsExperimentRel"));
 
 	public SegmentsExperimentRelModelImpl() {
 	}
@@ -325,6 +315,12 @@ public class SegmentsExperimentRelModelImpl
 					<String, BiConsumer<SegmentsExperimentRel, ?>>();
 
 		attributeGetterFunctions.put(
+			"mvccVersion", SegmentsExperimentRel::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<SegmentsExperimentRel, Long>)
+				SegmentsExperimentRel::setMvccVersion);
+		attributeGetterFunctions.put(
 			"segmentsExperimentRelId",
 			SegmentsExperimentRel::getSegmentsExperimentRelId);
 		attributeSetterBiConsumers.put(
@@ -391,6 +387,17 @@ public class SegmentsExperimentRelModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -528,7 +535,19 @@ public class SegmentsExperimentRelModelImpl
 
 	@Override
 	public void setSegmentsExperienceId(long segmentsExperienceId) {
+		_columnBitmask |= SEGMENTSEXPERIENCEID_COLUMN_BITMASK;
+
+		if (!_setOriginalSegmentsExperienceId) {
+			_setOriginalSegmentsExperienceId = true;
+
+			_originalSegmentsExperienceId = _segmentsExperienceId;
+		}
+
 		_segmentsExperienceId = segmentsExperienceId;
+	}
+
+	public long getOriginalSegmentsExperienceId() {
+		return _originalSegmentsExperienceId;
 	}
 
 	@JSON
@@ -580,6 +599,7 @@ public class SegmentsExperimentRelModelImpl
 		SegmentsExperimentRelImpl segmentsExperimentRelImpl =
 			new SegmentsExperimentRelImpl();
 
+		segmentsExperimentRelImpl.setMvccVersion(getMvccVersion());
 		segmentsExperimentRelImpl.setSegmentsExperimentRelId(
 			getSegmentsExperimentRelId());
 		segmentsExperimentRelImpl.setGroupId(getGroupId());
@@ -644,12 +664,12 @@ public class SegmentsExperimentRelModelImpl
 
 	@Override
 	public boolean isEntityCacheEnabled() {
-		return ENTITY_CACHE_ENABLED;
+		return _entityCacheEnabled;
 	}
 
 	@Override
 	public boolean isFinderCacheEnabled() {
-		return FINDER_CACHE_ENABLED;
+		return _finderCacheEnabled;
 	}
 
 	@Override
@@ -663,6 +683,11 @@ public class SegmentsExperimentRelModelImpl
 
 		segmentsExperimentRelModelImpl._setOriginalSegmentsExperimentId = false;
 
+		segmentsExperimentRelModelImpl._originalSegmentsExperienceId =
+			segmentsExperimentRelModelImpl._segmentsExperienceId;
+
+		segmentsExperimentRelModelImpl._setOriginalSegmentsExperienceId = false;
+
 		segmentsExperimentRelModelImpl._columnBitmask = 0;
 	}
 
@@ -670,6 +695,8 @@ public class SegmentsExperimentRelModelImpl
 	public CacheModel<SegmentsExperimentRel> toCacheModel() {
 		SegmentsExperimentRelCacheModel segmentsExperimentRelCacheModel =
 			new SegmentsExperimentRelCacheModel();
+
+		segmentsExperimentRelCacheModel.mvccVersion = getMvccVersion();
 
 		segmentsExperimentRelCacheModel.segmentsExperimentRelId =
 			getSegmentsExperimentRelId();
@@ -790,6 +817,10 @@ public class SegmentsExperimentRelModelImpl
 
 	}
 
+	private static boolean _entityCacheEnabled;
+	private static boolean _finderCacheEnabled;
+
+	private long _mvccVersion;
 	private long _segmentsExperimentRelId;
 	private long _groupId;
 	private long _companyId;
@@ -802,6 +833,8 @@ public class SegmentsExperimentRelModelImpl
 	private long _originalSegmentsExperimentId;
 	private boolean _setOriginalSegmentsExperimentId;
 	private long _segmentsExperienceId;
+	private long _originalSegmentsExperienceId;
+	private boolean _setOriginalSegmentsExperienceId;
 	private double _split;
 	private long _columnBitmask;
 	private SegmentsExperimentRel _escapedModel;

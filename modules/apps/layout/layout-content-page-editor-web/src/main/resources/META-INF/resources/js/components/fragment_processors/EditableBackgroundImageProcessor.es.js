@@ -12,6 +12,7 @@
  * details.
  */
 
+import {FLOATING_TOOLBAR_BUTTONS} from '../../utils/constants';
 import {openImageSelector} from '../../utils/FragmentsEditorDialogUtils';
 
 /**
@@ -20,6 +21,29 @@ import {openImageSelector} from '../../utils/FragmentsEditorDialogUtils';
  * @review
  */
 function destroy() {}
+
+/**
+ * @param {object} editableValues
+ * @return {object[]} Floating toolbar panels
+ */
+function getFloatingToolbarButtons(editableValues) {
+	const buttons = [];
+
+	const backgroundImageButton = {
+		...FLOATING_TOOLBAR_BUTTONS.fragmentBackgroundImage
+	};
+	const mapButton = {...FLOATING_TOOLBAR_BUTTONS.map};
+
+	if (editableValues.mappedField || editableValues.fieldId) {
+		backgroundImageButton.cssClass =
+			'disabled fragments-editor__floating-toolbar--disabled fragments-editor__floating-toolbar--mapped-field';
+		mapButton.cssClass = 'fragments-editor__floating-toolbar--mapped-field';
+	}
+
+	buttons.push(backgroundImageButton, mapButton);
+
+	return buttons;
+}
 
 /**
  * Show the image selector dialog and calls the given callback when an
@@ -39,17 +63,20 @@ function init(callback, imageSelectorURL, portletNamespace) {
 
 /**
  * @param {HTMLElement} element
- * @param {string} [backgroundImageURL='']
+ * @param {object} [backgroundImage={}]
  */
-function render(element, backgroundImageURL = '') {
-	element.style.backgroundImage = backgroundImageURL
-		? `url("${backgroundImageURL}")`
+function render(element, backgroundImage = '') {
+	element.style.backgroundImage = backgroundImage
+		? `url("${
+				backgroundImage.url ? backgroundImage.url : backgroundImage
+		  }")`
 		: '';
 	element.style.backgroundSize = 'cover';
 }
 
 export default {
 	destroy,
+	getFloatingToolbarButtons,
 	init,
 	render
 };

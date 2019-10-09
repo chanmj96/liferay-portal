@@ -124,17 +124,16 @@ public class LayoutSetPrototypeLocalServiceImpl
 		// Group
 
 		if (!CompanyThreadLocal.isDeleteInProcess()) {
-			int count = layoutSetPersistence.countByLayoutSetPrototypeUuid_Head(
-				layoutSetPrototype.getUuid(), false);
+			long count = layoutSetPersistence.countByC_L(
+				layoutSetPrototype.getCompanyId(),
+				layoutSetPrototype.getUuid());
 
 			if (count > 0) {
 				throw new RequiredLayoutSetPrototypeException();
 			}
 		}
 
-		Group group = layoutSetPrototype.getGroup();
-
-		groupLocalService.deleteGroup(group);
+		groupLocalService.deleteGroup(layoutSetPrototype.getGroup());
 
 		// Resources
 

@@ -14,17 +14,17 @@
 
 package com.liferay.fragment.entry.processor.freemarker;
 
-import com.liferay.fragment.entry.processor.freemarker.configuration.FreeMarkerFragmentEntryProcessorConfiguration;
+import com.liferay.fragment.entry.processor.freemarker.internal.configuration.FreeMarkerFragmentEntryProcessorConfiguration;
 import com.liferay.fragment.exception.FragmentEntryContentException;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.processor.FragmentEntryProcessor;
 import com.liferay.fragment.processor.FragmentEntryProcessorContext;
 import com.liferay.fragment.util.FragmentEntryConfigUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -40,7 +40,7 @@ import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.segments.constants.SegmentsConstants;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,15 +66,7 @@ public class FreeMarkerFragmentEntryProcessor
 	public JSONObject getDefaultEditableValuesJSONObject(
 		String html, String configuration) {
 
-		if (Validator.isNull(configuration)) {
-			return null;
-		}
-
-		return JSONUtil.put(
-			SegmentsConstants.SEGMENTS_EXPERIENCE_ID_PREFIX +
-				SegmentsConstants.SEGMENTS_EXPERIENCE_ID_DEFAULT,
-			FragmentEntryConfigUtil.getConfigurationDefaultValuesJSONObject(
-				configuration));
+		return JSONFactoryUtil.createJSONObject();
 	}
 
 	@Override
@@ -117,7 +109,7 @@ public class FreeMarkerFragmentEntryProcessor
 
 		Template template = TemplateManagerUtil.getTemplate(
 			TemplateConstants.LANG_TYPE_FTL,
-			new StringTemplateResource("template_id", "[#ftl]\n" + html), true);
+			new StringTemplateResource("template_id", "[#ftl] " + html), true);
 
 		template.put(TemplateConstants.WRITER, unsyncStringWriter);
 
@@ -127,43 +119,21 @@ public class FreeMarkerFragmentEntryProcessor
 
 		Map<String, Object> contextObjects = new HashMap<>();
 
-		JSONObject configurationJSONObject = null;
+		JSONObject configurationValuesJSONObject =
+			FragmentEntryConfigUtil.getConfigurationJSONObject(
+				fragmentEntryLink.getConfiguration(),
+				fragmentEntryLink.getEditableValues(),
+				fragmentEntryProcessorContext.getSegmentsExperienceIds());
 
-		JSONObject editableValuesJSONObject = JSONFactoryUtil.createJSONObject(
-			fragmentEntryLink.getEditableValues());
+		contextObjects.put("configuration", configurationValuesJSONObject);
 
-		Class<?> clazz = getClass();
+		contextObjects.put(
+			"fragmentEntryLinkNamespace", fragmentEntryLink.getNamespace());
 
-		String className = clazz.getName();
-
-		if ((editableValuesJSONObject == null) ||
-			(editableValuesJSONObject.get(className) == null)) {
-
-			configurationJSONObject =
-				FragmentEntryConfigUtil.getConfigurationDefaultValuesJSONObject(
-					fragmentEntryLink.getConfiguration());
-		}
-		else {
-			JSONObject configurationValuesJSONObject =
-				editableValuesJSONObject.getJSONObject(className);
-
-			long[] segmentsExperienceIds =
-				fragmentEntryProcessorContext.getSegmentsExperienceIds();
-
-			long segmentsExperienceId =
-				SegmentsConstants.SEGMENTS_EXPERIENCE_ID_DEFAULT;
-
-			if (segmentsExperienceIds.length > 0) {
-				segmentsExperienceId = segmentsExperienceIds[0];
-			}
-
-			configurationJSONObject =
-				configurationValuesJSONObject.getJSONObject(
-					SegmentsConstants.SEGMENTS_EXPERIENCE_ID_PREFIX +
-						segmentsExperienceId);
-		}
-
-		contextObjects.put("configuration", configurationJSONObject);
+		contextObjects.putAll(
+			FragmentEntryConfigUtil.getContextObjects(
+				configurationValuesJSONObject,
+				fragmentEntryLink.getConfiguration()));
 
 		templateManager.addContextObjects(template, contextObjects);
 
@@ -177,13 +147,7 @@ public class FreeMarkerFragmentEntryProcessor
 			template.processTemplate(unsyncStringWriter);
 		}
 		catch (TemplateException te) {
-			ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
-				"content.Language", getClass());
-
-			String message = LanguageUtil.get(
-				resourceBundle, "freemarker-syntax-is-invalid");
-
-			throw new FragmentEntryContentException(message, te);
+			throw new FragmentEntryContentException(_getMessage(te), te);
 		}
 
 		return unsyncStringWriter.toString();
@@ -205,7 +169,7 @@ public class FreeMarkerFragmentEntryProcessor
 
 		Template template = TemplateManagerUtil.getTemplate(
 			TemplateConstants.LANG_TYPE_FTL,
-			new StringTemplateResource("template_id", "[#ftl]\n" + html), true);
+			new StringTemplateResource("template_id", "[#ftl] " + html), true);
 
 		try {
 			HttpServletRequest httpServletRequest = null;
@@ -219,17 +183,29 @@ public class FreeMarkerFragmentEntryProcessor
 				httpServletResponse = serviceContext.getResponse();
 			}
 
-			if ((httpServletRequest != null) && (httpServletResponse != null)) {
+			if ((httpServletRequest != null) &&
+				(httpServletRequest.getAttribute(WebKeys.THEME_DISPLAY) !=
+					null)) {
+
 				TemplateManager templateManager =
 					TemplateManagerUtil.getTemplateManager(
 						TemplateConstants.LANG_TYPE_FTL);
 
 				Map<String, Object> contextObjects = new HashMap<>();
 
-				contextObjects.put(
-					"configuration",
+				JSONObject configurationDefaultValuesJSONObject =
 					FragmentEntryConfigUtil.
-						getConfigurationDefaultValuesJSONObject(configuration));
+						getConfigurationDefaultValuesJSONObject(configuration);
+
+				contextObjects.put(
+					"configuration", configurationDefaultValuesJSONObject);
+
+				contextObjects.put(
+					"fragmentEntryLinkNamespace", StringPool.BLANK);
+
+				contextObjects.putAll(
+					FragmentEntryConfigUtil.getContextObjects(
+						configurationDefaultValuesJSONObject, configuration));
 
 				templateManager.addContextObjects(template, contextObjects);
 
@@ -242,14 +218,26 @@ public class FreeMarkerFragmentEntryProcessor
 			}
 		}
 		catch (TemplateException te) {
-			ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
-				"content.Language", getClass());
-
-			String message = LanguageUtil.get(
-				resourceBundle, "freemarker-syntax-is-invalid");
-
-			throw new FragmentEntryContentException(message, te);
+			throw new FragmentEntryContentException(_getMessage(te), te);
 		}
+	}
+
+	private String _getMessage(TemplateException te) {
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			"content.Language", getClass());
+
+		String message = LanguageUtil.get(
+			resourceBundle, "freemarker-syntax-is-invalid");
+
+		Throwable causeThrowable = te.getCause();
+
+		String causeThrowableMessage = causeThrowable.getLocalizedMessage();
+
+		if (Validator.isNotNull(causeThrowableMessage)) {
+			message = message + "\n\n" + causeThrowableMessage;
+		}
+
+		return message;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

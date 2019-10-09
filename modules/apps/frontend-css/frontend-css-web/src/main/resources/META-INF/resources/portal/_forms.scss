@@ -1,13 +1,6 @@
-@import 'bourbon';
-@import 'mixins';
-
 .form-group-inline {
 	display: inline-block;
 	vertical-align: bottom;
-}
-
-.button-holder {
-	margin: 20px 0;
 }
 
 .form-search .input-group {
@@ -37,7 +30,7 @@
 		}
 	}
 
-	@include respond-to(phone, tablet) {
+	@include media-breakpoint-down(md) {
 		width: 100%;
 
 		.btn {
@@ -76,9 +69,9 @@
 		white-space: normal;
 		width: auto;
 
-		@include word-wrap(break-all);
+		@include overflow-wrap(break-all);
 
-		@include respond-to(phone, tablet) {
+		@include media-breakpoint-down(md) {
 			font-size: 18px;
 			padding: 8px;
 		}
@@ -157,6 +150,14 @@
 			&.lfr-ddm-repeatable-delete-button {
 				right: 24px;
 			}
+		}
+
+		.lfr-ddm-repeatable-drag-icon {
+			align-items: center;
+			cursor: move;
+			display: inline-flex;
+			position: relative;
+			top: 1px;
 		}
 	}
 

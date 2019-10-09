@@ -57,8 +57,6 @@ import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the AssetEntry service. Represents a row in the &quot;AssetEntry&quot; database table, with each column mapped to a property of this class.
  *
@@ -71,11 +69,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class AssetEntryModelImpl
 	extends BaseModelImpl<AssetEntry> implements AssetEntryModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a asset entry model instance should use the <code>AssetEntry</code> interface instead.
@@ -83,26 +80,27 @@ public class AssetEntryModelImpl
 	public static final String TABLE_NAME = "AssetEntry";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"entryId", Types.BIGINT}, {"groupId", Types.BIGINT},
-		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
-		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
-		{"modifiedDate", Types.TIMESTAMP}, {"classNameId", Types.BIGINT},
-		{"classPK", Types.BIGINT}, {"classUuid", Types.VARCHAR},
-		{"classTypeId", Types.BIGINT}, {"listable", Types.BOOLEAN},
-		{"visible", Types.BOOLEAN}, {"startDate", Types.TIMESTAMP},
-		{"endDate", Types.TIMESTAMP}, {"publishDate", Types.TIMESTAMP},
-		{"expirationDate", Types.TIMESTAMP}, {"mimeType", Types.VARCHAR},
-		{"title", Types.VARCHAR}, {"description", Types.CLOB},
-		{"summary", Types.CLOB}, {"url", Types.VARCHAR},
-		{"layoutUuid", Types.VARCHAR}, {"height", Types.INTEGER},
-		{"width", Types.INTEGER}, {"priority", Types.DOUBLE},
-		{"viewCount", Types.INTEGER}
+		{"mvccVersion", Types.BIGINT}, {"entryId", Types.BIGINT},
+		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
+		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
+		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
+		{"classNameId", Types.BIGINT}, {"classPK", Types.BIGINT},
+		{"classUuid", Types.VARCHAR}, {"classTypeId", Types.BIGINT},
+		{"listable", Types.BOOLEAN}, {"visible", Types.BOOLEAN},
+		{"startDate", Types.TIMESTAMP}, {"endDate", Types.TIMESTAMP},
+		{"publishDate", Types.TIMESTAMP}, {"expirationDate", Types.TIMESTAMP},
+		{"mimeType", Types.VARCHAR}, {"title", Types.VARCHAR},
+		{"description", Types.CLOB}, {"summary", Types.CLOB},
+		{"url", Types.VARCHAR}, {"layoutUuid", Types.VARCHAR},
+		{"height", Types.INTEGER}, {"width", Types.INTEGER},
+		{"priority", Types.DOUBLE}, {"viewCount", Types.INTEGER}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("entryId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("companyId", Types.BIGINT);
@@ -133,7 +131,7 @@ public class AssetEntryModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table AssetEntry (entryId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,classUuid VARCHAR(75) null,classTypeId LONG,listable BOOLEAN,visible BOOLEAN,startDate DATE null,endDate DATE null,publishDate DATE null,expirationDate DATE null,mimeType VARCHAR(75) null,title STRING null,description TEXT null,summary TEXT null,url STRING null,layoutUuid VARCHAR(75) null,height INTEGER,width INTEGER,priority DOUBLE,viewCount INTEGER)";
+		"create table AssetEntry (mvccVersion LONG default 0 not null,entryId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,classUuid VARCHAR(75) null,classTypeId LONG,listable BOOLEAN,visible BOOLEAN,startDate DATE null,endDate DATE null,publishDate DATE null,expirationDate DATE null,mimeType VARCHAR(75) null,title STRING null,description TEXT null,summary TEXT null,url STRING null,layoutUuid VARCHAR(75) null,height INTEGER,width INTEGER,priority DOUBLE,viewCount INTEGER)";
 
 	public static final String TABLE_SQL_DROP = "drop table AssetEntry";
 
@@ -197,6 +195,7 @@ public class AssetEntryModelImpl
 
 		AssetEntry model = new AssetEntryImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setEntryId(soapModel.getEntryId());
 		model.setGroupId(soapModel.getGroupId());
 		model.setCompanyId(soapModel.getCompanyId());
@@ -414,6 +413,10 @@ public class AssetEntryModelImpl
 		Map<String, BiConsumer<AssetEntry, ?>> attributeSetterBiConsumers =
 			new LinkedHashMap<String, BiConsumer<AssetEntry, ?>>();
 
+		attributeGetterFunctions.put("mvccVersion", AssetEntry::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<AssetEntry, Long>)AssetEntry::setMvccVersion);
 		attributeGetterFunctions.put("entryId", AssetEntry::getEntryId);
 		attributeSetterBiConsumers.put(
 			"entryId", (BiConsumer<AssetEntry, Long>)AssetEntry::setEntryId);
@@ -518,6 +521,17 @@ public class AssetEntryModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -1428,6 +1442,7 @@ public class AssetEntryModelImpl
 	public Object clone() {
 		AssetEntryImpl assetEntryImpl = new AssetEntryImpl();
 
+		assetEntryImpl.setMvccVersion(getMvccVersion());
 		assetEntryImpl.setEntryId(getEntryId());
 		assetEntryImpl.setGroupId(getGroupId());
 		assetEntryImpl.setCompanyId(getCompanyId());
@@ -1557,6 +1572,8 @@ public class AssetEntryModelImpl
 	@Override
 	public CacheModel<AssetEntry> toCacheModel() {
 		AssetEntryCacheModel assetEntryCacheModel = new AssetEntryCacheModel();
+
+		assetEntryCacheModel.mvccVersion = getMvccVersion();
 
 		assetEntryCacheModel.entryId = getEntryId();
 
@@ -1775,6 +1792,7 @@ public class AssetEntryModelImpl
 
 	}
 
+	private long _mvccVersion;
 	private long _entryId;
 	private long _groupId;
 	private long _originalGroupId;

@@ -17,8 +17,16 @@ package com.liferay.fragment.util;
 import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
+import com.liferay.portal.language.LanguageImpl;
 import com.liferay.portal.util.FileImpl;
+import com.liferay.registry.BasicRegistryImpl;
+import com.liferay.registry.RegistryUtil;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -38,26 +46,69 @@ public class FragmentEntryConfigUtilTest {
 		JSONFactoryUtil jsonFactoryUtil = new JSONFactoryUtil();
 
 		jsonFactoryUtil.setJSONFactory(new JSONFactoryImpl());
+
+		LanguageUtil languageUtil = new LanguageUtil();
+
+		languageUtil.setLanguage(new LanguageImpl());
+
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
 	}
 
 	@Test
 	public void testGetConfigurationDefaultValuesJSONObject() throws Exception {
 		JSONObject configurationDefaultValuesJSONObject =
 			FragmentEntryConfigUtil.getConfigurationDefaultValuesJSONObject(
-				_getFileContent("configuration.json"));
+				_read("configuration.json"));
 
 		JSONObject expectedConfigurationDefaultValuesJSONObject =
 			JSONFactoryUtil.createJSONObject(
-				_getFileContent("expected-configuration-default-values.json"));
+				_read("expected-configuration-default-values.json"));
 
 		Assert.assertEquals(
 			expectedConfigurationDefaultValuesJSONObject.toJSONString(),
 			configurationDefaultValuesJSONObject.toJSONString());
 	}
 
-	private String _getFileContent(String fileName) throws Exception {
+	@Test
+	public void testTranslateConfigurationEn() throws Exception {
+		_testTranslateConfiguration("en");
+	}
+
+	@Test
+	public void testTranslateConfigurationEs() throws Exception {
+		_testTranslateConfiguration("es");
+	}
+
+	private ResourceBundle _getResourceBundle(String language) {
+		Class<?> clazz = getClass();
+
+		Package pkg = clazz.getPackage();
+
+		return ResourceBundleUtil.getBundle(
+			pkg.getName() + ".dependencies.content.Language",
+			new Locale(language), clazz);
+	}
+
+	private String _read(String fileName) throws Exception {
 		return new String(
 			FileUtil.getBytes(getClass(), "dependencies/" + fileName));
+	}
+
+	private void _testTranslateConfiguration(String language) throws Exception {
+		JSONObject configurationJSONOjbect = JSONFactoryUtil.createJSONObject(
+			_read("configuration_untranslated.json"));
+
+		JSONObject expectedConfigurationTranslatedJSONObject =
+			JSONFactoryUtil.createJSONObject(
+				_read(
+					String.format(
+						"expected_configuration_translated_%s.json",
+						language)));
+
+		Assert.assertEquals(
+			expectedConfigurationTranslatedJSONObject.toJSONString(),
+			FragmentEntryConfigUtil.translateConfiguration(
+				configurationJSONOjbect, _getResourceBundle(language)));
 	}
 
 }

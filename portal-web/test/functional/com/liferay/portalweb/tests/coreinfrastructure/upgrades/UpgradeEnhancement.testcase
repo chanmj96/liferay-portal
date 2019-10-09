@@ -5,18 +5,17 @@ definition {
 	property database.types = "mysql";
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property ignore.errors = "Plugin security management is not enabled. Enable a security manager, then restart.";
 	property testray.main.component.name = "Upgrades Core Infrastructure";
 
 	@priority = "5"
 	test DirectUpgradeFromArchive6012 {
 		property data.archive.type = "data-archive-portal";
-		property portal.upgrades = "true";
+		property portal.upgrades = "false";
 		property portal.version = "6.0.12";
 		property skip.start-app-server = "true";
 		property test.assert.warning.exceptions = "true";
 		var liferayHome = PropsUtil.get("liferay.home.dir.name");
-		var fileContent = FileUtil.read("${liferayHome}/tools/portal-tools-db-upgrade-client/upgrade.log");
+		var fileContent = FileUtil.read("${liferayHome}/tools/portal-tools-db-upgrade-client/logs/upgrade.log");
 
 		if (contains("${fileContent}", "You must first upgrade to Liferay Portal 6200")) {
 			echo("You must first upgrade to Liferay Portal 6200.");
@@ -29,12 +28,12 @@ definition {
 	@priority = "5"
 	test DirectUpgradeFromArchive6130 {
 		property data.archive.type = "data-archive-portal";
-		property portal.upgrades = "true";
+		property portal.upgrades = "false";
 		property portal.version = "6.1.30";
 		property skip.start-app-server = "true";
 		property test.assert.warning.exceptions = "true";
 		var liferayHome = PropsUtil.get("liferay.home.dir.name");
-		var fileContent = FileUtil.read("${liferayHome}/tools/portal-tools-db-upgrade-client/upgrade.log");
+		var fileContent = FileUtil.read("${liferayHome}/tools/portal-tools-db-upgrade-client/logs/upgrade.log");
 
 		if (contains("${fileContent}", "You must first upgrade to Liferay Portal 6200")) {
 			echo("You must first upgrade to Liferay Portal 6200.");
@@ -54,7 +53,7 @@ definition {
 
 		GogoShell.executeCommand(commandName = "dm wtf");
 
-		GogoShell.viewOutput(outputContent = "No missing dependencies found.");
+		GogoShell.viewOutput(outputContent = "No unregistered components found");
 
 		// Change schema version from 2.1.1 to 2.1.0.
 
@@ -70,7 +69,7 @@ definition {
 
 		GogoShell.executeCommand(commandName = "dm wtf");
 
-		GogoShell.viewOutput(outputContent = "No missing dependencies found.");
+		GogoShell.viewOutput(outputContent = "No unregistered components found");
 
 		// Change schema version from 2.1.0 to 2.0.0.
 
@@ -86,9 +85,7 @@ definition {
 
 		GogoShell.executeCommand(commandName = "dm wtf");
 
-		for (var outputContent : list "1 missing dependencies found,The following service(s) are missing,release.bundle.symbolic.name=com.liferay.revert.schema.version,release.schema.version>=2.0.0,release.schema.version>=2.1.0,is not found in the service registry") {
-			GogoShell.viewOutput(outputContent = "${outputContent}");
-		}
+		GogoShell.viewOutput(outputContent = "No unregistered components found");
 
 		// Change schema version from 2.0.0 to 1.0.0.
 
@@ -104,7 +101,7 @@ definition {
 
 		GogoShell.executeCommand(commandName = "dm wtf");
 
-		for (var outputContent : list "1 missing dependencies found,The following service(s) are missing,release.bundle.symbolic.name=com.liferay.revert.schema.version,release.schema.version>=1.0.0,release.schema.version>=1.1.0,is not found in the service registry") {
+		for (var outputContent : list "1 unregistered components found,The following service(s) are missing,release.bundle.symbolic.name=com.liferay.revert.schema.version,release.schema.version>=1.0.0,release.schema.version>=2.0.0,for bundle com.liferay.revert.schema.version") {
 			GogoShell.viewOutput(outputContent = "${outputContent}");
 		}
 	}

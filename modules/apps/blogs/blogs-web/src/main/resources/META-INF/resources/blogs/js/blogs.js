@@ -56,16 +56,16 @@ AUI.add(
 						confirmDiscardImages: Liferay.Language.get(
 							'uploads-are-in-progress-confirmation'
 						),
+						saveDraftError: Liferay.Language.get(
+							'could-not-save-draft-to-the-server'
+						),
+						saveDraftMessage: Liferay.Language.get('saving-draft'),
 						savedAtMessage: Liferay.Language.get(
 							'entry-saved-at-x'
 						),
 						savedDraftAtMessage: Liferay.Language.get(
 							'draft-saved-at-x'
 						),
-						saveDraftError: Liferay.Language.get(
-							'could-not-save-draft-to-the-server'
-						),
-						saveDraftMessage: Liferay.Language.get('saving-draft'),
 						titleRequiredAtPublish: Liferay.Language.get(
 							'this-field-is-required-to-publish-the-entry'
 						)
@@ -82,103 +82,7 @@ AUI.add(
 			NS: 'liferay-blogs',
 
 			prototype: {
-				initializer: function(config) {
-					var instance = this;
-
-					instance._bindUI();
-
-					var entry = instance.get('entry');
-
-					var draftEntry =
-						entry &&
-						entry.status === instance.get('constants').STATUS_DRAFT;
-
-					var userEntry =
-						entry && entry.userId === themeDisplay.getUserId();
-
-					if (!entry || (userEntry && draftEntry)) {
-						instance._initDraftSaveInterval();
-					}
-
-					var customDescriptionEnabled =
-						entry && entry.customDescription;
-
-					instance._customDescription = customDescriptionEnabled
-						? entry.description
-						: STR_BLANK;
-					instance._shortenDescription = !customDescriptionEnabled;
-
-					instance.setDescription(
-						window[instance.ns('contentEditor')].getText()
-					);
-				},
-
-				destructor: function() {
-					var instance = this;
-
-					if (instance._saveDraftTimer) {
-						instance._saveDraftTimer.cancel();
-					}
-
-					new A.EventHandle(instance._eventHandles).detach();
-				},
-
-				setDescription: function(text) {
-					var instance = this;
-
-					var description = instance._customDescription;
-
-					if (instance._shortenDescription) {
-						description = instance._shorten(text);
-					}
-
-					var descriptionNode = instance.one('#description');
-
-					descriptionNode.val(description);
-
-					descriptionNode.attr(
-						'disabled',
-						instance._shortenDescription
-					);
-
-					var descriptionLabelNode = instance.one(
-						'[for="' + instance.ns('description') + '"]'
-					);
-
-					var form = Liferay.Form.get(instance.ns('fm'));
-
-					if (!instance._shortenDescription) {
-						descriptionLabelNode.removeClass('disabled');
-
-						form.addRule(instance.ns('description'), 'required');
-					} else {
-						descriptionLabelNode.addClass('disabled');
-
-						form.removeRule(instance.ns('description'), 'required');
-					}
-				},
-
-				updateFriendlyURL: function(title) {
-					var instance = this;
-
-					var urlTitleInput = instance.one('#urlTitle');
-
-					var friendlyURLEmpty = !urlTitleInput.val();
-
-					if (
-						instance._automaticURL() &&
-						(friendlyURLEmpty ||
-							instance._originalFriendlyURLChanged)
-					) {
-						urlTitleInput.val(
-							Liferay.Util.normalizeFriendlyURL(title)
-						);
-					}
-
-					instance._originalFriendlyURLChanged = true;
-				},
-
-				_automaticURL: function() {
+				_automaticURL() {
 					return (
 						this.one('#urlOptions')
 							.one('input:checked')
@@ -186,7 +90,7 @@ AUI.add(
 					);
 				},
 
-				_beforePublishBtnClick: function(event) {
+				_beforePublishBtnClick() {
 					var instance = this;
 
 					var form = Liferay.Form.get(instance.ns('fm'));
@@ -200,7 +104,7 @@ AUI.add(
 					);
 				},
 
-				_beforeSaveBtnClick: function() {
+				_beforeSaveBtnClick() {
 					var instance = this;
 
 					var form = Liferay.Form.get(instance.ns('fm'));
@@ -208,7 +112,7 @@ AUI.add(
 					form.removeRule(instance.ns('titleEditor'), 'required');
 				},
 
-				_bindUI: function() {
+				_bindUI() {
 					var instance = this;
 
 					instance._captionNode = instance.one(
@@ -297,7 +201,7 @@ AUI.add(
 					instance._eventHandles = eventHandles;
 				},
 
-				_checkImagesBeforeSave: function(draft, ajax) {
+				_checkImagesBeforeSave(draft, ajax) {
 					var instance = this;
 
 					if (instance._hasTempImages()) {
@@ -317,7 +221,7 @@ AUI.add(
 					}
 				},
 
-				_configureAbstract: function(event) {
+				_configureAbstract(event) {
 					var instance = this;
 
 					var target = event.target;
@@ -339,7 +243,7 @@ AUI.add(
 					instance.setDescription(description);
 				},
 
-				_getContentImages: function(content) {
+				_getContentImages(content) {
 					var contentDom = document.createElement('div');
 
 					contentDom.innerHTML = content;
@@ -364,7 +268,7 @@ AUI.add(
 					return finalImages;
 				},
 
-				_getPrincipalForm: function(formName) {
+				_getPrincipalForm(formName) {
 					var instance = this;
 
 					return instance.one(
@@ -372,19 +276,19 @@ AUI.add(
 					);
 				},
 
-				_getTempImages: function() {
+				_getTempImages() {
 					var instance = this;
 
 					return instance.all('img[data-random-id]');
 				},
 
-				_hasTempImages: function() {
+				_hasTempImages() {
 					var instance = this;
 
 					return instance._getTempImages().size() > 0;
 				},
 
-				_initDraftSaveInterval: function() {
+				_initDraftSaveInterval() {
 					var instance = this;
 
 					instance._saveDraftTimer = A.later(
@@ -406,7 +310,7 @@ AUI.add(
 					instance._oldTitle = entry ? entry.title : STR_BLANK;
 				},
 
-				_onChangeURLOptions: function() {
+				_onChangeURLOptions() {
 					var instance = this;
 
 					var urlTitleInput = instance.one('#urlTitle');
@@ -437,7 +341,7 @@ AUI.add(
 					}
 				},
 
-				_removeCaption: function() {
+				_removeCaption() {
 					var instance = this;
 
 					var captionNode = instance._captionNode;
@@ -451,7 +355,7 @@ AUI.add(
 					);
 				},
 
-				_saveEntry: function(draft, ajax) {
+				_saveEntry(draft, ajax) {
 					var instance = this;
 
 					var constants = instance.get('constants');
@@ -466,7 +370,18 @@ AUI.add(
 						instance.ns('subtitleEditor')
 					].getHTML();
 					var title = window[instance.ns('titleEditor')].getText();
-					var urlTitle = instance.one('#urlTitle').val();
+
+					var automaticURL = instance
+						.one(
+							'input[name=' +
+								instance.ns('automaticURL') +
+								']:checked'
+						)
+						.val();
+
+					var urlTitle = automaticURL
+						? ''
+						: instance.one('#urlTitle').val();
 
 					var form = instance._getPrincipalForm();
 
@@ -501,8 +416,8 @@ AUI.add(
 									.one('#assetTagNames')
 									.val(),
 								cmd: constants.ADD,
-								content: content,
-								coverImageCaption: coverImageCaption,
+								content,
+								coverImageCaption,
 								coverImageFileEntryCropRegion: instance
 									.one('#coverImageFileEntryCropRegion')
 									.val(),
@@ -531,9 +446,9 @@ AUI.add(
 								referringPortletResource: instance
 									.one('#referringPortletResource')
 									.val(),
-								subtitle: subtitle,
-								title: title,
-								urlTitle: urlTitle,
+								subtitle,
+								title,
+								urlTitle,
 								workflowAction: constants.ACTION_SAVE_DRAFT
 							});
 
@@ -541,86 +456,78 @@ AUI.add(
 								'[name^=' + instance.NS + 'ExpandoAttribute]'
 							);
 
-							customAttributes.each(function(
-								item,
-								index,
-								collection
-							) {
+							customAttributes.each(function(item) {
 								data[item.attr('name')] = item.val();
 							});
 
-							A.io.request(instance.get('editEntryURL'), {
-								data: data,
-								dataType: 'JSON',
-								on: {
-									failure: function() {
-										instance._updateStatus(
-											strings.saveDraftError
-										);
-									},
-									start: function() {
-										Liferay.Util.toggleDisabled(
-											instance.one('#publishButton'),
-											true
-										);
+							Liferay.Util.toggleDisabled(
+								instance.one('#publishButton'),
+								true
+							);
 
-										instance._updateStatus(
-											strings.saveDraftMessage
-										);
-									},
-									success: function(event, id, obj) {
-										instance._oldContent = content;
-										instance._oldSubtitle = subtitle;
-										instance._oldTitle = title;
+							instance._updateStatus(strings.saveDraftMessage);
 
-										var message = this.get('responseData');
+							const body = new URLSearchParams(data);
 
-										if (message) {
-											instance
-												.one('#coverImageFileEntryId')
-												.val(
-													message.coverImageFileEntryId
-												);
+							Liferay.Util.fetch(instance.get('editEntryURL'), {
+								body,
+								method: 'POST'
+							})
+								.then(response => {
+									return response.json();
+								})
+								.then(data => {
+									instance._oldContent = content;
+									instance._oldSubtitle = subtitle;
+									instance._oldTitle = title;
 
-											instance
-												.one('#entryId')
-												.val(message.entryId);
+									var message = data;
 
-											if (message.content) {
-												instance._updateContentImages(
-													message.content,
-													message.attributeDataImageId
-												);
-											}
+									if (message) {
+										instance
+											.one('#coverImageFileEntryId')
+											.val(message.coverImageFileEntryId);
 
-											if (saveStatus) {
-												var entry = instance.get(
-													'entry'
-												);
+										instance
+											.one('#entryId')
+											.val(message.entryId);
 
-												var saveText =
-													entry && entry.pending
-														? strings.savedAtMessage
-														: strings.savedDraftAtMessage;
-
-												var now = saveText.replace(
-													/\{0\}/gim,
-													new Date().toString()
-												);
-
-												instance._updateStatus(now);
-											}
-										} else {
-											saveStatus.hide();
+										if (message.content) {
+											instance._updateContentImages(
+												message.content,
+												message.attributeDataImageId
+											);
 										}
 
-										Liferay.Util.toggleDisabled(
-											instance.one('#publishButton'),
-											false
-										);
+										if (saveStatus) {
+											var entry = instance.get('entry');
+
+											var saveText =
+												entry && entry.pending
+													? strings.savedAtMessage
+													: strings.savedDraftAtMessage;
+
+											var now = saveText.replace(
+												/\{0\}/gim,
+												new Date().toString()
+											);
+
+											instance._updateStatus(now);
+										}
+									} else {
+										saveStatus.hide();
 									}
-								}
-							});
+
+									Liferay.Util.toggleDisabled(
+										instance.one('#publishButton'),
+										false
+									);
+								})
+								.catch(() => {
+									instance._updateStatus(
+										strings.saveDraftError
+									);
+								});
 						}
 					} else {
 						instance
@@ -649,7 +556,7 @@ AUI.add(
 					}
 				},
 
-				_shorten: function(text) {
+				_shorten(text) {
 					var instance = this;
 
 					var descriptionLength = instance.get('descriptionLength');
@@ -672,7 +579,7 @@ AUI.add(
 					return text;
 				},
 
-				_showCaption: function() {
+				_showCaption() {
 					var instance = this;
 
 					var captionNode = instance._captionNode;
@@ -682,10 +589,7 @@ AUI.add(
 					}
 				},
 
-				_updateContentImages: function(
-					finalContent,
-					attributeDataImageId
-				) {
+				_updateContentImages(finalContent, attributeDataImageId) {
 					var instance = this;
 
 					var originalContent = window[
@@ -748,7 +652,7 @@ AUI.add(
 					}
 				},
 
-				_updateStatus: function(text) {
+				_updateStatus(text) {
 					var instance = this;
 
 					var saveStatus = instance.one('#saveStatus');
@@ -756,6 +660,102 @@ AUI.add(
 					if (saveStatus) {
 						saveStatus.html(text);
 					}
+				},
+
+				destructor() {
+					var instance = this;
+
+					if (instance._saveDraftTimer) {
+						instance._saveDraftTimer.cancel();
+					}
+
+					new A.EventHandle(instance._eventHandles).detach();
+				},
+
+				initializer() {
+					var instance = this;
+
+					instance._bindUI();
+
+					var entry = instance.get('entry');
+
+					var draftEntry =
+						entry &&
+						entry.status === instance.get('constants').STATUS_DRAFT;
+
+					var userEntry =
+						entry && entry.userId === themeDisplay.getUserId();
+
+					if (!entry || (userEntry && draftEntry)) {
+						instance._initDraftSaveInterval();
+					}
+
+					var customDescriptionEnabled =
+						entry && entry.customDescription;
+
+					instance._customDescription = customDescriptionEnabled
+						? entry.description
+						: STR_BLANK;
+					instance._shortenDescription = !customDescriptionEnabled;
+
+					instance.setDescription(
+						window[instance.ns('contentEditor')].getText()
+					);
+				},
+
+				setDescription(text) {
+					var instance = this;
+
+					var description = instance._customDescription;
+
+					if (instance._shortenDescription) {
+						description = instance._shorten(text);
+					}
+
+					var descriptionNode = instance.one('#description');
+
+					descriptionNode.val(description);
+
+					descriptionNode.attr(
+						'disabled',
+						instance._shortenDescription
+					);
+
+					var descriptionLabelNode = instance.one(
+						'[for="' + instance.ns('description') + '"]'
+					);
+
+					var form = Liferay.Form.get(instance.ns('fm'));
+
+					if (!instance._shortenDescription) {
+						descriptionLabelNode.removeClass('disabled');
+
+						form.addRule(instance.ns('description'), 'required');
+					} else {
+						descriptionLabelNode.addClass('disabled');
+
+						form.removeRule(instance.ns('description'), 'required');
+					}
+				},
+
+				updateFriendlyURL(title) {
+					var instance = this;
+
+					var urlTitleInput = instance.one('#urlTitle');
+
+					var friendlyURLEmpty = !urlTitleInput.val();
+
+					if (
+						instance._automaticURL() &&
+						(friendlyURLEmpty ||
+							instance._originalFriendlyURLChanged)
+					) {
+						urlTitleInput.val(
+							Liferay.Util.normalizeFriendlyURL(title)
+						);
+					}
+
+					instance._originalFriendlyURLChanged = true;
 				}
 			}
 		});
@@ -764,11 +764,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: [
-			'aui-base',
-			'aui-io-request',
-			'liferay-form',
-			'liferay-portlet-base'
-		]
+		requires: ['aui-base', 'liferay-form']
 	}
 );

@@ -19,6 +19,7 @@ import 'clay-modal';
 import 'dynamic-data-mapping-form-renderer/js/components/PageRenderer/PageRenderer.es';
 
 import Component from 'metal-component';
+import dom from 'metal-dom';
 import Soy from 'metal-soy';
 import templates from './RuleEditor.soy.js';
 import {Config} from 'metal-state';
@@ -90,7 +91,7 @@ class RuleEditor extends Component {
 		});
 	}
 
-	formatDataProviderParameter(actionParameters, parameters) {
+	formatDataProviderInputParameter(actionParameters, parameters) {
 		return parameters.reduce(
 			(result, {name, value}) => ({
 				...result,
@@ -98,6 +99,19 @@ class RuleEditor extends Component {
 					Object.keys(actionParameters).indexOf(name) !== -1
 						? actionParameters[name]
 						: value
+			}),
+			{}
+		);
+	}
+
+	formatDataProviderOutputParameter(actionParameters, parameters) {
+		return parameters.reduce(
+			(result, {id}) => ({
+				...result,
+				[id]:
+					Object.keys(actionParameters).indexOf(id) !== -1
+						? actionParameters[id]
+						: undefined
 			}),
 			{}
 		);
@@ -124,12 +138,12 @@ class RuleEditor extends Component {
 										hasRequiredInputs: inputs.some(
 											input => input.required
 										),
-										inputs: this.formatDataProviderParameter(
+										inputs: this.formatDataProviderInputParameter(
 											action.inputs,
 											inputs
 										),
 										inputsData: inputs,
-										outputs: this.formatDataProviderParameter(
+										outputs: this.formatDataProviderOutputParameter(
 											action.outputs,
 											outputs
 										),
@@ -317,8 +331,8 @@ class RuleEditor extends Component {
 
 		return {
 			...state,
-			actions,
 			actionTypes,
+			actions,
 			conditions
 		};
 	}
@@ -375,16 +389,6 @@ class RuleEditor extends Component {
 			pageOptions: pageOptions(pages, maxPage),
 			roles: this._rolesValueFn()
 		});
-	}
-
-	syncVisible(visible) {
-		const addButton = document.querySelector('#addFieldButton');
-
-		super.syncVisible(visible);
-
-		if (addButton && visible) {
-			addButton.classList.add('hide');
-		}
 	}
 
 	willUpdate() {
@@ -616,7 +620,7 @@ class RuleEditor extends Component {
 	}
 
 	_getIndex(fieldInstance, fieldClass) {
-		const firstOperand = fieldInstance.element.closest(fieldClass);
+		const firstOperand = dom.closest(fieldInstance.element, fieldClass);
 
 		return firstOperand.getAttribute(`${fieldClass.substring(1)}-index`);
 	}
@@ -626,7 +630,7 @@ class RuleEditor extends Component {
 			fieldType = 'number';
 		}
 
-		if (!this.functionsMetadata.hasOwnProperty(fieldType)) {
+		if (!Object.hasOwnProperty.call(this.functionsMetadata, fieldType)) {
 			fieldType = 'text';
 		}
 
@@ -703,10 +707,6 @@ class RuleEditor extends Component {
 		this.setState({
 			actions: newActions
 		});
-	}
-
-	_handleCancelRule() {
-		this.emit('ruleCancel', {});
 	}
 
 	_handleConditionAdded() {
@@ -948,6 +948,10 @@ class RuleEditor extends Component {
 		});
 	}
 
+	_handleRuleCancelled() {
+		this.emit('ruleCancelled', {});
+	}
+
 	_handleSecondOperandFieldEdited(event) {
 		const {conditions} = this;
 		const {fieldInstance, value} = event;
@@ -961,7 +965,7 @@ class RuleEditor extends Component {
 
 		let index;
 
-		if (fieldInstance.element.closest('.condition-type-value')) {
+		if (dom.closest(fieldInstance.element, '.condition-type-value')) {
 			index = this._getIndex(fieldInstance, '.condition-type-value');
 		}
 
@@ -1479,26 +1483,6 @@ class RuleEditor extends Component {
 }
 
 RuleEditor.STATE = {
-	actions: Config.arrayOf(
-		Config.shapeOf({
-			action: Config.string(),
-			calculatorFields: Config.arrayOf(fieldOptionStructure).value([]),
-			expression: Config.string(),
-			hasRequiredInputs: Config.bool(),
-			inputs: Config.object(),
-			label: Config.string(),
-			outputs: Config.object(),
-			target: Config.string()
-		})
-	)
-		.internal()
-		.setter('_setActions')
-		.value([]),
-
-	actionsFieldOptions: Config.arrayOf(fieldOptionStructure)
-		.internal()
-		.valueFn('_actionsFieldOptionsValueFn'),
-
 	actionTypes: Config.arrayOf(
 		Config.shapeOf({
 			label: Config.string(),
@@ -1532,6 +1516,26 @@ RuleEditor.STATE = {
 				value: 'jump-to-page'
 			}
 		]),
+
+	actions: Config.arrayOf(
+		Config.shapeOf({
+			action: Config.string(),
+			calculatorFields: Config.arrayOf(fieldOptionStructure).value([]),
+			expression: Config.string(),
+			hasRequiredInputs: Config.bool(),
+			inputs: Config.object(),
+			label: Config.string(),
+			outputs: Config.object(),
+			target: Config.string()
+		})
+	)
+		.internal()
+		.setter('_setActions')
+		.value([]),
+
+	actionsFieldOptions: Config.arrayOf(fieldOptionStructure)
+		.internal()
+		.valueFn('_actionsFieldOptionsValueFn'),
 
 	/**
 	 * Used for tracking which action we are currently focused on

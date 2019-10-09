@@ -47,9 +47,9 @@ import javax.sql.DataSource;
  */
 public abstract class PowwowParticipantServiceBaseImpl
 	extends BaseServiceImpl
-	implements PowwowParticipantService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, PowwowParticipantService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>PowwowParticipantService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.powwow.service.PowwowParticipantServiceUtil</code>.

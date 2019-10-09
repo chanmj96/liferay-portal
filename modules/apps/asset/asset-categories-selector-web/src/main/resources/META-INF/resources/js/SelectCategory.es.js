@@ -121,7 +121,7 @@ class SelectCategory extends PortletBase {
 			const data = {};
 
 			newVal.forEach(node => {
-				data[node.name] = {
+				data[node.id] = {
 					categoryId: node.vocabulary ? 0 : node.id,
 					value: node.name,
 					vocabularyId: node.vocabulary ? node.id : 0
@@ -130,7 +130,7 @@ class SelectCategory extends PortletBase {
 
 			selectedNodes.forEach(node => {
 				if (newVal.indexOf(node) === -1) {
-					data[node.name] = {
+					data[node.id] = {
 						categoryId: node.vocabulary ? 0 : node.id,
 						unchecked: true,
 						value: node.name,
@@ -163,18 +163,18 @@ SelectCategory.STATE = {
 	itemSelectorSaveEvent: Config.string(),
 
 	/**
-	 * List of nodes
-	 * @type {Array.<Object>}
-	 */
-
-	nodes: Config.array().required(),
-
-	/**
 	 * Enables multiple selection of tree elements
 	 * @type {boolean}
 	 */
 
 	multiSelection: Config.bool().value(false),
+
+	/**
+	 * List of nodes
+	 * @type {Array.<Object>}
+	 */
+
+	nodes: Config.array().required(),
 
 	/**
 	 * Theme images root path

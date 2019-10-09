@@ -105,7 +105,8 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 
 	@Test
 	public void testFormatAnnotations() throws Exception {
-		test("FormatAnnotations.testjava");
+		test("FormatAnnotations1.testjava");
+		test("FormatAnnotations2.testjava");
 	}
 
 	@Test
@@ -298,6 +299,42 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testMissingDiamondOperator() throws Exception {
+		test("MissingDiamondOperator.testjava",
+			new String[] {
+				"Missing diamond operator '<>' for type 'ArrayList'",
+				"Missing generic types '<String, String>' for type 'ArrayList'",
+				"Missing diamond operator '<>' for type 'ConcurrentHashMap'",
+				"Missing diamond operator '<>' for type " +
+					"'ConcurrentSkipListMap'",
+				"Missing diamond operator '<>' for type " +
+					"'ConcurrentSkipListSet'",
+				"Missing diamond operator '<>' for type 'CopyOnWriteArraySet'",
+				"Missing generic types '<Position, String>' for type 'EnumMap'",
+				"Missing diamond operator '<>' for type 'HashMap'",
+				"Missing generic types '<String, String>' for type 'HashMap'",
+				"Missing diamond operator '<>' for type 'HashSet'",
+				"Missing diamond operator '<>' for type 'Hashtable'",
+				"Missing diamond operator '<>' for type 'IdentityHashMap'",
+				"Missing diamond operator '<>' for type 'LinkedHashMap'",
+				"Missing diamond operator '<>' for type 'LinkedHashSet'",
+				"Missing diamond operator '<>' for type 'LinkedList'",
+				"Missing diamond operator '<>' for type 'Stack'",
+				"Missing diamond operator '<>' for type 'TreeMap'",
+				"Missing diamond operator '<>' for type 'TreeSet'",
+				"Missing diamond operator '<>' for type 'Vector'",
+				"Missing generic types '<Map<String, String>>' for type " +
+					"'ArrayList'",
+				"Missing generic types '<String, String>' for type 'HashMap'",
+				"Missing generic types '<String, String>' for type 'HashMap'"
+			},
+			new Integer[] {
+				45, 47, 53, 55, 57, 59, 61, 68, 70, 76, 78, 80, 83, 85, 87, 89,
+				91, 93, 95, 97, 99, 110
+			});
+	}
+
+	@Test
 	public void testMissingSerialVersionUID() throws Exception {
 		test(
 			"MissingSerialVersionUID.testjava",
@@ -384,6 +421,16 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	@Test
 	public void testUnusedParameter() throws Exception {
 		test("UnusedParameter.testjava", "Parameter 'color' is unused", 26);
+	}
+
+	@Test
+	public void testUnusedVariable() throws Exception {
+		test(
+			"UnusedVariable.testjava",
+			new String[] {
+				"Variable 'matcher' is unused", "Variable '_s' is unused"
+			},
+			new Integer[] {26, 31});
 	}
 
 }

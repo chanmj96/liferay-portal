@@ -50,8 +50,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the AnnouncementsFlag service. Represents a row in the &quot;AnnouncementsFlag&quot; database table, with each column mapped to a property of this class.
  *
@@ -64,11 +62,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class AnnouncementsFlagModelImpl
 	extends BaseModelImpl<AnnouncementsFlag> implements AnnouncementsFlagModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a announcements flag model instance should use the <code>AnnouncementsFlag</code> interface instead.
@@ -125,13 +122,15 @@ public class AnnouncementsFlagModelImpl
 			"value.object.column.bitmask.enabled.com.liferay.announcements.kernel.model.AnnouncementsFlag"),
 		true);
 
-	public static final long ENTRYID_COLUMN_BITMASK = 1L;
+	public static final long COMPANYID_COLUMN_BITMASK = 1L;
 
-	public static final long USERID_COLUMN_BITMASK = 2L;
+	public static final long ENTRYID_COLUMN_BITMASK = 2L;
 
-	public static final long VALUE_COLUMN_BITMASK = 4L;
+	public static final long USERID_COLUMN_BITMASK = 4L;
 
-	public static final long CREATEDATE_COLUMN_BITMASK = 8L;
+	public static final long VALUE_COLUMN_BITMASK = 8L;
+
+	public static final long CREATEDATE_COLUMN_BITMASK = 16L;
 
 	/**
 	 * Converts the soap model instance into a normal model instance.
@@ -366,7 +365,19 @@ public class AnnouncementsFlagModelImpl
 
 	@Override
 	public void setCompanyId(long companyId) {
+		_columnBitmask |= COMPANYID_COLUMN_BITMASK;
+
+		if (!_setOriginalCompanyId) {
+			_setOriginalCompanyId = true;
+
+			_originalCompanyId = _companyId;
+		}
+
 		_companyId = companyId;
+	}
+
+	public long getOriginalCompanyId() {
+		return _originalCompanyId;
 	}
 
 	@JSON
@@ -585,6 +596,11 @@ public class AnnouncementsFlagModelImpl
 	public void resetOriginalValues() {
 		AnnouncementsFlagModelImpl announcementsFlagModelImpl = this;
 
+		announcementsFlagModelImpl._originalCompanyId =
+			announcementsFlagModelImpl._companyId;
+
+		announcementsFlagModelImpl._setOriginalCompanyId = false;
+
 		announcementsFlagModelImpl._originalUserId =
 			announcementsFlagModelImpl._userId;
 
@@ -702,6 +718,8 @@ public class AnnouncementsFlagModelImpl
 
 	private long _flagId;
 	private long _companyId;
+	private long _originalCompanyId;
+	private boolean _setOriginalCompanyId;
 	private long _userId;
 	private long _originalUserId;
 	private boolean _setOriginalUserId;

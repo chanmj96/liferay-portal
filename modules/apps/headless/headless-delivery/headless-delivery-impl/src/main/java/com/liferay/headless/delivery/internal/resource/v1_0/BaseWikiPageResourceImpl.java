@@ -63,6 +63,11 @@ import javax.ws.rs.core.UriInfo;
 @Path("/v1.0")
 public abstract class BaseWikiPageResourceImpl implements WikiPageResource {
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/wiki-nodes/{wikiNodeId}/wiki-pages/'  -u 'test@liferay.com:test'
+	 */
 	@Override
 	@GET
 	@Operation(
@@ -92,6 +97,11 @@ public abstract class BaseWikiPageResourceImpl implements WikiPageResource {
 		return Page.of(Collections.emptyList());
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/wiki-nodes/{wikiNodeId}/wiki-pages/' -d $'{"content": ___, "customFields": ___, "description": ___, "encodingFormat": ___, "headline": ___, "keywords": ___, "taxonomyCategoryIds": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 */
 	@Override
 	@Consumes({"application/json", "application/xml"})
 	@Operation(description = "Creates a new wiki page")
@@ -111,6 +121,59 @@ public abstract class BaseWikiPageResourceImpl implements WikiPageResource {
 		return new WikiPage();
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/wiki-pages/{parentWikiPageId}/wiki-pages'  -u 'test@liferay.com:test'
+	 */
+	@Override
+	@GET
+	@Operation(description = "Retrieves the child wiki page's of a wiki page.")
+	@Parameters(
+		value = {@Parameter(in = ParameterIn.PATH, name = "parentWikiPageId")}
+	)
+	@Path("/wiki-pages/{parentWikiPageId}/wiki-pages")
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "WikiPage")})
+	public Page<WikiPage> getWikiPageWikiPagesPage(
+			@NotNull @Parameter(hidden = true) @PathParam("parentWikiPageId")
+				Long parentWikiPageId)
+		throws Exception {
+
+		return Page.of(Collections.emptyList());
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/wiki-pages/{parentWikiPageId}/wiki-pages' -d $'{"content": ___, "customFields": ___, "description": ___, "encodingFormat": ___, "headline": ___, "keywords": ___, "taxonomyCategoryIds": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 */
+	@Override
+	@Consumes({"application/json", "application/xml"})
+	@Operation(
+		description = "Creates a child wiki page of the parent wiki page."
+	)
+	@POST
+	@Parameters(
+		value = {@Parameter(in = ParameterIn.PATH, name = "parentWikiPageId")}
+	)
+	@Path("/wiki-pages/{parentWikiPageId}/wiki-pages")
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "WikiPage")})
+	public WikiPage postWikiPageWikiPage(
+			@NotNull @Parameter(hidden = true) @PathParam("parentWikiPageId")
+				Long parentWikiPageId,
+			WikiPage wikiPage)
+		throws Exception {
+
+		return new WikiPage();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-delivery/v1.0/wiki-pages/{wikiPageId}'  -u 'test@liferay.com:test'
+	 */
 	@Override
 	@DELETE
 	@Operation(
@@ -128,6 +191,11 @@ public abstract class BaseWikiPageResourceImpl implements WikiPageResource {
 		throws Exception {
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/wiki-pages/{wikiPageId}'  -u 'test@liferay.com:test'
+	 */
 	@Override
 	@GET
 	@Operation(description = "Retrieves the wiki page")
@@ -145,6 +213,11 @@ public abstract class BaseWikiPageResourceImpl implements WikiPageResource {
 		return new WikiPage();
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/wiki-pages/{wikiPageId}' -d $'{"content": ___, "customFields": ___, "description": ___, "encodingFormat": ___, "headline": ___, "keywords": ___, "taxonomyCategoryIds": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 */
 	@Override
 	@Consumes({"application/json", "application/xml"})
 	@Operation(
@@ -172,6 +245,22 @@ public abstract class BaseWikiPageResourceImpl implements WikiPageResource {
 
 	public void setContextCompany(Company contextCompany) {
 		this.contextCompany = contextCompany;
+	}
+
+	public void setContextHttpServletRequest(
+		HttpServletRequest contextHttpServletRequest) {
+
+		this.contextHttpServletRequest = contextHttpServletRequest;
+	}
+
+	public void setContextHttpServletResponse(
+		HttpServletResponse contextHttpServletResponse) {
+
+		this.contextHttpServletResponse = contextHttpServletResponse;
+	}
+
+	public void setContextUriInfo(UriInfo contextUriInfo) {
+		this.contextUriInfo = contextUriInfo;
 	}
 
 	public void setContextUser(User contextUser) {

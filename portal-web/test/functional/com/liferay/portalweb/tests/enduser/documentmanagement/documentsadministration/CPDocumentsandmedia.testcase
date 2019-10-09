@@ -35,8 +35,6 @@ definition {
 
 		JSONGroup.addGroup(groupName = "Site Name");
 
-		Navigator.openURL();
-
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
 
 		DMDocument.addCP(
@@ -64,7 +62,7 @@ definition {
 			dmDocumentTitle = "DM Document Title");
 	}
 
-	@description = "This test ensures that a user can check in a document without changing versions."
+	@description = "This test covers LPS-88313 and LPS-92145. It ensures that a user can check in a document without changing versions."
 	@priority = "5"
 	test CheckInDocumentAsCurrentVersion {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
@@ -74,6 +72,13 @@ definition {
 		DMDocument.addCP(
 			dmDocumentFile = "Document_1.doc",
 			dmDocumentTitle = "Check in as current version");
+
+		DMDocument.editCP(
+			dmDocumentFile = "Document_1.doc",
+			dmDocumentTitle = "Check in as current version",
+			revision = "Current",
+			versioning = "true",
+			versionNotes = '''<!DOCTYPE html> <html class="ltr" dir="ltr" lang="en-US"> <head> <title>''');
 
 		DMDocument.checkoutCP(dmDocumentTitle = "Check in as current version");
 
@@ -304,6 +309,89 @@ definition {
 		DMFolder.viewCP(dmFolderName = "DM Folder Name Name");
 	}
 
+	@description = "This test covers LPS-94820. This test ensures that only the last two checked in versions of a file are kept when the max version limit is set."
+	@priority = "4"
+	test LimitCheckInMaxFileVersion {
+		property test.name.skip.portal.instance = "CPDocumentsandmedia#LimitCheckInMaxFileVersion";
+
+		SystemSettings.openSystemSettingsAdmin();
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Documents and Media",
+			configurationName = "Service",
+			configurationScope = "System Scope");
+
+		Type(
+			key_fieldLabel = "Maximum Number Of Versions",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "2");
+
+		ScrollWebElementIntoView(locator1 = "Button#SAVE");
+
+		AssertClick(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
+
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+
+		JSONDocument.addFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Check in this document three times",
+			groupName = "Guest");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in this document three times");
+
+		Refresh();
+
+		DMDocument.checkinCP(
+			dmDocumentTitle = "Check in this document three times",
+			revision = "Major");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in this document three times");
+
+		Refresh();
+
+		DMDocument.checkinCP(
+			dmDocumentTitle = "Check in this document three times",
+			revision = "Major");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		DMDocument.checkoutCP(dmDocumentTitle = "Check in this document three times");
+
+		Refresh();
+
+		DMDocument.checkinCP(
+			dmDocumentTitle = "Check in this document three times",
+			revision = "Major");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Check in this document three times");
+
+		for (var versionNumber : list "3.0,4.0") {
+			AssertElementPresent(
+				key_dmDocumentVersionNumber = "${versionNumber}",
+				locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_ANY");
+		}
+
+		for (var versionNumber : list "1.0,2.0") {
+			AssertElementNotPresent(
+				key_dmDocumentVersionNumber = "${versionNumber}",
+				locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_ANY");
+		}
+	}
+
 	@description = "This test ensures that only the last two versions of a file are kept when the max version limit is set."
 	@priority = "5"
 	test LimitMaxFileVersion {
@@ -361,6 +449,7 @@ definition {
 			locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_ANY");
 	}
 
+	@description = "This case covers the folder name of a document can be viewed in the info panel and navigate to it."
 	@priority = "5"
 	test MoveDocumentToFolder {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
@@ -374,7 +463,9 @@ definition {
 
 		DMDocument.viewCP(
 			dmDocumentSize = "259 B",
-			dmDocumentTitle = "DM Document Title");
+			dmDocumentTitle = "DM Document Title",
+			dmFolderName = "Home",
+			locationFieldName = "true");
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -393,6 +484,14 @@ definition {
 		DMDocument.viewMovedToFolderCP(
 			dmDocumentTitle = "DM Document Title",
 			dmFolderName = "DM Folder Name");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		DMDocument.viewCP(
+			dmDocumentSize = "259 B",
+			dmDocumentTitle = "DM Document Title",
+			dmFolderName = "DM Folder Name",
+			locationFieldName = "true");
 	}
 
 	@description = "This is a use case for LPS-60405."
@@ -473,6 +572,37 @@ definition {
 			dmFolderName = "DM Folder Name");
 	}
 
+	@description = "This is a test for LPS-91751. It ensures that a user cannot preview a file with size that exceeds the preview limit."
+	@priority = "4"
+	test PreviewFileThatExceedsLimit {
+		SystemSettings.openSystemSettingsAdmin();
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Documents and Media",
+			configurationName = "File Entries",
+			configurationScope = "System Scope");
+
+		Type(
+			key_fieldLabel = "Previewable Processor Maximum Size",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "1024");
+
+		SystemSettings.saveConfiguration();
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMDocument.addCP(
+			dmDocumentDescription = "DM Document Description1",
+			dmDocumentFile = "high_resolution_photo.jpg",
+			dmDocumentTitle = "DM Document Title");
+
+		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+
+		AssertVisible(
+			key_title = "File too big to preview",
+			locator1 = "Header#H3_TITLE");
+	}
+
 	@description = "This is a use case for LPS-88785."
 	@priority = "5"
 	test PreviewPDF {
@@ -539,7 +669,7 @@ definition {
 		DMDocument.viewSearchResultsCP(dmDocumentTitle = "DM Document Title");
 	}
 
-	@description = "This test makes sure that all files are deleted when user selects all"
+	@description = "This test covers LPS-91598. It makes sure that all files are deleted when user selects all."
 	@priority = "4"
 	test SelectAllAndDelete {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");

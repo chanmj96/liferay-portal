@@ -17,9 +17,9 @@ AUI.add(
 	function(A) {
 		var Lang = A.Lang;
 
-		var CSS_ICON_STAR = 'icon-star';
+		var CSS_ICON_STAR = 'icon-star-on';
 
-		var CSS_ICON_STAR_EMPTY = 'icon-star-empty';
+		var CSS_ICON_STAR_EMPTY = 'icon-star-off';
 
 		var EMPTY_FN = Lang.emptyFn;
 
@@ -30,8 +30,6 @@ AUI.add(
 		var STR_INITIAL_FOCUS = 'initialFocus';
 
 		var STR_NAMESPACE = 'namespace';
-
-		var STR_RESPONSE_DATA = 'responseData';
 
 		var STR_SIZE = 'size';
 
@@ -45,6 +43,62 @@ AUI.add(
 		var buffer = [];
 
 		var Ratings = A.Component.create({
+			_INSTANCES: {},
+
+			_registerRating(config) {
+				var instance = this;
+
+				var ratings = null;
+
+				if (config.type === 'like') {
+					ratings = Liferay.Ratings.LikeRating;
+				} else if (
+					config.type === 'stars' ||
+					config.type === 'stacked-stars'
+				) {
+					ratings = Liferay.Ratings.StarRating;
+				} else if (config.type === 'thumbs') {
+					ratings = Liferay.Ratings.ThumbRating;
+				}
+
+				var ratingInstance = null;
+
+				if (ratings && document.getElementById(config.containerId)) {
+					ratingInstance = new ratings(config);
+
+					instance._INSTANCES[
+						config.id || config.namespace
+					] = ratingInstance;
+				}
+
+				return ratingInstance;
+			},
+
+			_registerTask: A.debounce(function() {
+				buffer.forEach(function(item) {
+					var handle = item.container.on(
+						EVENT_INTERACTIONS_RENDER,
+						function(event) {
+							handle.detach();
+
+							var config = item.config;
+
+							config.initialFocus = event.type === 'focus';
+
+							Ratings._registerRating(config);
+						}
+					);
+				});
+
+				buffer.length = 0;
+			}, 100),
+
+			_thumbScoreMap: {
+				'-1': -1,
+				down: 0,
+				up: 1
+			},
+
 			ATTRS: {
 				averageScore: {},
 
@@ -67,7 +121,7 @@ AUI.add(
 				uri: {},
 
 				yourScore: {
-					getter: function(value) {
+					getter(value) {
 						var instance = this;
 
 						var yourScore = value;
@@ -88,13 +142,7 @@ AUI.add(
 			EXTENDS: A.Base,
 
 			prototype: {
-				initializer: function() {
-					var instance = this;
-
-					instance._renderRatings();
-				},
-
-				_bindRatings: function() {
+				_bindRatings() {
 					var instance = this;
 
 					instance.ratings.after(
@@ -104,7 +152,7 @@ AUI.add(
 					);
 				},
 
-				_convertToIndex: function(score) {
+				_convertToIndex(score) {
 					var scoreIndex = -1;
 
 					if (score === 1.0) {
@@ -116,7 +164,7 @@ AUI.add(
 					return scoreIndex;
 				},
 
-				_fixScore: function(score) {
+				_fixScore(score) {
 					var prefix = '';
 
 					if (score > 0) {
@@ -126,7 +174,7 @@ AUI.add(
 					return prefix + score;
 				},
 
-				_getLabel: function(desc, totalEntries) {
+				_getLabel(desc, totalEntries) {
 					var instance = this;
 
 					var tplLabel = '';
@@ -146,9 +194,9 @@ AUI.add(
 					}
 
 					return Lang.sub(tplLabel, {
-						desc: desc,
-						totalEntries: totalEntries,
-						voteLabel: voteLabel
+						desc,
+						totalEntries,
+						voteLabel
 					});
 				},
 
@@ -156,38 +204,39 @@ AUI.add(
 
 				_renderRatings: EMPTY_FN,
 
-				_sendVoteRequest: function(url, score, callback) {
+				_sendVoteRequest(url, score, callback) {
 					var instance = this;
 
 					Liferay.fire('ratings:vote', {
 						className: instance.get('className'),
 						classPK: instance.get('classPK'),
 						ratingType: instance.get('type'),
-						score: score
+						score
 					});
 
-					A.io.request(url, {
-						data: {
-							className: instance.get('className'),
-							classPK: instance.get('classPK'),
-							p_auth: Liferay.authToken,
-							p_l_id: themeDisplay.getPlid(),
-							score: score
-						},
-						dataType: 'JSON',
-						on: {
-							success: A.bind(callback, instance)
-						}
-					});
+					var data = {
+						className: instance.get('className'),
+						classPK: instance.get('classPK'),
+						p_auth: Liferay.authToken,
+						p_l_id: themeDisplay.getPlid(),
+						score
+					};
+
+					Liferay.Util.fetch(url, {
+						body: Liferay.Util.objectToFormData(data),
+						method: 'POST'
+					})
+						.then(response => response.json())
+						.then(response => callback.call(instance, response));
 				},
 
-				_showScoreTooltip: function(event) {
+				_showScoreTooltip(event) {
 					var instance = this;
 
 					var message = '';
 
 					var stars = instance._ratingScoreNode
-						.all('.icon-star')
+						.all('.icon-star-on')
 						.size();
 
 					if (stars === 1) {
@@ -202,7 +251,7 @@ AUI.add(
 					);
 				},
 
-				_updateAverageScoreText: function(averageScore) {
+				_updateAverageScoreText(averageScore) {
 					var instance = this;
 
 					var firstNode = instance._ratingScoreNode.one(
@@ -231,7 +280,7 @@ AUI.add(
 					}
 				},
 
-				_updateScoreText: function(score) {
+				_updateScoreText(score) {
 					var instance = this;
 
 					var nodes = instance._ratingStarNode.all('.rating-element');
@@ -270,10 +319,16 @@ AUI.add(
 							])
 						);
 					});
+				},
+
+				initializer() {
+					var instance = this;
+
+					instance._renderRatings();
 				}
 			},
 
-			register: function(config) {
+			register(config) {
 				var instance = this;
 
 				var containerId = config.containerId;
@@ -283,7 +338,7 @@ AUI.add(
 
 				if (container) {
 					buffer.push({
-						config: config,
+						config,
 						container: A.one(container)
 					});
 
@@ -291,62 +346,6 @@ AUI.add(
 				} else {
 					instance._registerRating(config);
 				}
-			},
-
-			_registerRating: function(config) {
-				var instance = this;
-
-				var ratings = null;
-
-				if (config.type === 'like') {
-					ratings = Liferay.Ratings.LikeRating;
-				} else if (
-					config.type === 'stars' ||
-					config.type === 'stacked-stars'
-				) {
-					ratings = Liferay.Ratings.StarRating;
-				} else if (config.type === 'thumbs') {
-					ratings = Liferay.Ratings.ThumbRating;
-				}
-
-				var ratingInstance = null;
-
-				if (ratings && document.getElementById(config.containerId)) {
-					ratingInstance = new ratings(config);
-
-					instance._INSTANCES[
-						config.id || config.namespace
-					] = ratingInstance;
-				}
-
-				return ratingInstance;
-			},
-
-			_registerTask: A.debounce(function() {
-				buffer.forEach(function(item, index) {
-					var handle = item.container.on(
-						EVENT_INTERACTIONS_RENDER,
-						function(event) {
-							handle.detach();
-
-							var config = item.config;
-
-							config.initialFocus = event.type === 'focus';
-
-							Ratings._registerRating(config);
-						}
-					);
-				});
-
-				buffer.length = 0;
-			}, 100),
-
-			_INSTANCES: {},
-
-			_thumbScoreMap: {
-				'-1': -1,
-				down: 0,
-				up: 1
 			}
 		});
 
@@ -360,7 +359,7 @@ AUI.add(
 			EXTENDS: Ratings,
 
 			prototype: {
-				_itemSelect: function(event) {
+				_itemSelect() {
 					var instance = this;
 
 					var score =
@@ -375,7 +374,7 @@ AUI.add(
 					);
 				},
 
-				_renderRatings: function() {
+				_renderRatings() {
 					var instance = this;
 
 					var namespace = instance.get(STR_NAMESPACE);
@@ -422,23 +421,19 @@ AUI.add(
 					);
 				},
 
-				_saveCallback: function(event, id, obj) {
+				_saveCallback(response) {
 					var instance = this;
-
-					var xhr = event.currentTarget;
-
-					var json = xhr.get(STR_RESPONSE_DATA);
 
 					var description = Liferay.Language.get('average');
 
 					var averageScore =
-						json.averageScore * instance.get(STR_SIZE);
+						response.averageScore * instance.get(STR_SIZE);
 
-					var score = json.score * instance.get(STR_SIZE);
+					var score = response.score * instance.get(STR_SIZE);
 
 					var label = instance._getLabel(
 						description,
-						json.totalEntries
+						response.totalEntries
 					);
 
 					var formattedAverageScore = averageScore.toFixed(1);
@@ -481,7 +476,7 @@ AUI.add(
 			EXTENDS: Ratings,
 
 			prototype: {
-				_createRating: function() {
+				_createRating() {
 					var instance = this;
 
 					var namespace = instance.get(STR_NAMESPACE);
@@ -500,18 +495,18 @@ AUI.add(
 					}).render();
 				},
 
-				_getThumbScores: function(entries, score) {
+				_getThumbScores(entries, score) {
 					var positiveVotes = Math.floor(score);
 
 					var negativeVotes = entries - positiveVotes;
 
 					return {
-						negativeVotes: negativeVotes,
-						positiveVotes: positiveVotes
+						negativeVotes,
+						positiveVotes
 					};
 				},
 
-				_itemSelect: function(event) {
+				_itemSelect() {
 					var instance = this;
 
 					var uri = instance.get(STR_URI);
@@ -526,7 +521,7 @@ AUI.add(
 					);
 				},
 
-				_renderRatings: function() {
+				_renderRatings() {
 					var instance = this;
 
 					if (themeDisplay.isSignedIn()) {
@@ -550,22 +545,18 @@ AUI.add(
 					}
 				},
 
-				_saveCallback: function(event, id, obj) {
+				_saveCallback(response) {
 					var instance = this;
 
-					var xhr = event.currentTarget;
-
-					var json = xhr.get(STR_RESPONSE_DATA);
-
 					var thumbScore = instance._getThumbScores(
-						json.totalEntries,
-						json.totalScore
+						response.totalEntries,
+						response.totalScore
 					);
 
 					instance._updateScores(thumbScore);
 				},
 
-				_updateScores: function(thumbScore) {
+				_updateScores(thumbScore) {
 					var instance = this;
 
 					var ratings = instance.ratings;
@@ -683,7 +674,7 @@ AUI.add(
 			NAME: 'LikeRatingImpl',
 
 			prototype: {
-				renderUI: function() {
+				renderUI() {
 					var instance = this;
 
 					var cssClasses = instance.get('cssClasses');
@@ -704,7 +695,7 @@ AUI.add(
 			NAME: 'LikeRating',
 
 			prototype: {
-				_createRating: function() {
+				_createRating() {
 					var instance = this;
 
 					var namespace = instance.get(STR_NAMESPACE);
@@ -723,7 +714,7 @@ AUI.add(
 					}).render();
 				},
 
-				_getThumbScores: function(entries, score) {
+				_getThumbScores(entries) {
 					return {
 						positiveVotes: entries
 					};
@@ -739,6 +730,6 @@ AUI.add(
 	},
 	'',
 	{
-		requires: ['aui-io-request', 'aui-rating']
+		requires: ['aui-rating']
 	}
 );

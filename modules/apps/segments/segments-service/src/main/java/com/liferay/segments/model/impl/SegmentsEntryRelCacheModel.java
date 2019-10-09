@@ -17,6 +17,7 @@ package com.liferay.segments.model.impl;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.segments.model.SegmentsEntryRel;
 
 import java.io.Externalizable;
@@ -26,17 +27,14 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing SegmentsEntryRel in entity cache.
  *
  * @author Eduardo Garcia
  * @generated
  */
-@ProviderType
 public class SegmentsEntryRelCacheModel
-	implements CacheModel<SegmentsEntryRel>, Externalizable {
+	implements CacheModel<SegmentsEntryRel>, Externalizable, MVCCModel {
 
 	@Override
 	public boolean equals(Object obj) {
@@ -51,8 +49,9 @@ public class SegmentsEntryRelCacheModel
 		SegmentsEntryRelCacheModel segmentsEntryRelCacheModel =
 			(SegmentsEntryRelCacheModel)obj;
 
-		if (segmentsEntryRelId ==
-				segmentsEntryRelCacheModel.segmentsEntryRelId) {
+		if ((segmentsEntryRelId ==
+				segmentsEntryRelCacheModel.segmentsEntryRelId) &&
+			(mvccVersion == segmentsEntryRelCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -62,14 +61,28 @@ public class SegmentsEntryRelCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, segmentsEntryRelId);
+		int hashCode = HashUtil.hash(0, segmentsEntryRelId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(21);
+		StringBundler sb = new StringBundler(23);
 
-		sb.append("{segmentsEntryRelId=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", segmentsEntryRelId=");
 		sb.append(segmentsEntryRelId);
 		sb.append(", groupId=");
 		sb.append(groupId);
@@ -98,6 +111,7 @@ public class SegmentsEntryRelCacheModel
 	public SegmentsEntryRel toEntityModel() {
 		SegmentsEntryRelImpl segmentsEntryRelImpl = new SegmentsEntryRelImpl();
 
+		segmentsEntryRelImpl.setMvccVersion(mvccVersion);
 		segmentsEntryRelImpl.setSegmentsEntryRelId(segmentsEntryRelId);
 		segmentsEntryRelImpl.setGroupId(groupId);
 		segmentsEntryRelImpl.setCompanyId(companyId);
@@ -135,6 +149,8 @@ public class SegmentsEntryRelCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
+
 		segmentsEntryRelId = objectInput.readLong();
 
 		groupId = objectInput.readLong();
@@ -155,6 +171,8 @@ public class SegmentsEntryRelCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		objectOutput.writeLong(segmentsEntryRelId);
 
 		objectOutput.writeLong(groupId);
@@ -180,6 +198,7 @@ public class SegmentsEntryRelCacheModel
 		objectOutput.writeLong(classPK);
 	}
 
+	public long mvccVersion;
 	public long segmentsEntryRelId;
 	public long groupId;
 	public long companyId;

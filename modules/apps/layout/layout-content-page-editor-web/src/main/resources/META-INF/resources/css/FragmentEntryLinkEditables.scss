@@ -2,22 +2,29 @@
 
 .fragments-editor__editable {
 	cursor: pointer;
-	display: block;
+	display: inline-block;
 	min-height: 1em;
 	min-width: 2ch;
 	outline: 0;
 	position: relative;
+
+	&[type='image'] {
+		display: block;
+	}
 
 	&--highlighted:before {
 		box-shadow: inset 0 0 0 1px $fragmentEntryLinkEditableFieldBorderColor;
 	}
 
 	&--hovered:before {
+		background-color: $fragmentEntryLinkEditableFieldSelectedColor;
 		box-shadow: inset 0 0 0 1px $fragmentEditableFieldHoverBorderColor;
 	}
 
-	&--active:before {
-		box-shadow: inset 0 0 0 2px $fragmentEditableFieldActiveBorderColor;
+	&--active:before,
+	&--selected:before {
+		background-color: $fragmentEntryLinkEditableFieldSelectedColor;
+		box-shadow: inset 0 0 0 1px $fragmentEditableFieldActiveBorderColor;
 		outline: none;
 	}
 
@@ -29,17 +36,23 @@
 	}
 
 	&--mapped:before {
-		background-color: fade_out($fragmentEditableFieldGridMappedColor, 0.9);
 		box-shadow: inset 0 0 0 1px
 			fade_out($fragmentEditableFieldGridMappedColor, 0.6);
 	}
 
 	&--mapped.fragments-editor__editable--hovered:before {
+		background-color: fade_out($fragmentEditableFieldGridMappedColor, 0.9);
 		box-shadow: inset 0 0 0 1px $fragmentEditableFieldGridMappedColor;
 	}
 
 	&--mapped.fragments-editor__editable--active:before {
-		box-shadow: inset 0 0 0 2px $fragmentEditableFieldGridMappedColor;
+		background-color: fade_out($fragmentEditableFieldGridMappedColor, 0.9);
+		box-shadow: inset 0 0 0 1px $fragmentEditableFieldGridMappedColor;
+	}
+
+	&--mapped-item-hovered:before {
+		background-color: fade_out($fragmentEditableFieldGridMappedColor, 0.9);
+		box-shadow: inset 0 0 0 1px $fragmentEditableFieldGridMappedColor;
 	}
 
 	&:before {
@@ -53,10 +66,6 @@
 		transition: box-shadow ease 0.2s, background-color ease 0.3s;
 		width: 100%;
 		z-index: 1;
-	}
-
-	&[type='image'] > img {
-		max-width: 100%;
 	}
 
 	.cke_editable {

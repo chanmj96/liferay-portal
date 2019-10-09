@@ -211,9 +211,7 @@ public class JenkinsResultsParserUtil {
 		}
 
 		if ((jsonObject.getInt("duration") == 0) && result.equals("FAILURE")) {
-			String actualResult = getActualResult(url);
-
-			jsonObject.putOpt("result", actualResult);
+			jsonObject.putOpt("result", getActualResult(url));
 		}
 
 		return jsonObject;
@@ -431,6 +429,8 @@ public class JenkinsResultsParserUtil {
 
 			try (OutputStream outputStream =
 					httpURLConnection.getOutputStream()) {
+
+				script = "script=" + script;
 
 				outputStream.write(script.getBytes("UTF-8"));
 
@@ -739,7 +739,7 @@ public class JenkinsResultsParserUtil {
 				new StringReader(toString(getLocalURL(url), false)));
 		}
 
-		_buildProperties = new Hashtable<>(properties.size());
+		_buildProperties = new Hashtable<>();
 
 		_buildProperties.putAll(properties);
 
@@ -789,6 +789,20 @@ public class JenkinsResultsParserUtil {
 		return _getCanonicalPath(canonicalFile);
 	}
 
+	public static String getCohortName() {
+		String jenkinsURL = System.getenv("JENKINS_URL");
+
+		return getCohortName(jenkinsURL);
+	}
+
+	public static String getCohortName(String masterHostname) {
+		Matcher matcher = _jenkinsMasterPattern.matcher(masterHostname);
+
+		matcher.find();
+
+		return matcher.group("cohortName");
+	}
+
 	public static List<File> getDirectoriesContainingFiles(
 		List<File> directories, List<File> files) {
 
@@ -830,6 +844,48 @@ public class JenkinsResultsParserUtil {
 
 			return timeStamp;
 		}
+	}
+
+	public static String getDistPortalBundlesBuildURL(String portalBranchName) {
+		try {
+			JSONObject jobJSONObject = toJSONObject(
+				_getDistPortalJobURL(portalBranchName) +
+					"/api/json?tree=builds[number]");
+
+			JSONArray buildsJSONArray = jobJSONObject.getJSONArray("builds");
+
+			Pattern distPortalBundleFileNamesPattern =
+				_getDistPortalBundleFileNamesPattern(portalBranchName);
+
+			for (int i = 0; i < buildsJSONArray.length(); i++) {
+				JSONObject buildJSONObject = buildsJSONArray.optJSONObject(i);
+
+				if (buildJSONObject == null) {
+					continue;
+				}
+
+				String distPortalBundlesBuildURL = combine(
+					_getDistPortalBundlesURL(portalBranchName), "/",
+					String.valueOf(buildJSONObject.getInt("number")), "/");
+
+				try {
+					Matcher matcher = distPortalBundleFileNamesPattern.matcher(
+						toString(distPortalBundlesBuildURL));
+
+					if (matcher.find()) {
+						return distPortalBundlesBuildURL;
+					}
+				}
+				catch (IOException ioe) {
+					System.out.println("WARNING: " + ioe.getMessage());
+				}
+			}
+		}
+		catch (IOException ioe) {
+			throw new RuntimeException(ioe);
+		}
+
+		return null;
 	}
 
 	public static String getEnvironmentVariable(
@@ -888,6 +944,29 @@ public class JenkinsResultsParserUtil {
 		return combine(
 			"https://api.github.com/repos/", username, "/", gitRepositoryName,
 			"/", path.replaceFirst("^/*", ""));
+	}
+
+	public static List<String> getGitHubCacheHostnames() {
+		try {
+			Properties buildProperties = getBuildProperties();
+
+			String gitHubCacheHostnames = buildProperties.getProperty(
+				"github.cache.hostnames");
+
+			String cohortName = getCohortName();
+
+			if (buildProperties.containsKey(
+					"github.cache.hostnames[" + cohortName + "]")) {
+
+				gitHubCacheHostnames = buildProperties.getProperty(
+					"github.cache.hostnames[" + cohortName + "]");
+			}
+
+			return Lists.newArrayList(gitHubCacheHostnames.split(","));
+		}
+		catch (IOException ioe) {
+			throw new RuntimeException(ioe);
+		}
 	}
 
 	public static String[] getGlobsFromProperty(String globProperty) {
@@ -1023,16 +1102,6 @@ public class JenkinsResultsParserUtil {
 		}
 
 		return Float.parseFloat(matcher.group(1));
-	}
-
-	public static GitWorkingDirectory getJenkinsGitWorkingDirectory() {
-		String gitRepositoryName = "liferay-jenkins-ee";
-
-		File gitRepositoryDir = new File(
-			getBaseGitRepositoryDir(), gitRepositoryName);
-
-		return GitWorkingDirectoryFactory.newGitWorkingDirectory(
-			"master", gitRepositoryDir, gitRepositoryName);
 	}
 
 	public static List<JenkinsMaster> getJenkinsMasters(
@@ -1272,31 +1341,6 @@ public class JenkinsResultsParserUtil {
 		}
 	}
 
-	public static PortalGitWorkingDirectory getPortalGitWorkingDirectory(
-		String upstreamBranchName) {
-
-		String gitRepositoryDirName = "liferay-portal";
-		String gitRepositoryName = "liferay-portal";
-
-		if (!upstreamBranchName.equals("master")) {
-			gitRepositoryDirName += "-" + upstreamBranchName;
-			gitRepositoryName += "-ee";
-		}
-
-		File gitRepositoryDir = new File(
-			getBaseGitRepositoryDir(), gitRepositoryDirName);
-
-		GitWorkingDirectory gitWorkingDirectory =
-			GitWorkingDirectoryFactory.newGitWorkingDirectory(
-				upstreamBranchName, gitRepositoryDir, gitRepositoryName);
-
-		if (!(gitWorkingDirectory instanceof PortalGitWorkingDirectory)) {
-			throw new RuntimeException("Invalid Git working directory");
-		}
-
-		return (PortalGitWorkingDirectory)gitWorkingDirectory;
-	}
-
 	public static Properties getProperties(File... propertiesFiles) {
 		Properties properties = new Properties();
 
@@ -1347,26 +1391,15 @@ public class JenkinsResultsParserUtil {
 	public static String getRandomGitHubDevNodeHostname(
 		List<String> excludedHostnames) {
 
-		try {
-			Properties buildProperties = getBuildProperties();
+		List<String> gitHubDevNodeHostnames = getGitHubCacheHostnames();
 
-			String gitCacheHostnames = buildProperties.getProperty(
-				"github.cache.hostnames");
-
-			List<String> gitHubDevNodeHostnames = Lists.newArrayList(
-				gitCacheHostnames.split(","));
-
-			if (excludedHostnames != null) {
-				for (String excludedHostname : excludedHostnames) {
-					gitHubDevNodeHostnames.remove(excludedHostname);
-				}
+		if (excludedHostnames != null) {
+			for (String excludedHostname : excludedHostnames) {
+				gitHubDevNodeHostnames.remove(excludedHostname);
 			}
+		}
 
-			return getRandomString(gitHubDevNodeHostnames);
-		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
-		}
+		return getRandomString(gitHubDevNodeHostnames);
 	}
 
 	public static List<String> getRandomList(List<String> list, int size) {
@@ -1793,7 +1826,7 @@ public class JenkinsResultsParserUtil {
 		sb.append(keepBuildLogs);
 		sb.append(");");
 
-		executeJenkinsScript(masterHostname, "script=" + sb.toString());
+		executeJenkinsScript(masterHostname, sb.toString());
 	}
 
 	public static void move(File sourceFile, File targetFile)
@@ -2336,6 +2369,16 @@ public class JenkinsResultsParserUtil {
 						buildProperties.getProperty("github.access.token"));
 				}
 
+				if ((httpAuthorizationHeader == null) &&
+					url.matches("https://test-\\d+-\\d+.liferay.com/.+")) {
+
+					Properties buildProperties = getBuildProperties();
+
+					httpAuthorizationHeader = new BasicHTTPAuthorization(
+						buildProperties.getProperty("jenkins.admin.user.token"),
+						buildProperties.getProperty("jenkins.admin.user.name"));
+				}
+
 				URL urlObject = new URL(url);
 
 				URLConnection urlConnection = urlObject.openConnection();
@@ -2471,6 +2514,17 @@ public class JenkinsResultsParserUtil {
 				return sb.toString();
 			}
 			catch (IOException ioe) {
+				if ((ioe instanceof UnknownHostException) &&
+					url.matches("http://test-\\d+-\\d+/.*")) {
+
+					return toString(
+						url.replaceAll(
+							"http://(test-\\d+-\\d+)(/.*)",
+							"https://$1.liferay.com$2"),
+						checkCache, maxRetries, method, postContent,
+						retryPeriod, timeout, httpAuthorizationHeader);
+				}
+
 				retryCount++;
 
 				if ((maxRetries >= 0) && (retryCount >= maxRetries)) {
@@ -2553,7 +2607,7 @@ public class JenkinsResultsParserUtil {
 			String.valueOf(buildNumber), "); build.description = \"",
 			buildDescription, "\";");
 
-		executeJenkinsScript(masterHostname, "script=" + jenkinsScript);
+		executeJenkinsScript(masterHostname, jenkinsScript);
 	}
 
 	public static void updateBuildResult(
@@ -2565,7 +2619,7 @@ public class JenkinsResultsParserUtil {
 			"def build = job.getBuildByNumber(", String.valueOf(buildNumber),
 			"); build.@result = hudson.model.Result.", buildResult, ";");
 
-		executeJenkinsScript(masterHostname, "script=" + jenkinsScript);
+		executeJenkinsScript(masterHostname, jenkinsScript);
 	}
 
 	public static void write(File file, String content) throws IOException {
@@ -2770,6 +2824,83 @@ public class JenkinsResultsParserUtil {
 		return combine(parentFileCanonicalPath, "/", canonicalFile.getName());
 	}
 
+	private static Pattern _getDistPortalBundleFileNamesPattern(
+		String portalBranchName) {
+
+		try {
+			String distPortalBundleFileNames = getProperty(
+				getBuildProperties(), "dist.portal.bundle.file.names",
+				portalBranchName);
+
+			if (distPortalBundleFileNames == null) {
+				distPortalBundleFileNames =
+					_DIST_PORTAL_BUNDLE_FILE_NAMES_DEFAULT;
+			}
+
+			StringBuilder sb = new StringBuilder();
+
+			List<String> distPortalBundleFileNamesList = Lists.newArrayList(
+				distPortalBundleFileNames.split("\\s*,\\s*"));
+
+			Collections.sort(distPortalBundleFileNamesList);
+
+			for (String distPortalBundleFileName :
+					distPortalBundleFileNamesList) {
+
+				String quotedDistPortalBundleFileName = Pattern.quote(
+					distPortalBundleFileName);
+
+				sb.append("\\<a href=\"");
+				sb.append(quotedDistPortalBundleFileName);
+				sb.append("\"\\>");
+				sb.append(quotedDistPortalBundleFileName);
+				sb.append("\\</a\\>.*");
+			}
+
+			sb.setLength(sb.length() - 2);
+
+			return Pattern.compile(sb.toString(), Pattern.DOTALL);
+		}
+		catch (IOException ioe) {
+			throw new RuntimeException("Unable to load build properties", ioe);
+		}
+	}
+
+	private static String _getDistPortalBundlesURL(String portalBranchName) {
+		try {
+			String distPortalBundlesURL = getProperty(
+				getBuildProperties(), "dist.portal.bundles.url",
+				portalBranchName);
+
+			if (distPortalBundlesURL != null) {
+				return distPortalBundlesURL;
+			}
+		}
+		catch (IOException ioe) {
+			System.out.println("WARNING: " + ioe.getMessage());
+		}
+
+		return combine(
+			_DIST_PORTAL_BUNDLES_URL_DEFAULT, "(", portalBranchName, ")/");
+	}
+
+	private static String _getDistPortalJobURL(String portalBranchName) {
+		try {
+			String distPortalJobURL = getProperty(
+				getBuildProperties(), "dist.portal.job.url", portalBranchName);
+
+			if (distPortalJobURL != null) {
+				return distPortalJobURL;
+			}
+		}
+		catch (IOException ioe) {
+			System.out.println("WARNING: " + ioe.getMessage());
+		}
+
+		return combine(
+			_DIST_PORTAL_JOB_URL_DEFAULT, "(", portalBranchName, ")");
+	}
+
 	private static String _getGitHubAPIRateLimitStatusMessage(
 		int limit, int remaining, long reset) {
 
@@ -2957,6 +3088,16 @@ public class JenkinsResultsParserUtil {
 		return true;
 	}
 
+	private static final String _DIST_PORTAL_BUNDLE_FILE_NAMES_DEFAULT =
+		"git-hash,liferay-portal-bundle-tomcat.tar.gz," +
+			"liferay-portal-source.tar.gz";
+
+	private static final String _DIST_PORTAL_BUNDLES_URL_DEFAULT =
+		"http://test-1-0/userContent/bundles/test-portal-acceptance-upstream";
+
+	private static final String _DIST_PORTAL_JOB_URL_DEFAULT =
+		"http://test-1-1/job/test-portal-acceptance-upstream";
+
 	private static final long _MILLIS_BASH_COMMAND_TIMEOUT_DEFAULT =
 		1000 * 60 * 60;
 
@@ -2987,6 +3128,8 @@ public class JenkinsResultsParserUtil {
 		"\\{.*?\\}");
 	private static final Pattern _javaVersionPattern = Pattern.compile(
 		"(\\d+\\.\\d+)");
+	private static final Pattern _jenkinsMasterPattern = Pattern.compile(
+		"(?<cohortName>test-\\d+)-\\d+");
 	private static Hashtable<?, ?> _jenkinsProperties;
 	private static final Pattern _localURLAuthorityPattern1 = Pattern.compile(
 		"http://(test-[0-9]+)/([0-9]+)/");
@@ -3011,6 +3154,8 @@ public class JenkinsResultsParserUtil {
 		System.getProperty("user.home"));
 
 	static {
+		_initializeRedactTokens();
+
 		System.out.println("Securing standard error and out");
 
 		System.setErr(new SecurePrintStream(System.err));

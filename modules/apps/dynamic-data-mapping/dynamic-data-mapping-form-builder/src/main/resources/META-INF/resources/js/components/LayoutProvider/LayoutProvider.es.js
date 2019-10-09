@@ -22,6 +22,7 @@ import {
 	RulesVisitor
 } from 'dynamic-data-mapping-form-renderer/js/util/visitors.es';
 import {setLocalizedValue} from '../../util/i18n.es';
+import {generateFieldName} from './util/fields.es';
 
 import handleColumnResized from './handlers/columnResizedHandler.es';
 import handleFieldAdded from './handlers/fieldAddedHandler.es';
@@ -30,6 +31,7 @@ import handleFieldClicked from './handlers/fieldClickedHandler.es';
 import handleFieldDeleted from './handlers/fieldDeletedHandler.es';
 import handleFieldDuplicated from './handlers/fieldDuplicatedHandler.es';
 import handleFieldEdited from './handlers/fieldEditedHandler.es';
+import handleFieldMoved from './handlers/fieldMovedHandler.es';
 import handleFieldSetAdded from './handlers/fieldSetAddedHandler.es';
 import handleLanguageIdDeleted from './handlers/languageIdDeletedHandler.es';
 import handlePaginationItemClicked from 'dynamic-data-mapping-form-renderer/js/store/actions/handlePaginationItemClicked.es';
@@ -171,6 +173,7 @@ class LayoutProvider extends Component {
 
 	getPages() {
 		const {defaultLanguageId, editingLanguageId} = this.props;
+		const {focusedField} = this.state;
 		let {pages} = this.state;
 
 		const visitor = new PagesVisitor(pages);
@@ -185,6 +188,7 @@ class LayoutProvider extends Component {
 					editingLanguageId
 				),
 				options,
+				selected: focusedField.fieldName === field.fieldName,
 				settingsContext: {
 					...settingsContext,
 					availableLanguageIds: [editingLanguageId],
@@ -255,6 +259,7 @@ class LayoutProvider extends Component {
 		const {
 			children,
 			defaultLanguageId,
+			fieldActions,
 			editingLanguageId,
 			spritemap
 		} = this.props;
@@ -274,10 +279,7 @@ class LayoutProvider extends Component {
 					activePage,
 					defaultLanguageId,
 					editingLanguageId,
-					events: {
-						...this.getEvents(),
-						...child.props.events
-					},
+					fieldActions,
 					focusedField: this.getFocusedField(),
 					pages: this.getPages(),
 					paginationMode,
@@ -289,6 +291,27 @@ class LayoutProvider extends Component {
 		}
 
 		return <span>{children}</span>;
+	}
+
+	_fieldActionsValueFn() {
+		return [
+			{
+				action: indexes => this.dispatch('fieldDuplicated', {indexes}),
+				label: Liferay.Language.get('duplicate')
+			},
+			{
+				action: indexes => this.dispatch('fieldDeleted', {indexes}),
+				label: Liferay.Language.get('delete')
+			}
+		];
+	}
+
+	_fieldNameGeneratorValueFn() {
+		return (desiredName, currentName) => {
+			const {pages} = this.state;
+
+			return generateFieldName(pages, desiredName, currentName);
+		};
 	}
 
 	_handleActivePageUpdated(activePage) {
@@ -350,79 +373,15 @@ class LayoutProvider extends Component {
 	}
 
 	_handleFieldDuplicated(event) {
-		const {defaultLanguageId} = this.props;
-
-		this.setState(
-			handleFieldDuplicated(this.state, defaultLanguageId, event)
-		);
+		this.setState(handleFieldDuplicated(this.props, this.state, event));
 	}
 
 	_handleFieldEdited(properties) {
-		const {defaultLanguageId, editingLanguageId} = this.props;
-
-		this.setState(
-			handleFieldEdited(
-				this.state,
-				defaultLanguageId,
-				editingLanguageId,
-				properties
-			)
-		);
+		this.setState(handleFieldEdited(this.props, this.state, properties));
 	}
 
-	_handleFieldMoved({addedToPlaceholder, target, source}) {
-		let {pages} = this.state;
-		const {columnIndex, pageIndex, rowIndex} = source;
-
-		const column = FormSupport.getColumn(
-			pages,
-			pageIndex,
-			rowIndex,
-			columnIndex
-		);
-		const {fields} = column;
-		const newRow = FormSupport.implAddRow(12, fields);
-
-		pages = FormSupport.removeFields(
-			pages,
-			pageIndex,
-			rowIndex,
-			columnIndex
-		);
-
-		const pageTarget = pages[target.pageIndex];
-
-		const rowTarget = pageTarget.rows[target.rowIndex];
-
-		if (target.rowIndex > pages[pageIndex].rows.length - 1) {
-			pages = FormSupport.addRow(
-				pages,
-				target.rowIndex,
-				target.pageIndex,
-				newRow
-			);
-		} else if (addedToPlaceholder && rowTarget.columns.length === 1) {
-			pages = FormSupport.addRow(
-				pages,
-				target.rowIndex,
-				target.pageIndex,
-				newRow
-			);
-		} else {
-			pages = FormSupport.addFieldToColumn(
-				pages,
-				target.pageIndex,
-				target.rowIndex,
-				target.columnIndex,
-				fields[0]
-			);
-		}
-
-		pages[pageIndex].rows = FormSupport.removeEmptyRows(pages, pageIndex);
-
-		this.setState({
-			pages
-		});
+	_handleFieldMoved(event) {
+		this.setState(handleFieldMoved(this.props, this.state, event));
 	}
 
 	_handleFieldSetAdded(event) {
@@ -523,7 +482,7 @@ class LayoutProvider extends Component {
 			rules: [...this.state.rules, rule]
 		});
 
-		this.emit('ruleAdded', rule);
+		this.emit('rulesModified');
 	}
 
 	_handleRuleDeleted({ruleId}) {
@@ -532,6 +491,8 @@ class LayoutProvider extends Component {
 		this.setState({
 			rules: rules.filter((rule, index) => index !== ruleId)
 		});
+
+		this.emit('rulesModified');
 	}
 
 	_handleRuleSaved(event) {
@@ -551,7 +512,7 @@ class LayoutProvider extends Component {
 			rules
 		});
 
-		this.emit('ruleSaved', newRule);
+		this.emit('rulesModified');
 	}
 
 	_handleSidebarFieldBlurred() {
@@ -689,7 +650,43 @@ LayoutProvider.PROPS = {
 	 * @type {?object}
 	 */
 
-	events: Config.setter('_setEvents'),
+	events: Config.setter('_setEvents').value({}),
+
+	/**
+	 * @default undefined
+	 * @instance
+	 * @memberof LayoutProvider
+	 * @type {?string}
+	 */
+
+	fieldActions: Config.array().valueFn('_fieldActionsValueFn'),
+
+	/**
+	 * @default _fieldNameGeneratorValueFn
+	 * @instance
+	 * @memberof LayoutProvider
+	 * @type {?function}
+	 */
+
+	fieldNameGenerator: Config.func().valueFn('_fieldNameGeneratorValueFn'),
+
+	/**
+	 * @default undefined
+	 * @instance
+	 * @memberof LayoutProvider
+	 * @type {?string}
+	 */
+
+	fieldSetDefinitionURL: Config.string(),
+
+	/**
+	 * @default []
+	 * @instance
+	 * @memberof LayoutProvider
+	 * @type {?(array|undefined)}
+	 */
+
+	fieldSets: Config.array().value([]),
 
 	/**
 	 * @default undefined
@@ -739,7 +736,16 @@ LayoutProvider.PROPS = {
 	 * @type {?(array|undefined)}
 	 */
 
-	spritemap: Config.string()
+	spritemap: Config.string(),
+
+	/**
+	 * @default undefined
+	 * @instance
+	 * @memberof LayoutProvider
+	 * @type {?string}
+	 */
+
+	view: Config.string()
 };
 
 LayoutProvider.STATE = {

@@ -17,12 +17,15 @@ package com.liferay.oauth2.provider.shortcut.internal.instance.lifecycle;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.oauth2.provider.constants.ClientProfile;
 import com.liferay.oauth2.provider.constants.GrantType;
+import com.liferay.oauth2.provider.constants.OAuth2ProviderActionKeys;
 import com.liferay.oauth2.provider.model.OAuth2Application;
 import com.liferay.oauth2.provider.scope.spi.application.descriptor.ApplicationDescriptor;
 import com.liferay.oauth2.provider.scope.spi.prefix.handler.PrefixHandlerFactory;
 import com.liferay.oauth2.provider.scope.spi.scope.finder.ScopeFinder;
 import com.liferay.oauth2.provider.scope.spi.scope.mapper.ScopeMapper;
 import com.liferay.oauth2.provider.service.OAuth2ApplicationLocalService;
+import com.liferay.oauth2.provider.service.OAuth2ApplicationScopeAliasesLocalService;
+import com.liferay.oauth2.provider.service.OAuth2ScopeGrantLocalService;
 import com.liferay.oauth2.provider.shortcut.internal.constants.OAuth2ProviderShortcutConstants;
 import com.liferay.oauth2.provider.shortcut.internal.spi.scope.finder.OAuth2ProviderShortcutScopeFinder;
 import com.liferay.oauth2.provider.util.OAuth2SecureRandomGenerator;
@@ -35,13 +38,20 @@ import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.ResourcePermission;
+import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.CompanyService;
 import com.liferay.portal.kernel.service.ContactService;
 import com.liferay.portal.kernel.service.GroupService;
 import com.liferay.portal.kernel.service.OrganizationService;
 import com.liferay.portal.kernel.service.PortalService;
+import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupService;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -59,14 +69,11 @@ import com.liferay.portal.security.service.access.policy.service.SAPEntryLocalSe
 import java.io.InputStream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -91,8 +98,61 @@ public class AnalyticsCloudPortalInstanceLifecycleListener
 
 	@Override
 	public void portalInstanceRegistered(Company company) throws Exception {
-		if (_hasOAuth2Application(company.getCompanyId())) {
-			return;
+		OAuth2Application oAuth2Application = _addOAuth2Application(company);
+
+		_addResourcePermissions(oAuth2Application);
+	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_scopeAliasesList = new ArrayList<>(_SAP_ENTRY_OBJECT_ARRAYS.length);
+
+		for (String[] sapEntryObjectArray : _SAP_ENTRY_OBJECT_ARRAYS) {
+			_scopeAliasesList.add(
+				StringUtil.replaceFirst(
+					sapEntryObjectArray[0], "OAUTH2_", StringPool.BLANK));
+		}
+
+		Dictionary<String, Object> properties = new HashMapDictionary<>();
+
+		properties.put(
+			"osgi.jaxrs.name",
+			OAuth2ProviderShortcutConstants.APPLICATION_NAME);
+		properties.put("sap.scope.finder", true);
+
+		_serviceRegistration = bundleContext.registerService(
+			new String[] {
+				ApplicationDescriptor.class.getName(),
+				PrefixHandlerFactory.class.getName(),
+				ScopeFinder.class.getName(), ScopeMapper.class.getName()
+			},
+			new OAuth2ProviderShortcutScopeFinder(), properties);
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceRegistration.unregister();
+	}
+
+	private OAuth2Application _addOAuth2Application(Company company)
+		throws Exception {
+
+		DynamicQuery dynamicQuery =
+			_oAuth2ApplicationLocalService.dynamicQuery();
+
+		Property companyIdProperty = PropertyFactoryUtil.forName("companyId");
+
+		dynamicQuery.add(companyIdProperty.eq(company.getCompanyId()));
+
+		Property nameProperty = PropertyFactoryUtil.forName("name");
+
+		dynamicQuery.add(nameProperty.eq(_APPLICATION_NAME));
+
+		List<OAuth2Application> oAuth2Applications =
+			_oAuth2ApplicationLocalService.dynamicQuery(dynamicQuery);
+
+		if (!oAuth2Applications.isEmpty()) {
+			return oAuth2Applications.get(0);
 		}
 
 		User user = _userLocalService.getDefaultUser(company.getCompanyId());
@@ -124,38 +184,42 @@ public class AnalyticsCloudPortalInstanceLifecycleListener
 
 		_oAuth2ApplicationLocalService.updateIcon(
 			oAuth2Application.getOAuth2ApplicationId(), inputStream);
+
+		_createOAuth2ScopeGrants(oAuth2Application);
+
+		return oAuth2Application;
 	}
 
-	@Activate
-	protected void activate(BundleContext bundleContext) {
-		Stream<String[]> stream = Arrays.stream(_SAP_ENTRY_OBJECT_ARRAYS);
+	private void _addResourcePermissions(OAuth2Application oAuth2Application)
+		throws Exception {
 
-		_scopeAliasesList = stream.map(
-			sapEntryObjectArray -> StringUtil.replaceFirst(
-				sapEntryObjectArray[0], "OAUTH2_", StringPool.BLANK)
-		).collect(
-			Collectors.toList()
-		);
+		Role role = _roleLocalService.fetchRole(
+			oAuth2Application.getCompanyId(),
+			RoleConstants.ANALYTICS_ADMINISTRATOR);
 
-		Dictionary<String, Object> properties = new HashMapDictionary<>();
+		if (role == null) {
+			return;
+		}
 
-		properties.put(
-			"osgi.jaxrs.name",
-			OAuth2ProviderShortcutConstants.APPLICATION_NAME);
-		properties.put("sap.scope.finder", true);
+		ResourcePermission resourcePermission =
+			_resourcePermissionLocalService.fetchResourcePermission(
+				oAuth2Application.getCompanyId(),
+				OAuth2Application.class.getName(),
+				ResourceConstants.SCOPE_INDIVIDUAL,
+				String.valueOf(oAuth2Application.getPrimaryKey()),
+				role.getRoleId());
 
-		_serviceRegistration = bundleContext.registerService(
+		if (resourcePermission != null) {
+			return;
+		}
+
+		_resourcePermissionLocalService.setResourcePermissions(
+			oAuth2Application.getCompanyId(), OAuth2Application.class.getName(),
+			ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(oAuth2Application.getPrimaryKey()), role.getRoleId(),
 			new String[] {
-				ApplicationDescriptor.class.getName(),
-				PrefixHandlerFactory.class.getName(),
-				ScopeFinder.class.getName(), ScopeMapper.class.getName()
-			},
-			new OAuth2ProviderShortcutScopeFinder(), properties);
-	}
-
-	@Deactivate
-	protected void deactivate() {
-		_serviceRegistration.unregister();
+				ActionKeys.VIEW, OAuth2ProviderActionKeys.ACTION_CREATE_TOKEN
+			});
 	}
 
 	private void _addSAPEntries(long companyId, long userId)
@@ -189,25 +253,21 @@ public class AnalyticsCloudPortalInstanceLifecycleListener
 		}
 	}
 
-	private boolean _hasOAuth2Application(long companyId) {
-		DynamicQuery dynamicQuery =
-			_oAuth2ApplicationLocalService.dynamicQuery();
+	private void _createOAuth2ScopeGrants(OAuth2Application oAuth2Application)
+		throws PortalException {
 
-		Property companyIdProperty = PropertyFactoryUtil.forName("companyId");
-
-		dynamicQuery.add(companyIdProperty.eq(companyId));
-
-		Property nameProperty = PropertyFactoryUtil.forName("name");
-
-		dynamicQuery.add(nameProperty.eq(_APPLICATION_NAME));
-
-		if (_oAuth2ApplicationLocalService.dynamicQueryCount(dynamicQuery) >
-				0) {
-
-			return true;
+		for (String scope : _SEGMENTS_ASAH_DEFAULT_OAUTH2_SCOPE_GRANTS) {
+			_oAuth2ScopeGrantLocalService.createOAuth2ScopeGrant(
+				oAuth2Application.getCompanyId(),
+				oAuth2Application.getOAuth2ApplicationScopeAliasesId(),
+				"Liferay.Segments.Asah.REST",
+				"com.liferay.segments.asah.rest.impl", scope,
+				Collections.singletonList(
+					"Liferay.Segments.Asah.REST.everything"));
 		}
 
-		return false;
+		_oAuth2ApplicationLocalService.updateOAuth2Application(
+			oAuth2Application);
 	}
 
 	private static final String _APPLICATION_NAME = "Analytics Cloud";
@@ -255,6 +315,10 @@ public class AnalyticsCloudPortalInstanceLifecycleListener
 		}
 	};
 
+	private static final String[] _SEGMENTS_ASAH_DEFAULT_OAUTH2_SCOPE_GRANTS = {
+		"DELETE", "GET", "POST"
+	};
+
 	@Reference(
 		target = "(indexer.class.name=com.liferay.document.library.kernel.model.DLFileEntry)"
 	)
@@ -264,7 +328,20 @@ public class AnalyticsCloudPortalInstanceLifecycleListener
 	private OAuth2ApplicationLocalService _oAuth2ApplicationLocalService;
 
 	@Reference
+	private OAuth2ApplicationScopeAliasesLocalService
+		_oAuth2ApplicationScopeAliasesLocalService;
+
+	@Reference
+	private OAuth2ScopeGrantLocalService _oAuth2ScopeGrantLocalService;
+
+	@Reference
 	private Portal _portal;
+
+	@Reference
+	private ResourcePermissionLocalService _resourcePermissionLocalService;
+
+	@Reference
+	private RoleLocalService _roleLocalService;
 
 	@Reference
 	private SAPEntryLocalService _sapEntryLocalService;

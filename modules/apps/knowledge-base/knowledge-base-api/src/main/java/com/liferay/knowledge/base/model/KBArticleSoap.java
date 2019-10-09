@@ -20,20 +20,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.knowledge.base.service.http.KBArticleServiceSoap}.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class KBArticleSoap implements Serializable {
 
 	public static KBArticleSoap toSoapModel(KBArticle model) {
 		KBArticleSoap soapModel = new KBArticleSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setKbArticleId(model.getKbArticleId());
 		soapModel.setResourcePrimKey(model.getResourcePrimKey());
@@ -115,6 +113,14 @@ public class KBArticleSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setKbArticleId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -357,6 +363,7 @@ public class KBArticleSoap implements Serializable {
 		_statusDate = statusDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _kbArticleId;
 	private long _resourcePrimKey;

@@ -15,6 +15,7 @@
 package com.liferay.roles.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.RoleNameException;
@@ -51,7 +52,6 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.comparator.RoleRoleIdComparator;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.util.test.LayoutTestUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -162,10 +162,13 @@ public class RoleLocalServiceTest {
 	public void testGetAssigneesTotalSiteRole() throws Exception {
 		_group = GroupTestUtil.addGroup();
 		_role = RoleTestUtil.addRole(RoleConstants.TYPE_SITE);
+
 		_user = UserTestUtil.addUser();
+
 		_userGroup = UserGroupTestUtil.addUserGroup();
 
 		_groupLocalService.addUserGroup(_user.getUserId(), _group);
+
 		_groupLocalService.addUserGroupGroup(
 			_userGroup.getUserGroupId(), _group);
 

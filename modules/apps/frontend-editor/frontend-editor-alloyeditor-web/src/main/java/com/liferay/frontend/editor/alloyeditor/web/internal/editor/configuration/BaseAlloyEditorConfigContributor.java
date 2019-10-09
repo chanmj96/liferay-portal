@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Map;
 
@@ -46,19 +47,17 @@ public abstract class BaseAlloyEditorConfigContributor
 		ThemeDisplay themeDisplay,
 		RequestBackedPortletURLFactory requestBackedPortletURLFactory) {
 
-		jsonObject.put("allowedContent", Boolean.TRUE);
-
-		String contentsLanguageDir = getContentsLanguageDir(
-			inputEditorTaglibAttributes);
-
 		jsonObject.put(
-			"contentsLangDirection", HtmlUtil.escapeJS(contentsLanguageDir));
-
-		String contentsLanguageId = getContentsLanguageId(
-			inputEditorTaglibAttributes);
-
-		jsonObject.put(
-			"contentsLanguage", contentsLanguageId.replace("iw_", "he_")
+			"allowedContent", Boolean.TRUE
+		).put(
+			"contentsLangDirection",
+			HtmlUtil.escapeJS(
+				getContentsLanguageDir(inputEditorTaglibAttributes))
+		).put(
+			"contentsLanguage",
+			StringUtil.replace(
+				getContentsLanguageId(inputEditorTaglibAttributes), "iw_",
+				"he_")
 		).put(
 			"disableNativeSpellChecker", Boolean.FALSE
 		).put(
@@ -68,12 +67,9 @@ public abstract class BaseAlloyEditorConfigContributor
 					"ae_tabletools,ae_uicore"
 		).put(
 			"imageScaleResize", "scale"
-		);
-
-		String languageId = getLanguageId(themeDisplay);
-
-		jsonObject.put(
-			"language", languageId.replace("iw_", "he_")
+		).put(
+			"language",
+			StringUtil.replace(getLanguageId(themeDisplay), "iw_", "he_")
 		).put(
 			"removePlugins",
 			"contextmenu,elementspath,floatingspace,image,link,liststyle," +

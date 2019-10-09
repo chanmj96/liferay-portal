@@ -20,20 +20,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services, specifically {@link com.liferay.wiki.service.http.WikiPageServiceSoap}.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class WikiPageSoap implements Serializable {
 
 	public static WikiPageSoap toSoapModel(WikiPage model) {
 		WikiPageSoap soapModel = new WikiPageSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setUuid(model.getUuid());
 		soapModel.setPageId(model.getPageId());
 		soapModel.setResourcePrimKey(model.getResourcePrimKey());
@@ -109,6 +107,14 @@ public class WikiPageSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setPageId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public String getUuid() {
@@ -311,6 +317,7 @@ public class WikiPageSoap implements Serializable {
 		_statusDate = statusDate;
 	}
 
+	private long _mvccVersion;
 	private String _uuid;
 	private long _pageId;
 	private long _resourcePrimKey;

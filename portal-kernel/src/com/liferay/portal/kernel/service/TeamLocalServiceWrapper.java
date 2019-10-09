@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * Provides a wrapper for {@link TeamLocalService}.
  *
@@ -23,18 +21,22 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see TeamLocalService
  * @generated
  */
-@ProviderType
 public class TeamLocalServiceWrapper
-	implements TeamLocalService, ServiceWrapper<TeamLocalService> {
+	implements ServiceWrapper<TeamLocalService>, TeamLocalService {
 
 	public TeamLocalServiceWrapper(TeamLocalService teamLocalService) {
 		_teamLocalService = teamLocalService;
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this interface directly. Always use {@link TeamLocalServiceUtil} to access the team local service. Add custom service methods to <code>com.liferay.portal.service.impl.TeamLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 */
 	@Override
 	public com.liferay.portal.kernel.model.Team addTeam(
-			long userId, long groupId, String name, String description,
-			ServiceContext serviceContext)
+			long userId, long groupId, java.lang.String name,
+			java.lang.String description, ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _teamLocalService.addTeam(
@@ -318,7 +320,7 @@ public class TeamLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Team fetchTeam(
-		long groupId, String name) {
+		long groupId, java.lang.String name) {
 
 		return _teamLocalService.fetchTeam(groupId, name);
 	}
@@ -332,7 +334,7 @@ public class TeamLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Team fetchTeamByUuidAndGroupId(
-		String uuid, long groupId) {
+		java.lang.String uuid, long groupId) {
 
 		return _teamLocalService.fetchTeamByUuidAndGroupId(uuid, groupId);
 	}
@@ -379,7 +381,7 @@ public class TeamLocalServiceWrapper
 	 * @return the OSGi service identifier
 	 */
 	@Override
-	public String getOSGiServiceIdentifier() {
+	public java.lang.String getOSGiServiceIdentifier() {
 		return _teamLocalService.getOSGiServiceIdentifier();
 	}
 
@@ -407,7 +409,7 @@ public class TeamLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Team getTeam(
-			long groupId, String name)
+			long groupId, java.lang.String name)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _teamLocalService.getTeam(groupId, name);
@@ -423,7 +425,7 @@ public class TeamLocalServiceWrapper
 	 */
 	@Override
 	public com.liferay.portal.kernel.model.Team getTeamByUuidAndGroupId(
-			String uuid, long groupId)
+			java.lang.String uuid, long groupId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _teamLocalService.getTeamByUuidAndGroupId(uuid, groupId);
@@ -456,7 +458,7 @@ public class TeamLocalServiceWrapper
 	 */
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.Team>
-		getTeamsByUuidAndCompanyId(String uuid, long companyId) {
+		getTeamsByUuidAndCompanyId(java.lang.String uuid, long companyId) {
 
 		return _teamLocalService.getTeamsByUuidAndCompanyId(uuid, companyId);
 	}
@@ -474,7 +476,7 @@ public class TeamLocalServiceWrapper
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.Team>
 		getTeamsByUuidAndCompanyId(
-			String uuid, long companyId, int start, int end,
+			java.lang.String uuid, long companyId, int start, int end,
 			com.liferay.portal.kernel.util.OrderByComparator
 				<com.liferay.portal.kernel.model.Team> orderByComparator) {
 
@@ -609,8 +611,9 @@ public class TeamLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.portal.kernel.model.Team> search(
-		long groupId, String name, String description,
-		java.util.LinkedHashMap<String, Object> params, int start, int end,
+		long groupId, java.lang.String name, java.lang.String description,
+		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
+		int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator
 			<com.liferay.portal.kernel.model.Team> obc) {
 
@@ -620,8 +623,8 @@ public class TeamLocalServiceWrapper
 
 	@Override
 	public int searchCount(
-		long groupId, String name, String description,
-		java.util.LinkedHashMap<String, Object> params) {
+		long groupId, java.lang.String name, java.lang.String description,
+		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params) {
 
 		return _teamLocalService.searchCount(
 			groupId, name, description, params);
@@ -639,7 +642,7 @@ public class TeamLocalServiceWrapper
 
 	@Override
 	public com.liferay.portal.kernel.model.Team updateTeam(
-			long teamId, String name, String description)
+			long teamId, java.lang.String name, java.lang.String description)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
 		return _teamLocalService.updateTeam(teamId, name, description);

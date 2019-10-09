@@ -46,9 +46,9 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class AssetListEntryServiceBaseImpl
 	extends BaseServiceImpl
-	implements AssetListEntryService, AopService, IdentifiableOSGiService {
+	implements AopService, AssetListEntryService, IdentifiableOSGiService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>AssetListEntryService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.asset.list.service.AssetListEntryServiceUtil</code>.

@@ -1,12 +1,24 @@
 @import './ColumnOverlayGrid';
 
+@import './common/Button';
+
+@import './common/Editor';
+
+@import './common/Textarea';
+
+@import './CreateContentDialog';
+
 @import './DragDrop';
 
 @import './ElementTopper';
 
 @import './FloatingToolbar';
 
+@import './FragmentComment';
+
 @import './FragmentEntryLink';
+
+@import './FragmentEntryLinkBackgroundImageEditables';
 
 @import './FragmentEntryLinkList';
 
@@ -17,6 +29,12 @@
 @import './FragmentsEditorSidebar';
 
 @import './FragmentsEditorToolbar';
+
+@import './InlineConfirm';
+
+@import './ItemHighlight';
+
+@import './PageContent';
 
 @import './SegmentsExperienceSelector';
 

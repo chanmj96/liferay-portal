@@ -50,9 +50,9 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class CalendarResourceServiceBaseImpl
 	extends BaseServiceImpl
-	implements CalendarResourceService, AopService, IdentifiableOSGiService {
+	implements AopService, CalendarResourceService, IdentifiableOSGiService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>CalendarResourceService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.calendar.service.CalendarResourceServiceUtil</code>.

@@ -14,7 +14,6 @@
 
 package com.liferay.change.tracking.service;
 
-import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -31,10 +30,9 @@ import org.osgi.util.tracker.ServiceTracker;
  * @see CTProcessLocalService
  * @generated
  */
-@ProviderType
 public class CTProcessLocalServiceUtil {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.change.tracking.service.impl.CTProcessLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
@@ -78,11 +76,9 @@ public class CTProcessLocalServiceUtil {
 	 *
 	 * @param ctProcess the ct process
 	 * @return the ct process that was removed
-	 * @throws PortalException
 	 */
 	public static com.liferay.change.tracking.model.CTProcess deleteCTProcess(
-			com.liferay.change.tracking.model.CTProcess ctProcess)
-		throws com.liferay.portal.kernel.exception.PortalException {
+		com.liferay.change.tracking.model.CTProcess ctProcess) {
 
 		return getService().deleteCTProcess(ctProcess);
 	}
@@ -250,6 +246,18 @@ public class CTProcessLocalServiceUtil {
 		getCTProcesses(long ctCollectionId) {
 
 		return getService().getCTProcesses(ctCollectionId);
+	}
+
+	public static java.util.List<com.liferay.change.tracking.model.CTProcess>
+		getCTProcesses(
+			long companyId, long userId, String keywords, int status, int start,
+			int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.change.tracking.model.CTProcess>
+					orderByComparator) {
+
+		return getService().getCTProcesses(
+			companyId, userId, keywords, status, start, end, orderByComparator);
 	}
 
 	public static java.util.List<com.liferay.change.tracking.model.CTProcess>

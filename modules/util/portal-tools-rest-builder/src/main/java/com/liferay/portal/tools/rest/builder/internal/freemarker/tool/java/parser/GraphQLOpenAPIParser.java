@@ -120,9 +120,10 @@ public class GraphQLOpenAPIParser {
 		for (JavaMethodParameter javaMethodParameter :
 				resourceJavaMethodSignature.getJavaMethodParameters()) {
 
-			String parameterType = javaMethodParameter.getParameterType();
+			if (Objects.equals(
+					javaMethodParameter.getParameterType(),
+					Pagination.class.getName())) {
 
-			if (Objects.equals(parameterType, Pagination.class.getName())) {
 				javaMethodParameters.add(
 					new JavaMethodParameter("pageSize", int.class.getName()));
 
@@ -210,9 +211,9 @@ public class GraphQLOpenAPIParser {
 		sb.append(javaMethodSignature.getMethodName());
 
 		for (JavaMethodParameter javaMethodParameter : javaMethodParameters) {
-			String parameterName = javaMethodParameter.getParameterName();
-
-			sb.append(StringUtil.upperCaseFirstLetter(parameterName));
+			sb.append(
+				StringUtil.upperCaseFirstLetter(
+					javaMethodParameter.getParameterName()));
 		}
 
 		return "@GraphQLName(\"" + sb.toString() + "\")";
@@ -247,7 +248,16 @@ public class GraphQLOpenAPIParser {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("@GraphQLName(\"");
-		sb.append(javaMethodParameter.getParameterName());
+
+		String parameterName = javaMethodParameter.getParameterName();
+
+		if (parameterName.equals("sorts")) {
+			sb.append("sort");
+		}
+		else {
+			sb.append(javaMethodParameter.getParameterName());
+		}
+
 		sb.append("\")");
 
 		return sb.toString();

@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link KBFolder}.
@@ -33,7 +31,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see KBFolder
  * @generated
  */
-@ProviderType
 public class KBFolderWrapper
 	extends BaseModelWrapper<KBFolder>
 	implements KBFolder, ModelWrapper<KBFolder> {
@@ -46,6 +43,7 @@ public class KBFolderWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("kbFolderId", getKbFolderId());
 		attributes.put("groupId", getGroupId());
@@ -65,6 +63,12 @@ public class KBFolderWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -227,6 +231,16 @@ public class KBFolderWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this kb folder.
+	 *
+	 * @return the mvcc version of this kb folder
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this kb folder.
 	 *
 	 * @return the name of this kb folder
@@ -332,6 +346,11 @@ public class KBFolderWrapper
 		return model.isRoot();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a kb folder model instance should use the <code>KBFolder</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -405,6 +424,16 @@ public class KBFolderWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this kb folder.
+	 *
+	 * @param mvccVersion the mvcc version of this kb folder
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

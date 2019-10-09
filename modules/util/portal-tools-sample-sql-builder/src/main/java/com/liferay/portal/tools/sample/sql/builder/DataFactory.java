@@ -19,7 +19,6 @@ import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.asset.kernel.model.AssetCategoryModel;
 import com.liferay.asset.kernel.model.AssetEntryModel;
 import com.liferay.asset.kernel.model.AssetTagModel;
-import com.liferay.asset.kernel.model.AssetTagStatsModel;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.model.AssetVocabularyModel;
 import com.liferay.blogs.constants.BlogsPortletKeys;
@@ -143,9 +142,7 @@ import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutFriendlyURLModel;
 import com.liferay.portal.kernel.model.LayoutModel;
 import com.liferay.portal.kernel.model.LayoutSetModel;
-import com.liferay.portal.kernel.model.LayoutSetVersionModel;
 import com.liferay.portal.kernel.model.LayoutTypePortletConstants;
-import com.liferay.portal.kernel.model.LayoutVersionModel;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.PortletPreferencesModel;
@@ -192,8 +189,6 @@ import com.liferay.portal.model.impl.GroupModelImpl;
 import com.liferay.portal.model.impl.LayoutFriendlyURLModelImpl;
 import com.liferay.portal.model.impl.LayoutModelImpl;
 import com.liferay.portal.model.impl.LayoutSetModelImpl;
-import com.liferay.portal.model.impl.LayoutSetVersionModelImpl;
-import com.liferay.portal.model.impl.LayoutVersionModelImpl;
 import com.liferay.portal.model.impl.PortletPreferencesModelImpl;
 import com.liferay.portal.model.impl.ReleaseModelImpl;
 import com.liferay.portal.model.impl.ResourcePermissionModelImpl;
@@ -207,7 +202,6 @@ import com.liferay.portlet.PortletPreferencesImpl;
 import com.liferay.portlet.asset.model.impl.AssetCategoryModelImpl;
 import com.liferay.portlet.asset.model.impl.AssetEntryModelImpl;
 import com.liferay.portlet.asset.model.impl.AssetTagModelImpl;
-import com.liferay.portlet.asset.model.impl.AssetTagStatsModelImpl;
 import com.liferay.portlet.asset.model.impl.AssetVocabularyModelImpl;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileEntryMetadataModelImpl;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileEntryModelImpl;
@@ -352,7 +346,7 @@ public class DataFactory {
 		String defaultAssetPublisherPreference = StringUtil.read(
 			getResourceInputStream("default_asset_publisher_preference.xml"));
 
-		_defaultAssetPublisherPortletPreference =
+		_defaultAssetPublisherPortletPreferencesImpl =
 			(PortletPreferencesImpl)_portletPreferencesFactory.fromDefaultXML(
 				defaultAssetPublisherPreference);
 
@@ -496,18 +490,6 @@ public class DataFactory {
 		}
 
 		return allAssetTagModels;
-	}
-
-	public List<AssetTagStatsModel> getAssetTagStatsModels() {
-		List<AssetTagStatsModel> allAssetTagStatsModels = new ArrayList<>();
-
-		for (List<AssetTagStatsModel> assetTagStatsModels :
-				_assetTagStatsModelsArray) {
-
-			allAssetTagStatsModels.addAll(assetTagStatsModels);
-		}
-
-		return allAssetTagStatsModels;
 	}
 
 	public List<AssetVocabularyModel> getAssetVocabularyModels() {
@@ -868,14 +850,10 @@ public class DataFactory {
 		_assetTagModelsMaps =
 			(Map<Long, List<AssetTagModel>>[])
 				new HashMap<?, ?>[_maxGroupsCount];
-		_assetTagStatsModelsArray =
-			(List<AssetTagStatsModel>[])new List<?>[_maxGroupsCount];
 
 		for (int i = 1; i <= _maxGroupsCount; i++) {
 			List<AssetTagModel> assetTagModels = new ArrayList<>(
 				_maxAssetTagCount);
-			List<AssetTagStatsModel> assetTagStatsModels = new ArrayList<>(
-				_maxAssetTagCount * 3);
 
 			for (int j = 0; j < _maxAssetTagCount; j++) {
 				AssetTagModel assetTagModel = new AssetTagModelImpl();
@@ -894,26 +872,9 @@ public class DataFactory {
 				assetTagModel.setLastPublishDate(new Date());
 
 				assetTagModels.add(assetTagModel);
-
-				AssetTagStatsModel assetTagStatsModel = newAssetTagStatsModel(
-					assetTagModel.getTagId(), getClassNameId(BlogsEntry.class));
-
-				assetTagStatsModels.add(assetTagStatsModel);
-
-				assetTagStatsModel = newAssetTagStatsModel(
-					assetTagModel.getTagId(),
-					getClassNameId(JournalArticle.class));
-
-				assetTagStatsModels.add(assetTagStatsModel);
-
-				assetTagStatsModel = newAssetTagStatsModel(
-					assetTagModel.getTagId(), getClassNameId(WikiPage.class));
-
-				assetTagStatsModels.add(assetTagStatsModel);
 			}
 
 			_assetTagModelsArray[i - 1] = assetTagModels;
-			_assetTagStatsModelsArray[i - 1] = assetTagStatsModels;
 
 			Map<Long, List<AssetTagModel>> assetTagModelsMap = new HashMap<>();
 
@@ -2171,7 +2132,6 @@ public class DataFactory {
 		long plid = _counter.get();
 
 		layoutModel.setPlid(plid);
-		layoutModel.setHeadId(plid);
 
 		layoutModel.setGroupId(groupId);
 		layoutModel.setCompanyId(_companyId);
@@ -2202,51 +2162,13 @@ public class DataFactory {
 		return layoutModel;
 	}
 
-	public List<LayoutSetModel> newLayoutSetModels(
-		long groupId, int publicLayoutSetPageCount) {
-
+	public List<LayoutSetModel> newLayoutSetModels(long groupId) {
 		List<LayoutSetModel> layoutSetModels = new ArrayList<>(2);
 
-		layoutSetModels.add(newLayoutSetModel(groupId, true, 0));
-		layoutSetModels.add(
-			newLayoutSetModel(groupId, false, publicLayoutSetPageCount));
+		layoutSetModels.add(newLayoutSetModel(groupId, true));
+		layoutSetModels.add(newLayoutSetModel(groupId, false));
 
 		return layoutSetModels;
-	}
-
-	public List<LayoutSetVersionModel> newLayoutSetVersionModels(
-		List<LayoutSetModel> layoutSetModels) {
-
-		List<LayoutSetVersionModel> layoutSetVersionModels = new ArrayList<>(
-			layoutSetModels.size());
-
-		layoutSetModels.forEach(
-			layoutSetModel -> layoutSetVersionModels.add(
-				newLayoutSetVersionModel(layoutSetModel)));
-
-		return layoutSetVersionModels;
-	}
-
-	public LayoutVersionModel newLayoutVersionModel(LayoutModel layoutModel) {
-		LayoutVersionModel layoutVersionModel = new LayoutVersionModelImpl();
-
-		layoutVersionModel.setLayoutVersionId(_counter.get());
-		layoutVersionModel.setUuid(SequentialUUID.generate());
-		layoutVersionModel.setPlid(layoutModel.getPlid());
-		layoutVersionModel.setGroupId(layoutModel.getGroupId());
-		layoutVersionModel.setCompanyId(_companyId);
-		layoutVersionModel.setUserId(_sampleUserId);
-		layoutVersionModel.setUserName(_SAMPLE_USER_NAME);
-		layoutVersionModel.setCreateDate(new Date());
-		layoutVersionModel.setModifiedDate(new Date());
-		layoutVersionModel.setLayoutId(layoutModel.getLayoutId());
-		layoutVersionModel.setName(layoutModel.getName());
-		layoutVersionModel.setType(layoutModel.getType());
-		layoutVersionModel.setFriendlyURL(layoutModel.getFriendlyURL());
-		layoutVersionModel.setTypeSettings(layoutModel.getTypeSettings());
-		layoutVersionModel.setLastPublishDate(new Date());
-
-		return layoutVersionModel;
 	}
 
 	public List<MBCategoryModel> newMBCategoryModels(long groupId) {
@@ -2525,7 +2447,8 @@ public class DataFactory {
 			groupId, objectValuePair.getValue());
 
 		PortletPreferences jxPortletPreferences =
-			(PortletPreferences)_defaultAssetPublisherPortletPreference.clone();
+			(PortletPreferences)
+				_defaultAssetPublisherPortletPreferencesImpl.clone();
 
 		jxPortletPreferences.setValue("queryAndOperator0", "false");
 		jxPortletPreferences.setValue("queryContains0", "true");
@@ -3209,18 +3132,6 @@ public class DataFactory {
 		return assetEntryModel;
 	}
 
-	protected AssetTagStatsModel newAssetTagStatsModel(
-		long tagId, long classNameId) {
-
-		AssetTagStatsModel assetTagStatsModel = new AssetTagStatsModelImpl();
-
-		assetTagStatsModel.setTagStatsId(_counter.get());
-		assetTagStatsModel.setTagId(tagId);
-		assetTagStatsModel.setClassNameId(classNameId);
-
-		return assetTagStatsModel;
-	}
-
 	protected AssetVocabularyModel newAssetVocabularyModel(
 		long grouId, long userId, String userName, String name) {
 
@@ -3309,6 +3220,8 @@ public class DataFactory {
 		ddmStructureLayoutModel.setUserName(_SAMPLE_USER_NAME);
 		ddmStructureLayoutModel.setCreateDate(nextFutureDate());
 		ddmStructureLayoutModel.setModifiedDate(nextFutureDate());
+		ddmStructureLayoutModel.setStructureLayoutKey(
+			String.valueOf(_counter.get()));
 		ddmStructureLayoutModel.setStructureVersionId(structureVersionId);
 		ddmStructureLayoutModel.setDefinition(definition);
 
@@ -3488,14 +3401,13 @@ public class DataFactory {
 	}
 
 	protected LayoutSetModel newLayoutSetModel(
-		long groupId, boolean privateLayout, int pageCount) {
+		long groupId, boolean privateLayout) {
 
 		LayoutSetModel layoutSetModel = new LayoutSetModelImpl();
 
 		long layoutSetId = _counter.get();
 
 		layoutSetModel.setLayoutSetId(layoutSetId);
-		layoutSetModel.setHeadId(layoutSetId);
 
 		layoutSetModel.setGroupId(groupId);
 		layoutSetModel.setCompanyId(_companyId);
@@ -3504,31 +3416,8 @@ public class DataFactory {
 		layoutSetModel.setPrivateLayout(privateLayout);
 		layoutSetModel.setThemeId("classic_WAR_classictheme");
 		layoutSetModel.setColorSchemeId("01");
-		layoutSetModel.setPageCount(pageCount);
 
 		return layoutSetModel;
-	}
-
-	protected LayoutSetVersionModel newLayoutSetVersionModel(
-		LayoutSetModel layoutSetModel) {
-
-		LayoutSetVersionModel layoutSetVersionModel =
-			new LayoutSetVersionModelImpl();
-
-		layoutSetVersionModel.setLayoutSetVersionId(_counter.get());
-		layoutSetVersionModel.setLayoutSetId(layoutSetModel.getLayoutSetId());
-		layoutSetVersionModel.setGroupId(layoutSetModel.getGroupId());
-		layoutSetVersionModel.setCompanyId(layoutSetModel.getCompanyId());
-		layoutSetVersionModel.setCreateDate(new Date());
-		layoutSetVersionModel.setModifiedDate(new Date());
-		layoutSetVersionModel.setPrivateLayout(
-			layoutSetModel.getPrivateLayout());
-		layoutSetVersionModel.setThemeId(layoutSetModel.getThemeId());
-		layoutSetVersionModel.setColorSchemeId(
-			layoutSetModel.getColorSchemeId());
-		layoutSetVersionModel.setPageCount(layoutSetModel.getPageCount());
-
-		return layoutSetVersionModel;
 	}
 
 	protected MBCategoryModel newMBCategoryModel(long groupId, int index) {
@@ -3634,17 +3523,17 @@ public class DataFactory {
 			String servletContextName, String schemaVersion)
 		throws IOException {
 
-		ReleaseModelImpl releaseModel = new ReleaseModelImpl();
+		ReleaseModelImpl releaseModelImpl = new ReleaseModelImpl();
 
-		releaseModel.setReleaseId(_counter.get());
-		releaseModel.setCreateDate(new Date());
-		releaseModel.setModifiedDate(new Date());
-		releaseModel.setServletContextName(servletContextName);
-		releaseModel.setSchemaVersion(schemaVersion);
-		releaseModel.setBuildDate(new Date());
-		releaseModel.setVerified(true);
+		releaseModelImpl.setReleaseId(_counter.get());
+		releaseModelImpl.setCreateDate(new Date());
+		releaseModelImpl.setModifiedDate(new Date());
+		releaseModelImpl.setServletContextName(servletContextName);
+		releaseModelImpl.setSchemaVersion(schemaVersion);
+		releaseModelImpl.setBuildDate(new Date());
+		releaseModelImpl.setVerified(true);
 
-		return releaseModel;
+		return releaseModelImpl;
 	}
 
 	protected ResourcePermissionModel newResourcePermissionModel(
@@ -3968,7 +3857,6 @@ public class DataFactory {
 	private Map<Long, SimpleCounter>[] _assetTagCounters;
 	private List<AssetTagModel>[] _assetTagModelsArray;
 	private Map<Long, List<AssetTagModel>>[] _assetTagModelsMaps;
-	private List<AssetTagStatsModel>[] _assetTagStatsModelsArray;
 	private List<AssetVocabularyModel>[] _assetVocabularyModelsArray;
 	private final Map<String, ClassNameModel> _classNameModels =
 		new HashMap<>();
@@ -3977,7 +3865,7 @@ public class DataFactory {
 	private final SimpleCounter _counter;
 	private final Map<String, Writer> _csvWriters = new HashMap<>();
 	private final PortletPreferencesImpl
-		_defaultAssetPublisherPortletPreference;
+		_defaultAssetPublisherPortletPreferencesImpl;
 	private AssetVocabularyModel _defaultAssetVocabularyModel;
 	private DDMStructureLayoutModel _defaultDLDDMStructureLayoutModel;
 	private DDMStructureModel _defaultDLDDMStructureModel;

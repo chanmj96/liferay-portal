@@ -39,7 +39,6 @@ import com.liferay.gradle.plugins.internal.FindBugsDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.IdeaDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.JSModuleConfigGeneratorDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.JavadocFormatterDefaultsPlugin;
-import com.liferay.gradle.plugins.internal.JspCDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.RESTBuilderDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.ServiceBuilderDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.TLDFormatterDefaultsPlugin;
@@ -47,10 +46,10 @@ import com.liferay.gradle.plugins.internal.TestIntegrationDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.UpgradeTableBuilderDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.WSDDBuilderDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.WatchOSGiPlugin;
-import com.liferay.gradle.plugins.internal.XMLFormatterDefaultsPlugin;
 import com.liferay.gradle.plugins.internal.util.FileUtil;
 import com.liferay.gradle.plugins.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.internal.util.IncludeResourceCompileIncludeInstruction;
+import com.liferay.gradle.plugins.internal.util.copy.RenameDependencyAction;
 import com.liferay.gradle.plugins.jasper.jspc.JspCPlugin;
 import com.liferay.gradle.plugins.javadoc.formatter.JavadocFormatterPlugin;
 import com.liferay.gradle.plugins.js.module.config.generator.JSModuleConfigGeneratorPlugin;
@@ -72,7 +71,6 @@ import com.liferay.gradle.plugins.util.BndBuilderUtil;
 import com.liferay.gradle.plugins.wsdd.builder.BuildWSDDTask;
 import com.liferay.gradle.plugins.wsdd.builder.WSDDBuilderPlugin;
 import com.liferay.gradle.plugins.wsdl.builder.WSDLBuilderPlugin;
-import com.liferay.gradle.plugins.xml.formatter.XMLFormatterPlugin;
 import com.liferay.gradle.util.StringUtil;
 import com.liferay.gradle.util.Validator;
 
@@ -82,11 +80,14 @@ import java.io.File;
 
 import java.nio.charset.StandardCharsets;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -103,6 +104,8 @@ import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileCopyDetails;
+import org.gradle.api.file.RelativePath;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -129,6 +132,7 @@ import org.gradle.api.tasks.compile.CompileOptions;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.api.tasks.testing.Test;
+import org.gradle.language.base.plugins.LifecycleBasePlugin;
 import org.gradle.plugins.ide.eclipse.EclipsePlugin;
 
 /**
@@ -145,6 +149,11 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 
 	public static final String COMPILE_INCLUDE_CONFIGURATION_NAME =
 		"compileInclude";
+
+	public static final String DEPLOY_DEPENDENCIES_TASK_NAME =
+		"deployDependencies";
+
+	public static final String DEPLOY_FAST_TASK_NAME = "deployFast";
 
 	public static final String PLUGIN_NAME = "liferayOSGi";
 
@@ -168,13 +177,18 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 			_addConfigurationCompileInclude(project);
 
 		_addTaskAutoUpdateXml(project);
+		_addTaskDeployFast(project, liferayExtension);
 		_addTasksBuildWSDDJar(project, liferayExtension);
+
+		Copy deployDependenciesTask = _addTaskDeployDependencies(
+			project, liferayExtension);
 
 		_configureArchivesBaseName(project);
 		_configureDescription(project);
 		_configureLiferay(project, liferayExtension);
 		_configureSourceSetMain(project);
 		_configureTaskClean(project);
+		_configureTaskDeploy(project, deployDependenciesTask);
 		_configureTaskJar(project);
 		_configureTaskJavadoc(project);
 		_configureTaskTest(project);
@@ -729,6 +743,210 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 		return jar;
 	}
 
+	private Copy _addTaskDeployDependencies(
+		Project project, final LiferayExtension liferayExtension) {
+
+		final Copy copy = GradleUtil.addTask(
+			project, DEPLOY_DEPENDENCIES_TASK_NAME, Copy.class);
+
+		final boolean keepVersions = Boolean.getBoolean(
+			"deploy.dependencies.keep.versions");
+
+		GradleUtil.setProperty(
+			copy, LiferayOSGiPlugin.AUTO_CLEAN_PROPERTY_NAME, false);
+		GradleUtil.setProperty(copy, "keepVersions", keepVersions);
+
+		String renameSuffix = ".jar";
+
+		if (keepVersions) {
+			renameSuffix = "-$1.jar";
+		}
+
+		GradleUtil.setProperty(copy, "renameSuffix", renameSuffix);
+
+		copy.into(
+			new Callable<File>() {
+
+				@Override
+				public File call() throws Exception {
+					return liferayExtension.getDeployDir();
+				}
+
+			});
+
+		copy.setDescription("Deploys additional dependencies.");
+
+		TaskOutputs taskOutputs = copy.getOutputs();
+
+		taskOutputs.upToDateWhen(
+			new Spec<Task>() {
+
+				@Override
+				public boolean isSatisfiedBy(Task task) {
+					return false;
+				}
+
+			});
+
+		project.afterEvaluate(
+			new Action<Project>() {
+
+				@Override
+				public void execute(Project project) {
+					copy.eachFile(new RenameDependencyAction(keepVersions));
+				}
+
+			});
+
+		return copy;
+	}
+
+	@SuppressWarnings("serial")
+	private Copy _addTaskDeployFast(
+		Project project, LiferayExtension liferayExtension) {
+
+		Copy deployFastTask = GradleUtil.addTask(
+			project, DEPLOY_FAST_TASK_NAME, Copy.class);
+
+		deployFastTask.setDescription(
+			"Builds and deploys resources to the Liferay work directory.");
+		deployFastTask.setGroup(LifecycleBasePlugin.BUILD_GROUP);
+
+		deployFastTask.setDestinationDir(liferayExtension.getLiferayHome());
+		deployFastTask.setIncludeEmptyDirs(false);
+
+		String bundleSymbolicName = BndBuilderUtil.getInstruction(
+			project, Constants.BUNDLE_SYMBOLICNAME);
+		String bundleVersion = BndBuilderUtil.getInstruction(
+			project, Constants.BUNDLE_VERSION);
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("work/");
+		sb.append(bundleSymbolicName);
+		sb.append("-");
+		sb.append(bundleVersion);
+
+		final String pathName = sb.toString();
+
+		deployFastTask.from(
+			GradleUtil.getTask(project, JspCPlugin.COMPILE_JSP_TASK_NAME),
+			new Closure<Void>(project) {
+
+				@SuppressWarnings("unused")
+				public void doCall(CopySpec copySpec) {
+					copySpec.into(pathName);
+				}
+
+			});
+
+		deployFastTask.from(
+			GradleUtil.getTask(project, JavaPlugin.PROCESS_RESOURCES_TASK_NAME),
+			new Closure<Void>(project) {
+
+				@SuppressWarnings("unused")
+				public void doCall(CopySpec copySpec) {
+					copySpec.eachFile(
+						new Action<FileCopyDetails>() {
+
+							@Override
+							public void execute(
+								FileCopyDetails fileCopyDetails) {
+
+								RelativePath relativePath =
+									fileCopyDetails.getRelativePath();
+
+								String[] segments = relativePath.getSegments();
+
+								if ((segments.length > 4) &&
+									segments[2].equals("META-INF") &&
+									segments[3].equals("resources")) {
+
+									List<String> list = new ArrayList<>();
+
+									list.add(segments[0]);
+									list.add(segments[1]);
+
+									for (int i = 4; i < segments.length; i++) {
+										String segment = segments[i];
+
+										if (!segment.equals(".sass-cache")) {
+											list.add(segment);
+										}
+									}
+
+									segments = list.toArray(new String[0]);
+								}
+
+								fileCopyDetails.setRelativePath(
+									new RelativePath(true, segments));
+							}
+
+						});
+
+					copySpec.include("**/*.css");
+					copySpec.include("**/*.css.map");
+					copySpec.into(pathName);
+				}
+
+			});
+
+		deployFastTask.dependsOn(
+			GradleUtil.getTask(project, JavaPlugin.CLASSES_TASK_NAME));
+
+		SourceSet mainSourceSet = GradleUtil.getSourceSet(
+			project, SourceSet.MAIN_SOURCE_SET_NAME);
+
+		deployFastTask.from(
+			mainSourceSet.getOutput(),
+			new Closure<Void>(project) {
+
+				@SuppressWarnings("unused")
+				public void doCall(CopySpec copySpec) {
+					copySpec.eachFile(
+						new Action<FileCopyDetails>() {
+
+							@Override
+							public void execute(
+								FileCopyDetails fileCopyDetails) {
+
+								RelativePath relativePath =
+									fileCopyDetails.getRelativePath();
+
+								String[] segments = relativePath.getSegments();
+
+								if ((segments.length > 4) &&
+									segments[2].equals("META-INF") &&
+									segments[3].equals("resources")) {
+
+									List<String> list = new ArrayList<>();
+
+									list.add(segments[0]);
+									list.add(segments[1]);
+
+									for (int i = 4; i < segments.length; i++) {
+										list.add(segments[i]);
+									}
+
+									segments = list.toArray(new String[0]);
+								}
+
+								fileCopyDetails.setRelativePath(
+									new RelativePath(true, segments));
+							}
+
+						});
+
+					copySpec.include("**/*.js");
+					copySpec.include("**/*.js.map");
+					copySpec.into(pathName);
+				}
+
+			});
+
+		return deployFastTask;
+	}
+
 	private void _addTasksBuildWSDDJar(
 		Project project, final LiferayExtension liferayExtension) {
 
@@ -760,7 +978,9 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 
 		GradleUtil.applyPlugin(project, NodePlugin.class);
 
-		if (GradleUtil.hasTask(project, NodePlugin.NPM_RUN_BUILD_TASK_NAME)) {
+		if (GradleUtil.hasTask(
+				project, NodePlugin.PACKAGE_RUN_BUILD_TASK_NAME)) {
+
 			GradleUtil.applyPlugin(project, JSTranspilerBasePlugin.class);
 		}
 		else {
@@ -779,7 +999,6 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 		GradleUtil.applyPlugin(project, TLDDocBuilderPlugin.class);
 		GradleUtil.applyPlugin(project, TLDFormatterPlugin.class);
 		GradleUtil.applyPlugin(project, TestIntegrationPlugin.class);
-		GradleUtil.applyPlugin(project, XMLFormatterPlugin.class);
 
 		AlloyTaglibDefaultsPlugin.INSTANCE.apply(project);
 		CSSBuilderDefaultsPlugin.INSTANCE.apply(project);
@@ -797,7 +1016,6 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 		UpgradeTableBuilderDefaultsPlugin.INSTANCE.apply(project);
 		WSDDBuilderDefaultsPlugin.INSTANCE.apply(project);
 		WatchOSGiPlugin.INSTANCE.apply(project);
-		XMLFormatterDefaultsPlugin.INSTANCE.apply(project);
 	}
 
 	private void _configureApplication(Project project) {
@@ -836,6 +1054,8 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 	}
 
 	private void _configureBundleExtension(Project project) {
+		Logger logger = project.getLogger();
+
 		BundleExtension bundleExtension = new BundleExtension();
 
 		ExtensionContainer extensionContainer = project.getExtensions();
@@ -857,6 +1077,17 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 					String key = (String)keys.nextElement();
 
 					String value = utf8Properties.getProperty(key);
+
+					if (Objects.equals(key, Constants.INCLUDERESOURCE) &&
+						value.contains("[0-9]*")) {
+
+						value = value.replace("[0-9]*", "[0-9.]*");
+
+						logger.lifecycle(
+							"DEPRECATED: Update \"{}\" to \"{}\" to remove " +
+								"this message",
+							Constants.INCLUDERESOURCE, value);
+					}
 
 					bundleExtension.put(key, value);
 				}
@@ -1002,7 +1233,8 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 				for (Task task : project.getTasks()) {
 					String taskName = task.getName();
 
-					if (taskName.equals(LiferayBasePlugin.DEPLOY_TASK_NAME) ||
+					if (taskName.equals(DEPLOY_FAST_TASK_NAME) ||
+						taskName.equals(LiferayBasePlugin.DEPLOY_TASK_NAME) ||
 						taskName.equals("eclipseClasspath") ||
 						taskName.equals("eclipseProject") ||
 						taskName.equals("ideaModule") ||
@@ -1053,6 +1285,15 @@ public class LiferayOSGiPlugin implements Plugin<Project> {
 		};
 
 		delete.dependsOn(closure);
+	}
+
+	private void _configureTaskDeploy(
+		Project project, Copy deployDepenciesTask) {
+
+		Task deployTask = GradleUtil.getTask(
+			project, LiferayBasePlugin.DEPLOY_TASK_NAME);
+
+		deployTask.finalizedBy(deployDepenciesTask);
 	}
 
 	private void _configureTaskJar(final Project project) {

@@ -20,20 +20,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * This class is used by SOAP remote services.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class DLFileRankSoap implements Serializable {
 
 	public static DLFileRankSoap toSoapModel(DLFileRank model) {
 		DLFileRankSoap soapModel = new DLFileRankSoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
 		soapModel.setFileRankId(model.getFileRankId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -92,6 +90,14 @@ public class DLFileRankSoap implements Serializable {
 
 	public void setPrimaryKey(long pk) {
 		setFileRankId(pk);
+	}
+
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	public long getFileRankId() {
@@ -154,6 +160,7 @@ public class DLFileRankSoap implements Serializable {
 		_active = active;
 	}
 
+	private long _mvccVersion;
 	private long _fileRankId;
 	private long _groupId;
 	private long _companyId;

@@ -18,11 +18,16 @@ import {Config} from 'metal-state';
 
 import '../floating_toolbar/fragment_configuration/FloatingToolbarFragmentConfigurationPanel.es';
 import './FragmentEntryLinkContent.es';
+import {
+	disableSavingChangesStatusAction,
+	enableSavingChangesStatusAction,
+	updateLastSaveDateAction
+} from '../../actions/saveChanges.es';
 import FloatingToolbar from '../floating_toolbar/FloatingToolbar.es';
 import templates from './FragmentEntryLink.soy';
 import {
 	MOVE_FRAGMENT_ENTRY_LINK,
-	REMOVE_FRAGMENT_ENTRY_LINK
+	UPDATE_SELECTED_SIDEBAR_PANEL_ID
 } from '../../actions/actions.es';
 import {getConnectedComponent} from '../../store/ConnectedComponent.es';
 import {
@@ -31,6 +36,7 @@ import {
 	getItemMoveDirection,
 	getItemPath,
 	getTargetBorder,
+	getWidget,
 	itemIsInPath
 } from '../../utils/FragmentsEditorGetUtils.es';
 import {
@@ -42,17 +48,35 @@ import {
 import {
 	moveItem,
 	moveRow,
-	removeItem,
-	setIn
+	removeItem
 } from '../../utils/FragmentsEditorUpdateUtils.es';
 import {prefixSegmentsExperienceId} from '../../utils/prefixSegmentsExperienceId.es';
 import {shouldUpdatePureComponent} from '../../utils/FragmentsEditorComponentUtils.es';
+import {removeFragmentEntryLinkAction} from '../../actions/removeFragmentEntryLinks.es';
+import {duplicateFragmentEntryLinkAction} from '../../actions/duplicateFragmentEntryLink.es';
+import {updateActiveItemAction} from '../../actions/updateActiveItem.es';
 
 /**
  * FragmentEntryLink
  * @review
  */
 class FragmentEntryLink extends Component {
+	/**
+	 * @inheritdoc
+	 */
+	created() {
+		this._handleFloatingToolbarButtonClicked = this._handleFloatingToolbarButtonClicked.bind(
+			this
+		);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	disposed() {
+		this._disposeFloatingToolbar();
+	}
+
 	/**
 	 * @inheritdoc
 	 * @param {object} state
@@ -66,45 +90,33 @@ class FragmentEntryLink extends Component {
 			state.layoutData.structure
 		);
 
-		const fragmentEntryLinkInHoveredPath = itemIsInPath(
-			hoveredPath,
-			state.fragmentEntryLinkId,
-			FRAGMENTS_EDITOR_ITEM_TYPES.fragment
-		);
+		return {
+			...state,
 
-		let nextState = setIn(
-			state,
-			['_fragmentEntryLinkRowType'],
-			state.rowType
-		);
+			_fragmentEntryLinkRowType: state.rowType,
+			_fragmentsEditorItemTypes: FRAGMENTS_EDITOR_ITEM_TYPES,
+			_fragmentsEditorRowTypes: FRAGMENTS_EDITOR_ROW_TYPES,
 
-		nextState = setIn(
-			nextState,
-			['_fragmentsEditorItemTypes'],
-			FRAGMENTS_EDITOR_ITEM_TYPES
-		);
+			_hovered: itemIsInPath(
+				hoveredPath,
+				state.fragmentEntryLinkId,
+				FRAGMENTS_EDITOR_ITEM_TYPES.fragment
+			),
 
-		nextState = setIn(
-			nextState,
-			['_fragmentsEditorRowTypes'],
-			FRAGMENTS_EDITOR_ROW_TYPES
-		);
-
-		return setIn(nextState, ['_hovered'], fragmentEntryLinkInHoveredPath);
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	disposed() {
-		this._disposeFloatingToolbar();
+			_showComments: state.sidebarPanels.some(
+				sidebarPanel => sidebarPanel.sidebarPanelId === 'comments'
+			)
+		};
 	}
 
 	/**
 	 * @inheritdoc
 	 */
 	rendered() {
-		if (this._shouldShowConfigPanel()) {
+		if (
+			this.fragmentEntryLinkId === this.activeItemId &&
+			this.activeItemType === FRAGMENTS_EDITOR_ITEM_TYPES.fragment
+		) {
 			this._createFloatingToolbar();
 		} else {
 			this._disposeFloatingToolbar();
@@ -147,10 +159,14 @@ class FragmentEntryLink extends Component {
 
 			if (configurationValues) {
 				const segmentedConfigurationValues =
+					configurationValues[segmentsExperienceId] ||
 					configurationValues[defaultSegmentsExperienceId] ||
-					configurationValues[segmentsExperienceId];
+					configurationValues;
 
-				this._configurationValues = segmentedConfigurationValues;
+				this._configurationValues = {
+					...this._defaultConfigurationValues,
+					...segmentedConfigurationValues
+				};
 			}
 		}
 	}
@@ -162,7 +178,10 @@ class FragmentEntryLink extends Component {
 	_createFloatingToolbar() {
 		const config = {
 			anchorElement: this.element,
-			buttons: [],
+			buttons: this._getFloatingToolbarButtons(),
+			events: {
+				buttonClicked: this._handleFloatingToolbarButtonClicked
+			},
 			item: {
 				configuration: this._configuration,
 				configurationValues: this._configurationValues,
@@ -172,10 +191,7 @@ class FragmentEntryLink extends Component {
 			itemId: this.fragmentEntryLinkId,
 			itemType: FRAGMENTS_EDITOR_ITEM_TYPES.fragment,
 			portalElement: document.body,
-			store: this.store,
-			fixSelectedPanel: true,
-			selectedPanelId:
-				FLOATING_TOOLBAR_BUTTONS.fragmentConfiguration.panelId
+			store: this.store
 		};
 
 		if (this._floatingToolbar) {
@@ -183,6 +199,23 @@ class FragmentEntryLink extends Component {
 		} else {
 			this._floatingToolbar = new FloatingToolbar(config);
 		}
+	}
+
+	/**
+	 * Duplicate this fragmentEntryLink
+	 * @private
+	 */
+	_duplicateFragmentEntryLink() {
+		this.store
+			.dispatch(enableSavingChangesStatusAction())
+			.dispatch(
+				duplicateFragmentEntryLinkAction(
+					this.fragmentEntryLinkId,
+					this.rowType
+				)
+			)
+			.dispatch(updateLastSaveDateAction())
+			.dispatch(disableSavingChangesStatusAction());
 	}
 
 	/**
@@ -198,6 +231,49 @@ class FragmentEntryLink extends Component {
 	}
 
 	/**
+	 * @private
+	 * @return {object[]} Floating toolbar buttons
+	 * @review
+	 */
+	_getFloatingToolbarButtons() {
+		const buttons = [];
+
+		const fragmentEntryLink = this.fragmentEntryLinks[
+			this.fragmentEntryLinkId
+		];
+
+		const widget =
+			fragmentEntryLink.portletId &&
+			getWidget(this.widgets, fragmentEntryLink.portletId);
+
+		if (!widget || widget.instanceable) {
+			buttons.push(FLOATING_TOOLBAR_BUTTONS.duplicateFragment);
+		}
+
+		if (this._shouldShowConfigPanel()) {
+			buttons.push(FLOATING_TOOLBAR_BUTTONS.fragmentConfiguration);
+		}
+
+		return buttons;
+	}
+
+	/**
+	 * Callback executed when an floating toolbar button is clicked
+	 * @param {Event} event
+	 * @param {Object} data
+	 * @private
+	 */
+	_handleFloatingToolbarButtonClicked(event, data) {
+		const {panelId} = data;
+
+		if (panelId === FLOATING_TOOLBAR_BUTTONS.duplicateFragment.panelId) {
+			event.preventDefault();
+
+			this._duplicateFragmentEntryLink();
+		}
+	}
+
+	/**
 	 * Handle fragment keyup event so it can emit when it
 	 * should be moved or selected.
 	 * @param {KeyboardEvent} event
@@ -205,54 +281,70 @@ class FragmentEntryLink extends Component {
 	 * @review
 	 */
 	_handleFragmentKeyUp(event) {
-		if (!this.fragmentEditorEnabled) {
-			event.stopPropagation();
+		event.stopPropagation();
 
-			const direction = getItemMoveDirection(event.keyCode);
-			const {fragmentEntryLinkRowType} = event.delegateTarget.dataset;
+		const direction = getItemMoveDirection(event.keyCode);
+		const {fragmentEntryLinkRowType} = event.delegateTarget.dataset;
 
-			if (direction) {
-				if (
-					fragmentEntryLinkRowType ===
-					FRAGMENTS_EDITOR_ROW_TYPES.sectionRow
-				) {
-					moveRow(
-						direction,
-						getFragmentRowIndex(
-							this.layoutData.structure,
-							this.fragmentEntryLinkId
-						),
-						this.store,
-						this.layoutData.structure
-					);
-				} else {
-					const column = getFragmentColumn(
+		if (direction) {
+			if (
+				fragmentEntryLinkRowType ===
+				FRAGMENTS_EDITOR_ROW_TYPES.sectionRow
+			) {
+				moveRow(
+					direction,
+					getFragmentRowIndex(
 						this.layoutData.structure,
 						this.fragmentEntryLinkId
-					);
-					const fragmentIndex = column.fragmentEntryLinkIds.indexOf(
-						this.fragmentEntryLinkId
-					);
-					const targetFragmentEntryLinkId =
-						column.fragmentEntryLinkIds[fragmentIndex + direction];
+					),
+					this.store,
+					this.layoutData.structure
+				);
+			} else {
+				const column = getFragmentColumn(
+					this.layoutData.structure,
+					this.fragmentEntryLinkId
+				);
+				const fragmentIndex = column.fragmentEntryLinkIds.indexOf(
+					this.fragmentEntryLinkId
+				);
+				const targetFragmentEntryLinkId =
+					column.fragmentEntryLinkIds[fragmentIndex + direction];
 
-					if (direction && targetFragmentEntryLinkId) {
-						const moveItemPayload = {
-							fragmentEntryLinkId: this.fragmentEntryLinkId,
-							targetBorder: getTargetBorder(direction),
-							targetItemId: targetFragmentEntryLinkId,
-							targetItemType: FRAGMENTS_EDITOR_ITEM_TYPES.fragment
-						};
+				if (direction && targetFragmentEntryLinkId) {
+					const moveItemPayload = {
+						fragmentEntryLinkId: this.fragmentEntryLinkId,
+						targetBorder: getTargetBorder(direction),
+						targetItemId: targetFragmentEntryLinkId,
+						targetItemType: FRAGMENTS_EDITOR_ITEM_TYPES.fragment
+					};
 
-						moveItem(
-							this.store,
-							MOVE_FRAGMENT_ENTRY_LINK,
-							moveItemPayload
-						);
-					}
+					moveItem(
+						this.store,
+						MOVE_FRAGMENT_ENTRY_LINK,
+						moveItemPayload
+					);
 				}
 			}
 		}
+	}
+
+	/**
+	 * @private
+	 * @review
+	 */
+	_handleFragmentCommentsButtonClick() {
+		this.store.dispatch(
+			updateActiveItemAction(
+				this.fragmentEntryLinkId,
+				FRAGMENTS_EDITOR_ITEM_TYPES.fragment
+			)
+		);
+
+		this.store.dispatch({
+			type: UPDATE_SELECTED_SIDEBAR_PANEL_ID,
+			value: 'comments'
+		});
 	}
 
 	/**
@@ -263,9 +355,10 @@ class FragmentEntryLink extends Component {
 	_handleFragmentRemoveButtonClick(event) {
 		event.stopPropagation();
 
-		removeItem(this.store, REMOVE_FRAGMENT_ENTRY_LINK, {
-			fragmentEntryLinkId: this.fragmentEntryLinkId
-		});
+		removeItem(
+			this.store,
+			removeFragmentEntryLinkAction(this.fragmentEntryLinkId)
+		);
 	}
 
 	/**
@@ -283,7 +376,7 @@ class FragmentEntryLink extends Component {
 			this.fragmentEntryLinkId === this.activeItemId &&
 			this.activeItemType === FRAGMENTS_EDITOR_ITEM_TYPES.fragment;
 
-		return this._config && fieldSetsExist && fragmentIsActive;
+		return fieldSetsExist && fragmentIsActive;
 	}
 }
 
@@ -385,7 +478,7 @@ const ConnectedFragmentEntryLink = getConnectedComponent(FragmentEntryLink, [
 	'dropTargetItemId',
 	'dropTargetItemType',
 	'dropTargetBorder',
-	'fragmentEditorEnabled',
+	'duplicateFragmentEntryLinkURL',
 	'fragmentEntryLinks',
 	'hoveredItemId',
 	'hoveredItemType',
@@ -396,7 +489,9 @@ const ConnectedFragmentEntryLink = getConnectedComponent(FragmentEntryLink, [
 	'segmentsExperienceId',
 	'selectedMappingTypes',
 	'selectedSidebarPanelId',
-	'spritemap'
+	'sidebarPanels',
+	'spritemap',
+	'widgets'
 ]);
 
 Soy.register(ConnectedFragmentEntryLink, templates);

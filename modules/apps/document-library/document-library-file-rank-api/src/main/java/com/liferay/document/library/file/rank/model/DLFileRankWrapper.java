@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link DLFileRank}.
@@ -32,7 +30,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see DLFileRank
  * @generated
  */
-@ProviderType
 public class DLFileRankWrapper
 	extends BaseModelWrapper<DLFileRank>
 	implements DLFileRank, ModelWrapper<DLFileRank> {
@@ -45,6 +42,7 @@ public class DLFileRankWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("fileRankId", getFileRankId());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -58,6 +56,12 @@ public class DLFileRankWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		Long fileRankId = (Long)attributes.get("fileRankId");
 
 		if (fileRankId != null) {
@@ -162,6 +166,16 @@ public class DLFileRankWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this document library file rank.
+	 *
+	 * @return the mvcc version of this document library file rank
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the primary key of this document library file rank.
 	 *
 	 * @return the primary key of this document library file rank
@@ -201,6 +215,11 @@ public class DLFileRankWrapper
 		return model.isActive();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a document library file rank model instance should use the <code>DLFileRank</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -264,6 +283,16 @@ public class DLFileRankWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
+	}
+
+	/**
+	 * Sets the mvcc version of this document library file rank.
+	 *
+	 * @param mvccVersion the mvcc version of this document library file rank
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**

@@ -19,10 +19,12 @@ import com.liferay.gradle.plugins.defaults.internal.util.GradlePluginsDefaultsUt
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
 import com.liferay.gradle.plugins.node.NodeExtension;
 import com.liferay.gradle.plugins.node.NodePlugin;
-import com.liferay.gradle.plugins.node.tasks.ExecuteNpmTask;
+import com.liferay.gradle.plugins.node.tasks.ExecutePackageManagerTask;
 import com.liferay.gradle.plugins.node.tasks.NpmInstallTask;
+import com.liferay.gradle.plugins.node.tasks.PackageRunTestTask;
 import com.liferay.gradle.plugins.node.tasks.PublishNodeModuleTask;
 import com.liferay.gradle.plugins.util.PortalTools;
+import com.liferay.gradle.util.Validator;
 
 import java.io.File;
 
@@ -47,7 +49,8 @@ public class NodeDefaultsPlugin extends BaseDefaultsPlugin<NodePlugin> {
 		_configureNode(project, portalVersion);
 		_configureTaskNpmInstall(project, portalVersion);
 
-		_configureTaskNpmRunBuild(project);
+		_configureTaskExecutePackageManager(project);
+		_configureTaskPackageRunTest(project);
 		_configureTasksPublishNodeModule(project);
 	}
 
@@ -76,6 +79,19 @@ public class NodeDefaultsPlugin extends BaseDefaultsPlugin<NodePlugin> {
 		}
 	}
 
+	private void _configureTaskExecutePackageManager(Project project) {
+		TaskContainer taskContainer = project.getTasks();
+
+		ExecutePackageManagerTask executePackageManagerTask =
+			(ExecutePackageManagerTask)taskContainer.findByName(
+				NodePlugin.PACKAGE_RUN_BUILD_TASK_NAME);
+
+		if (executePackageManagerTask != null) {
+			executePackageManagerTask.environment(
+				"LIFERAY_NPM_BUNDLER_NO_TRACKING", "1");
+		}
+	}
+
 	private void _configureTaskNpmInstall(
 		Project project, String portalVersion) {
 
@@ -90,15 +106,23 @@ public class NodeDefaultsPlugin extends BaseDefaultsPlugin<NodePlugin> {
 		}
 	}
 
-	private void _configureTaskNpmRunBuild(Project project) {
+	private void _configureTaskPackageRunTest(Project project) {
 		TaskContainer taskContainer = project.getTasks();
 
-		ExecuteNpmTask executeNpmTask =
-			(ExecuteNpmTask)taskContainer.findByName(
-				NodePlugin.NPM_RUN_BUILD_TASK_NAME);
+		PackageRunTestTask packageRunTestTask =
+			(PackageRunTestTask)taskContainer.findByName(
+				NodePlugin.PACKAGE_RUN_TEST_TASK_NAME);
 
-		if (executeNpmTask != null) {
-			executeNpmTask.environment("LIFERAY_NPM_BUNDLER_NO_TRACKING", "1");
+		if (packageRunTestTask == null) {
+			return;
+		}
+
+		String ignoreFailures = GradleUtil.getTaskPrefixedProperty(
+			packageRunTestTask, "ignore.failures");
+
+		if (Validator.isNotNull(ignoreFailures)) {
+			packageRunTestTask.setIgnoreFailures(
+				Boolean.parseBoolean(ignoreFailures));
 		}
 	}
 

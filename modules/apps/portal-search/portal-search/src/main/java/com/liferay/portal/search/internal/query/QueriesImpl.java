@@ -52,8 +52,10 @@ import com.liferay.portal.search.query.TermQuery;
 import com.liferay.portal.search.query.TermsQuery;
 import com.liferay.portal.search.query.TermsSetQuery;
 import com.liferay.portal.search.query.WildcardQuery;
+import com.liferay.portal.search.query.WrapperQuery;
 import com.liferay.portal.search.script.Script;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -97,6 +99,14 @@ public class QueriesImpl implements Queries {
 	@Override
 	public DisMaxQuery disMax() {
 		return new DisMaxQueryImpl();
+	}
+
+	@Override
+	public MoreLikeThisQuery.DocumentIdentifier documentIdentifier(
+		String index, String type, String id) {
+
+		return new MoreLikeThisQueryImpl.DocumentIdentifierImpl(
+			index, type, id);
 	}
 
 	@Override
@@ -187,14 +197,46 @@ public class QueriesImpl implements Queries {
 		return new MatchPhrasePrefixQueryImpl(field, value);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #moreLikeThis(List<String>, String...)}
+	 */
+	@Deprecated
 	@Override
 	public MoreLikeThisQuery moreLikeThis(List<String> likeTexts) {
-		return new MoreLikeThisQueryImpl(likeTexts);
+		return new MoreLikeThisQueryImpl(
+			Collections.emptyList(), likeTexts.toArray(new String[0]));
 	}
 
 	@Override
+	public MoreLikeThisQuery moreLikeThis(
+		List<String> fields, String... likeTexts) {
+
+		return new MoreLikeThisQueryImpl(fields, likeTexts);
+	}
+
+	@Override
+	public MoreLikeThisQuery moreLikeThis(
+		Set<MoreLikeThisQuery.DocumentIdentifier> documentIdentifiers) {
+
+		return new MoreLikeThisQueryImpl(documentIdentifiers);
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #moreLikeThis(List<String>, String...)}
+	 */
+	@Deprecated
+	@Override
 	public MoreLikeThisQuery moreLikeThis(String... likeTexts) {
-		return new MoreLikeThisQueryImpl(likeTexts);
+		return new MoreLikeThisQueryImpl(Collections.emptyList(), likeTexts);
+	}
+
+	@Override
+	public MoreLikeThisQuery moreLikeThis(
+		String[] fields, String... likeTexts) {
+
+		return new MoreLikeThisQueryImpl(fields, likeTexts);
 	}
 
 	@Override
@@ -276,6 +318,16 @@ public class QueriesImpl implements Queries {
 	@Override
 	public WildcardQuery wildcard(String field, String value) {
 		return new WildcardQueryImpl(field, value);
+	}
+
+	@Override
+	public WrapperQuery wrapper(byte[] source) {
+		return new WrapperQueryImpl(source);
+	}
+
+	@Override
+	public WrapperQuery wrapper(String source) {
+		return new WrapperQueryImpl(source);
 	}
 
 }

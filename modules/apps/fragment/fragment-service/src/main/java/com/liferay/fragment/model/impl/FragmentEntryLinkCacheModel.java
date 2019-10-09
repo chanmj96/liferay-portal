@@ -18,6 +18,7 @@ import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -26,17 +27,14 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing FragmentEntryLink in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class FragmentEntryLinkCacheModel
-	implements CacheModel<FragmentEntryLink>, Externalizable {
+	implements CacheModel<FragmentEntryLink>, Externalizable, MVCCModel {
 
 	@Override
 	public boolean equals(Object obj) {
@@ -51,8 +49,9 @@ public class FragmentEntryLinkCacheModel
 		FragmentEntryLinkCacheModel fragmentEntryLinkCacheModel =
 			(FragmentEntryLinkCacheModel)obj;
 
-		if (fragmentEntryLinkId ==
-				fragmentEntryLinkCacheModel.fragmentEntryLinkId) {
+		if ((fragmentEntryLinkId ==
+				fragmentEntryLinkCacheModel.fragmentEntryLinkId) &&
+			(mvccVersion == fragmentEntryLinkCacheModel.mvccVersion)) {
 
 			return true;
 		}
@@ -62,14 +61,28 @@ public class FragmentEntryLinkCacheModel
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, fragmentEntryLinkId);
+		int hashCode = HashUtil.hash(0, fragmentEntryLinkId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(45);
+		StringBundler sb = new StringBundler(47);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", fragmentEntryLinkId=");
 		sb.append(fragmentEntryLinkId);
@@ -122,6 +135,8 @@ public class FragmentEntryLinkCacheModel
 	public FragmentEntryLink toEntityModel() {
 		FragmentEntryLinkImpl fragmentEntryLinkImpl =
 			new FragmentEntryLinkImpl();
+
+		fragmentEntryLinkImpl.setMvccVersion(mvccVersion);
 
 		if (uuid == null) {
 			fragmentEntryLinkImpl.setUuid("");
@@ -235,6 +250,7 @@ public class FragmentEntryLinkCacheModel
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		fragmentEntryLinkId = objectInput.readLong();
@@ -270,6 +286,8 @@ public class FragmentEntryLinkCacheModel
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
@@ -358,6 +376,7 @@ public class FragmentEntryLinkCacheModel
 		objectOutput.writeLong(lastPublishDate);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long fragmentEntryLinkId;
 	public long groupId;

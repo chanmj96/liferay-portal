@@ -27,15 +27,12 @@ import java.io.ObjectOutput;
 
 import java.util.Date;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The cache model class for representing Layout in entity cache.
  *
  * @author Brian Wing Shun Chan
  * @generated
  */
-@ProviderType
 public class LayoutCacheModel
 	implements CacheModel<Layout>, Externalizable, MVCCModel {
 
@@ -83,10 +80,10 @@ public class LayoutCacheModel
 
 		sb.append("{mvccVersion=");
 		sb.append(mvccVersion);
+		sb.append(", ctCollectionId=");
+		sb.append(ctCollectionId);
 		sb.append(", uuid=");
 		sb.append(uuid);
-		sb.append(", headId=");
-		sb.append(headId);
 		sb.append(", plid=");
 		sb.append(plid);
 		sb.append(", groupId=");
@@ -163,6 +160,7 @@ public class LayoutCacheModel
 		LayoutImpl layoutImpl = new LayoutImpl();
 
 		layoutImpl.setMvccVersion(mvccVersion);
+		layoutImpl.setCtCollectionId(ctCollectionId);
 
 		if (uuid == null) {
 			layoutImpl.setUuid("");
@@ -171,8 +169,6 @@ public class LayoutCacheModel
 			layoutImpl.setUuid(uuid);
 		}
 
-		layoutImpl.setHeadId(headId);
-		layoutImpl.setHead(head);
 		layoutImpl.setPlid(plid);
 		layoutImpl.setGroupId(groupId);
 		layoutImpl.setCompanyId(companyId);
@@ -328,11 +324,9 @@ public class LayoutCacheModel
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException {
 		mvccVersion = objectInput.readLong();
+
+		ctCollectionId = objectInput.readLong();
 		uuid = objectInput.readUTF();
-
-		headId = objectInput.readLong();
-
-		head = objectInput.readBoolean();
 
 		plid = objectInput.readLong();
 
@@ -387,16 +381,14 @@ public class LayoutCacheModel
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeLong(mvccVersion);
 
+		objectOutput.writeLong(ctCollectionId);
+
 		if (uuid == null) {
 			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(uuid);
 		}
-
-		objectOutput.writeLong(headId);
-
-		objectOutput.writeBoolean(head);
 
 		objectOutput.writeLong(plid);
 
@@ -534,9 +526,8 @@ public class LayoutCacheModel
 	}
 
 	public long mvccVersion;
+	public long ctCollectionId;
 	public String uuid;
-	public long headId;
-	public boolean head;
 	public long plid;
 	public long groupId;
 	public long companyId;

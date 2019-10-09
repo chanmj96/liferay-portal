@@ -19,28 +19,22 @@ import {EventHandler} from 'metal-events';
 import PortletBase from './PortletBase.es';
 
 /**
- * DynamicInlineScroll appends list item elements to dropdown menus with inline-scrollers
- * on scroll events to improve page load performance.
+ * Appends list item elements to dropdown menus with inline-scrollers on scroll
+ * events to improve page loading performance.
  *
  * @extends {Component}
- * @review
  */
-
 class DynamicInlineScroll extends PortletBase {
 	/**
 	 * @inheritDoc
-	 * @review
 	 */
-
 	created() {
 		this.eventHandler_ = new EventHandler();
 	}
 
 	/**
 	 * @inheritDoc
-	 * @review
 	 */
-
 	attached() {
 		let {rootNode} = this;
 
@@ -58,9 +52,7 @@ class DynamicInlineScroll extends PortletBase {
 
 	/**
 	 * @inheritDoc
-	 * @review
 	 */
-
 	detached() {
 		super.detached();
 
@@ -69,12 +61,11 @@ class DynamicInlineScroll extends PortletBase {
 
 	/**
 	 * Dynamically adds list item elements to the dropdown menu.
-	 * @param {element} listElement Dom node of the list element.
-	 * @param {number} pageIndex Index of page with an inline-scroller.
+	 *
+	 * @param {element} listElement The list element's DOM node.
+	 * @param {number} pageIndex The Index of the page with an inline-scroller.
 	 * @protected
-	 * @review
 	 */
-
 	addListItem_(listElement, pageIndex) {
 		const listItem = document.createElement('li');
 
@@ -94,13 +85,12 @@ class DynamicInlineScroll extends PortletBase {
 	}
 
 	/**
-	 * Returns the href attribute value for each
-	 * @param {number} pageIndex Index of page
+	 * Returns the <code>href</code> attribute value for each page.
+	 *
+	 * @param {number} pageIndex The Index of the page.
 	 * @protected
-	 * @return {string} String value of href
-	 * @review
+	 * @return {string} The <code>href</code> value as a string.
 	 */
-
 	getHREF_(pageIndex) {
 		const {curParam, formName, jsCall, namespace, url, urlAnchor} = this;
 
@@ -114,25 +104,23 @@ class DynamicInlineScroll extends PortletBase {
 	}
 
 	/**
-	 * Returns the value of the parameter passed in as a Number object
-	 * @param {string|!Object} val The string or Object to be converted to a number
+	 * Returns the numerical value of the parameter passed in.
+	 *
+	 * @param {string|!Object} val The string or object to be converted to a number.
 	 * @protected
-	 * @return {number} Number value of parameter
-	 * @review
+	 * @return {number} The parameter's numberical value.
 	 */
-
 	getNumber_(val) {
 		return Number(val);
 	}
 
 	/**
-	 * Handles click event of dynmaically added list item and submits search
-	 * container form.
+	 * Handles the click event of the dynmaically added list item, preventing
+	 * the default behavior and submitting the search container form.
+	 *
 	 * @param {Event} event The click event of the dynamically added list item.
 	 * @protected
-	 * @review
 	 */
-
 	handleListItemClick_(event) {
 		if (this.forcePost) {
 			event.preventDefault();
@@ -151,14 +139,14 @@ class DynamicInlineScroll extends PortletBase {
 	}
 
 	/**
-	 * An event triggered when a dropdown menu with an inline-scroller is scrolled.
-	 * Dynamically adds list item elements to the dropdown menu as it is scrolled down.
-	 * @param {Event} event The scroll event triggered by scrolling a dropdown menu
-	 * with an inline-scroller
+	 * An event triggered when a dropdown menu with an inline-scroller is
+	 * scrolled. This dynamically adds list item elements to the dropdown menu
+	 * as it is scrolled down.
+	 *
+	 * @param {Event} event The scroll event triggered by scrolling a dropdown
+	 *        menu with an inline-scroller.
 	 * @protected
-	 * @review
 	 */
-
 	onScroll_(event) {
 		const {cur, initialPages, pages} = this;
 		const {target} = event;
@@ -197,145 +185,133 @@ class DynamicInlineScroll extends PortletBase {
 
 /**
  * State definition.
+ *
  * @ignore
- * @review
  * @static
  * @type {!Object}
  */
-
 DynamicInlineScroll.STATE = {
 	/**
-	 * Current page
+	 * Current page index.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {string}
 	 */
-
 	cur: {
 		setter: 'getNumber_',
 		validator: core.isString
 	},
 
 	/**
-	 * URL parameter for current page
+	 * URL parameter of the current page.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {string}
 	 */
-
 	curParam: {
 		validator: core.isString
 	},
 
 	/**
-	 * Forces a form post when a page on the dropdown menu is clicked
+	 * Forces a form post when a page on the dropdown menu is clicked.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {boolean}
 	 */
-
 	forcePost: {
 		validator: core.isBoolean
 	},
 
 	/**
-	 * Form name
+	 * Form name.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {string}
 	 */
-
 	formName: {
 		validator: core.isString
 	},
 
 	/**
 	 * Number of pages loaded to the inline-scroll dropdown menu for the first
-	 * page load
+	 * page load.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {string}
 	 */
-
 	initialPages: {
 		setter: 'getNumber_',
 		validator: core.isString
 	},
 
 	/**
-	 * JavaScript call
+	 * JavaScript call.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {string}
 	 */
-
 	jsCall: {
 		validator: core.isString
 	},
 
 	/**
-	 * Namespace
+	 * Namespace.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {string}
 	 */
-
 	namespace: {
 		validator: core.isString
 	},
 
 	/**
-	 * Total number of pages
+	 * Total number of pages.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {string}
 	 */
-
 	pages: {
 		setter: 'getNumber_',
 		validator: core.isString
 	},
 
 	/**
-	 * Random namespace
+	 * Random namespace.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {string}
 	 */
-
 	randomNamespace: {
 		validator: core.isString
 	},
 
 	/**
-	 * URL
+	 * URL.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {string}
 	 */
-
 	url: {
 		validator: core.isString
 	},
 
 	/**
-	 * URL anchor
+	 * URL anchor.
+	 *
 	 * @instance
 	 * @memberof DynamicInlineScroll
-	 * @review
 	 * @type {string}
 	 */
-
 	urlAnchor: {
 		validator: core.isString
 	}

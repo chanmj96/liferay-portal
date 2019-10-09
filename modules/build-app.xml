@@ -79,12 +79,15 @@
 				<property file="@{app.dir}/app.bnd" />
 
 				<if>
-					<and>
-						<available file="@{app.dir}/app.bnd" />
-						<not>
-							<equals arg1="${Liferay-Releng-Bundle}" arg2="true" />
-						</not>
-					</and>
+					<or>
+						<available file="@{app.dir}/.lfrbuild-releng-ignore" />
+						<and>
+							<available file="@{app.dir}/app.bnd" />
+							<not>
+								<equals arg1="${Liferay-Releng-Bundle}" arg2="true" />
+							</not>
+						</and>
+					</or>
 					<then>
 						<ant inheritAll="false" target="delete-app">
 							<property name="app.name" value="${app.name}" />
@@ -113,7 +116,7 @@
 				<zip
 					basedir="${output.dir}"
 					destfile="${output.dir}/${Liferay-Releng-App-Title}.lpkg"
-					includes="*.jar,*.war,*.zip,liferay-marketplace.properties"
+					includes="*.jar,*.war,liferay-marketplace.properties"
 				/>
 			</then>
 		</if>
@@ -140,7 +143,7 @@
 				<zip
 					basedir="@{lpkg.dir}"
 					destfile="${output.dir}/${lpkg.dir.name}.lpkg"
-					includes="*.jar,*.war,*.zip,liferay-marketplace.properties"
+					includes="*.jar,*.war,liferay-marketplace.properties"
 				/>
 			</sequential>
 		</for>
@@ -441,7 +444,6 @@
 				excludes="${build.modules.excludes}"
 				includes="${app.module.dirs}"
 			/>
-			<property name="download.app.jspcs" value="${download.app.jspcs}" />
 			<property name="liferay.releng.app.title" value="${Liferay-Releng-App-Title}" />
 			<property name="lp.version.major" value="${lp.version.major}" />
 			<property name="lpkg.title.prefix" value="${lpkg.title.prefix}" />
@@ -846,6 +848,7 @@
 
 		<condition property="module.dirs.null">
 			<or>
+				<available file="${app.dir}/.lfrbuild-releng-ignore" />
 				<equals arg1="${app.module.dirs}" arg2="" />
 				<not>
 					<isset property="app.module.dirs" />

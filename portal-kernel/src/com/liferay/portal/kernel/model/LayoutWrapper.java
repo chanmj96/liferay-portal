@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.model.wrapper.BaseModelWrapper;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.osgi.annotation.versioning.ProviderType;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -32,7 +32,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see Layout
  * @generated
  */
-@ProviderType
 public class LayoutWrapper
 	extends BaseModelWrapper<Layout> implements Layout, ModelWrapper<Layout> {
 
@@ -45,8 +44,8 @@ public class LayoutWrapper
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
 		attributes.put("mvccVersion", getMvccVersion());
+		attributes.put("ctCollectionId", getCtCollectionId());
 		attributes.put("uuid", getUuid());
-		attributes.put("headId", getHeadId());
 		attributes.put("plid", getPlid());
 		attributes.put("groupId", getGroupId());
 		attributes.put("companyId", getCompanyId());
@@ -94,16 +93,16 @@ public class LayoutWrapper
 			setMvccVersion(mvccVersion);
 		}
 
+		Long ctCollectionId = (Long)attributes.get("ctCollectionId");
+
+		if (ctCollectionId != null) {
+			setCtCollectionId(ctCollectionId);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
 			setUuid(uuid);
-		}
-
-		Long headId = (Long)attributes.get("headId");
-
-		if (headId != null) {
-			setHeadId(headId);
 		}
 
 		Long plid = (Long)attributes.get("plid");
@@ -498,6 +497,16 @@ public class LayoutWrapper
 		return model.getCssText();
 	}
 
+	/**
+	 * Returns the ct collection ID of this layout.
+	 *
+	 * @return the ct collection ID of this layout
+	 */
+	@Override
+	public long getCtCollectionId() {
+		return model.getCtCollectionId();
+	}
+
 	@Override
 	public String getDefaultLanguageId() {
 		return model.getDefaultLanguageId();
@@ -654,16 +663,6 @@ public class LayoutWrapper
 	@Override
 	public long getGroupId() {
 		return model.getGroupId();
-	}
-
-	/**
-	 * Returns the head ID of this layout.
-	 *
-	 * @return the head ID of this layout
-	 */
-	@Override
-	public long getHeadId() {
-		return model.getHeadId();
 	}
 
 	/**
@@ -1633,6 +1632,11 @@ public class LayoutWrapper
 		return model.matches(httpServletRequest, friendlyURL);
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a layout model instance should use the <code>Layout</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -1716,6 +1720,16 @@ public class LayoutWrapper
 	@Override
 	public void setCss(String css) {
 		model.setCss(css);
+	}
+
+	/**
+	 * Sets the ct collection ID of this layout.
+	 *
+	 * @param ctCollectionId the ct collection ID of this layout
+	 */
+	@Override
+	public void setCtCollectionId(long ctCollectionId) {
+		model.setCtCollectionId(ctCollectionId);
 	}
 
 	/**
@@ -1803,16 +1817,6 @@ public class LayoutWrapper
 	@Override
 	public void setGroupId(long groupId) {
 		model.setGroupId(groupId);
-	}
-
-	/**
-	 * Sets the head ID of this layout.
-	 *
-	 * @param headId the head ID of this layout
-	 */
-	@Override
-	public void setHeadId(long headId) {
-		model.setHeadId(headId);
 	}
 
 	/**
@@ -2328,18 +2332,20 @@ public class LayoutWrapper
 	}
 
 	@Override
+	public Map<String, Function<Layout, Object>> getAttributeGetterFunctions() {
+		return model.getAttributeGetterFunctions();
+	}
+
+	@Override
+	public Map<String, BiConsumer<Layout, Object>>
+		getAttributeSetterBiConsumers() {
+
+		return model.getAttributeSetterBiConsumers();
+	}
+
+	@Override
 	public StagedModelType getStagedModelType() {
 		return model.getStagedModelType();
-	}
-
-	@Override
-	public boolean isHead() {
-		return model.isHead();
-	}
-
-	@Override
-	public void populateVersionModel(LayoutVersion layoutVersion) {
-		model.populateVersionModel(layoutVersion);
 	}
 
 	@Override

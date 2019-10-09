@@ -17,7 +17,6 @@ package com.liferay.oauth2.provider.service;
 import com.liferay.oauth2.provider.model.OAuth2Authorization;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.jsonwebservice.JSONWebService;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
 import com.liferay.portal.kernel.service.BaseService;
 import com.liferay.portal.kernel.transaction.Isolation;
@@ -39,7 +38,6 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @AccessControlled
-@JSONWebService
 @ProviderType
 @Transactional(
 	isolation = Isolation.PORTAL,
@@ -47,7 +45,7 @@ import org.osgi.annotation.versioning.ProviderType;
 )
 public interface OAuth2AuthorizationService extends BaseService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link OAuth2AuthorizationServiceUtil} to access the o auth2 authorization remote service. Add custom service methods to <code>com.liferay.oauth2.provider.service.impl.OAuth2AuthorizationServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.

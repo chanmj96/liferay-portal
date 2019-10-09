@@ -49,9 +49,9 @@ import javax.sql.DataSource;
  */
 public abstract class LayoutSetPrototypeServiceBaseImpl
 	extends BaseServiceImpl
-	implements LayoutSetPrototypeService, IdentifiableOSGiService {
+	implements IdentifiableOSGiService, LayoutSetPrototypeService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>LayoutSetPrototypeService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.portal.kernel.service.LayoutSetPrototypeServiceUtil</code>.

@@ -16,10 +16,11 @@ package com.liferay.talend.resource;
 
 import com.liferay.talend.LiferayBaseComponentDefinition;
 import com.liferay.talend.common.oas.OASParameter;
+import com.liferay.talend.common.oas.OASSource;
 import com.liferay.talend.connection.LiferayConnectionProperties;
 import com.liferay.talend.connection.LiferayConnectionPropertiesProvider;
-import com.liferay.talend.runtime.LiferaySourceOrSinkRuntime;
-import com.liferay.talend.runtime.ValidatedSoSSandboxRuntime;
+import com.liferay.talend.schema.SchemaListener;
+import com.liferay.talend.source.LiferayOASSource;
 import com.liferay.talend.tliferayoutput.Action;
 
 import java.net.URI;
@@ -41,8 +42,8 @@ import org.slf4j.LoggerFactory;
 import org.talend.components.api.component.ISchemaListener;
 import org.talend.components.api.properties.ComponentPropertiesImpl;
 import org.talend.components.common.SchemaProperties;
+import org.talend.daikon.properties.Properties;
 import org.talend.daikon.properties.ValidationResult;
-import org.talend.daikon.properties.ValidationResultMutable;
 import org.talend.daikon.properties.presentation.Form;
 import org.talend.daikon.properties.presentation.Widget;
 import org.talend.daikon.properties.property.Property;
@@ -60,29 +61,24 @@ public abstract class BaseLiferayResourceProperties
 		super(name);
 	}
 
-	public ValidationResult afterEndpoint() throws Exception {
+	public ValidationResult afterEndpoint() {
 		if (_logger.isDebugEnabled()) {
 			_logger.debug("Endpoint: " + endpoint.getValue());
 		}
 
-		ValidatedSoSSandboxRuntime validatedSoSSandboxRuntime =
-			LiferayBaseComponentDefinition.initializeSandboxedRuntime(
+		LiferayOASSource liferayOASSource =
+			LiferayBaseComponentDefinition.getLiferayOASSource(
 				getEffectiveLiferayConnectionProperties());
 
-		ValidationResultMutable validationResultMutable =
-			validatedSoSSandboxRuntime.getValidationResultMutable();
-
-		if (validationResultMutable.getStatus() ==
-				ValidationResult.Result.ERROR) {
-
-			return validationResultMutable;
+		if (!liferayOASSource.isValid()) {
+			return liferayOASSource.getValidationResult();
 		}
 
-		LiferaySourceOrSinkRuntime liferaySourceOrSinkRuntime =
-			validatedSoSSandboxRuntime.getLiferaySourceOrSinkRuntime();
+		return doAfterEndpoint(liferayOASSource.getOASSource());
+	}
 
-		return doAfterEndpoint(
-			liferaySourceOrSinkRuntime, validationResultMutable);
+	public String getEndpoint() {
+		return endpoint.getValue();
 	}
 
 	public URI getEndpointURI() {
@@ -98,6 +94,99 @@ public abstract class BaseLiferayResourceProperties
 
 		UriBuilder uriBuilder = UriBuilder.fromPath(endpointHref);
 
+		return buildEndpointURI(uriBuilder);
+	}
+
+	@Override
+	public LiferayConnectionProperties getLiferayConnectionProperties() {
+		return connection;
+	}
+
+	public Schema getSchema() {
+		Property<Schema> schemaProperty = main.schema;
+
+		return schemaProperty.getValue();
+	}
+
+	@Override
+	public Properties init() {
+		if (connection == null) {
+			throw new IllegalStateException(
+				"Unable to initialize class if `connection` field is null");
+		}
+
+		Properties properties = super.init();
+
+		if (_logger.isTraceEnabled()) {
+			_logger.trace("Initialized " + System.identityHashCode(this));
+		}
+
+		return properties;
+	}
+
+	public void setLiferayConnectionProperties(
+		LiferayConnectionProperties liferayConnectionProperties) {
+
+		connection = liferayConnectionProperties;
+	}
+
+	public void setSchema(Schema schema) {
+		Property<Schema> schemaProperty = main.schema;
+
+		schemaProperty.setValue(schema);
+	}
+
+	public void setSchemaListener(ISchemaListener schemaListener) {
+		this.schemaListener = schemaListener;
+	}
+
+	@Override
+	public void setupLayout() {
+		super.setupLayout();
+
+		// Special property settings
+
+		endpoint.setRequired();
+
+		// Forms
+
+		_setupReferenceForm();
+	}
+
+	@Override
+	public void setupProperties() {
+		super.setupProperties();
+
+		endpoint.setValue(null);
+
+		setSchemaListener(new SchemaListener(this));
+
+		if (_logger.isTraceEnabled()) {
+			_logger.trace("Properties set " + System.identityHashCode(this));
+		}
+	}
+
+	public LiferayConnectionProperties connection = null;
+	public StringProperty endpoint = new StringProperty("endpoint");
+
+	public SchemaProperties main = new SchemaProperties("main") {
+
+		@SuppressWarnings("unused")
+		public void afterSchema() {
+			if (schemaListener != null) {
+				schemaListener.afterSchema();
+			}
+		}
+
+	};
+
+	public Property<Action> operations = PropertyFactory.newEnum(
+		"operations", Action.class);
+	public ParametersTable parametersTable = new ParametersTable(
+		"parametersTable");
+	public ISchemaListener schemaListener;
+
+	protected URI buildEndpointURI(UriBuilder uriBuilder) {
 		List<String> parameterNames = parametersTable.columnName.getValue();
 		List<String> parameterTypes = parametersTable.typeColumnName.getValue();
 		List<String> parameterValues =
@@ -137,71 +226,7 @@ public abstract class BaseLiferayResourceProperties
 		return uriBuilder.build();
 	}
 
-	@Override
-	public LiferayConnectionProperties getLiferayConnectionProperties() {
-		return connection;
-	}
-
-	public Schema getSchema() {
-		Property<Schema> schemaProperty = main.schema;
-
-		return schemaProperty.getValue();
-	}
-
-	public void setSchema(Schema schema) {
-		Property<Schema> schemaProperty = main.schema;
-
-		schemaProperty.setValue(schema);
-	}
-
-	public void setSchemaListener(ISchemaListener schemaListener) {
-		this.schemaListener = schemaListener;
-	}
-
-	@Override
-	public void setupLayout() {
-		super.setupLayout();
-
-		// Special property settings
-
-		endpoint.setRequired();
-
-		// Forms
-
-		_setupReferenceForm();
-	}
-
-	@Override
-	public void setupProperties() {
-		super.setupProperties();
-
-		endpoint.setValue(null);
-	}
-
-	public LiferayConnectionProperties connection =
-		new LiferayConnectionProperties("connection");
-	public StringProperty endpoint = new StringProperty("endpoint");
-
-	public SchemaProperties main = new SchemaProperties("main") {
-
-		@SuppressWarnings("unused")
-		public void afterSchema() {
-			if (schemaListener != null) {
-				schemaListener.afterSchema();
-			}
-		}
-
-	};
-
-	public Property<Action> operations = PropertyFactory.newEnum(
-		"operations", Action.class);
-	public ParametersTable parametersTable = new ParametersTable(
-		"parametersTable");
-	public ISchemaListener schemaListener;
-
-	protected abstract ValidationResult doAfterEndpoint(
-		LiferaySourceOrSinkRuntime liferaySourceOrSinkRuntime,
-		ValidationResultMutable validationResultMutable);
+	protected abstract ValidationResult doAfterEndpoint(OASSource oasSource);
 
 	protected LiferayConnectionProperties
 		getEffectiveLiferayConnectionProperties() {
@@ -241,56 +266,50 @@ public abstract class BaseLiferayResourceProperties
 		return liferayConnectionProperties;
 	}
 
-	protected void populateParametersTable(
-		LiferaySourceOrSinkRuntime liferaySourceOrSinkRuntime,
-		String httpMethod) {
-
-		List<String> parameterNames = new ArrayList<>();
-		List<String> parameterValues = new ArrayList<>();
-		List<String> parameterTypes = new ArrayList<>();
-
-		List<OASParameter> oasParameters =
-			liferaySourceOrSinkRuntime.getParameters(
-				endpoint.getValue(), httpMethod);
-
+	protected void populateParametersTable(List<OASParameter> oasParameters) {
 		if (oasParameters.isEmpty()) {
 			parametersTable.columnName.setValue(Collections.emptyList());
 			parametersTable.valueColumnName.setValue(Collections.emptyList());
 			parametersTable.typeColumnName.setValue(Collections.emptyList());
+
+			return;
 		}
-		else {
-			for (OASParameter oasParameter : oasParameters) {
-				String name = oasParameter.getName();
 
-				if (Objects.equals(name, "page") ||
-					Objects.equals(name, "pageSize")) {
+		List<String> parameterNames = new ArrayList<>();
+		List<String> parameterTypes = new ArrayList<>();
+		List<String> parameterValues = new ArrayList<>();
 
-					continue;
-				}
+		for (OASParameter oasParameter : oasParameters) {
+			String name = oasParameter.getName();
 
-				if (oasParameter.isRequired() ||
-					(OASParameter.Type.PATH == oasParameter.getType())) {
+			if (Objects.equals(name, "page") ||
+				Objects.equals(name, "pageSize")) {
 
-					name = name + "*";
-				}
-
-				parameterNames.add(name);
-
-				OASParameter.Type type = oasParameter.getType();
-
-				String typeString = type.toString();
-
-				typeString = typeString.toLowerCase();
-
-				parameterTypes.add(typeString);
-
-				parameterValues.add("");
+				continue;
 			}
 
-			parametersTable.columnName.setValue(parameterNames);
-			parametersTable.typeColumnName.setValue(parameterTypes);
-			parametersTable.valueColumnName.setValue(parameterValues);
+			if (oasParameter.isRequired() ||
+				(OASParameter.Type.PATH == oasParameter.getType())) {
+
+				name = name + "*";
+			}
+
+			parameterNames.add(name);
+
+			OASParameter.Type type = oasParameter.getType();
+
+			String typeString = type.toString();
+
+			typeString = typeString.toLowerCase();
+
+			parameterTypes.add(typeString);
+
+			parameterValues.add("");
 		}
+
+		parametersTable.columnName.setValue(parameterNames);
+		parametersTable.typeColumnName.setValue(parameterTypes);
+		parametersTable.valueColumnName.setValue(parameterValues);
 	}
 
 	private void _setupReferenceForm() {

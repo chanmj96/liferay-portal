@@ -208,7 +208,7 @@ class CriteriaGroup extends Component {
 		} = this.props;
 
 		return (
-			<Fragment>
+			<>
 				<DropZone
 					dropIndex={index}
 					groupId={groupId}
@@ -232,7 +232,7 @@ class CriteriaGroup extends Component {
 					onMove={onMove}
 					propertyKey={propertyKey}
 				/>
-			</Fragment>
+			</>
 		);
 	};
 
@@ -341,7 +341,7 @@ class CriteriaGroup extends Component {
 						propertyKey={propertyKey}
 					/>
 				) : (
-					<Fragment>
+					<>
 						<DropZone
 							before
 							dropIndex={0}
@@ -355,8 +355,8 @@ class CriteriaGroup extends Component {
 							singleRow &&
 							!root &&
 							connectDragSource(
-								<div className='criteria-group-drag-icon drag-icon'>
-									<ClayIcon symbol='drag' />
+								<div className="criteria-group-drag-icon drag-icon">
+									<ClayIcon symbol="drag" />
 								</div>
 							)}
 
@@ -374,7 +374,7 @@ class CriteriaGroup extends Component {
 									</Fragment>
 								);
 							})}
-					</Fragment>
+					</>
 				)}
 			</div>
 		);

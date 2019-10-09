@@ -38,6 +38,7 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -53,6 +54,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "KnowledgeBaseFolder")
 public class KnowledgeBaseFolder {
 
+	@GraphQLName("ViewableBy")
 	public static enum ViewableBy {
 
 		ANYONE("Anyone"), MEMBERS("Members"), OWNER("Owner");
@@ -87,6 +89,7 @@ public class KnowledgeBaseFolder {
 	}
 
 	@Schema(description = "The folder's creator.")
+	@Valid
 	public Creator getCreator() {
 		return creator;
 	}
@@ -115,6 +118,7 @@ public class KnowledgeBaseFolder {
 	protected Creator creator;
 
 	@Schema
+	@Valid
 	public CustomField[] getCustomFields() {
 		return customFields;
 	}
@@ -350,6 +354,7 @@ public class KnowledgeBaseFolder {
 	@Schema(
 		description = "The folder's parent Knowledge Base folder, if it exists."
 	)
+	@Valid
 	public ParentKnowledgeBaseFolder getParentKnowledgeBaseFolder() {
 		return parentKnowledgeBaseFolder;
 	}
@@ -446,6 +451,7 @@ public class KnowledgeBaseFolder {
 	@Schema(
 		description = "A write-only property that specifies the folder's default permissions."
 	)
+	@Valid
 	public ViewableBy getViewableBy() {
 		return viewableBy;
 	}

@@ -12,6 +12,13 @@
  * details.
  */
 
+/**
+ * The Crop Region Utility
+ *
+ * @deprecated As of Athanasius(7.3.x), replaced by Liferay.Util.getCropRegion
+ * @module liferay-crop-region
+ */
+
 AUI.add(
 	'liferay-crop-region',
 	function(A) {
@@ -20,7 +27,7 @@ AUI.add(
 		var CropRegion = function() {};
 
 		CropRegion.prototype = {
-			_getCropRegion: function(imagePreview, region) {
+			_getCropRegion(imagePreview, region) {
 				var instance = this;
 				var cropRegion;
 
@@ -56,9 +63,7 @@ AUI.add(
 				return cropRegion;
 			},
 
-			_getImgNaturalSize: function(img) {
-				var instance = this;
-
+			_getImgNaturalSize(img) {
 				var imageHeight = img.get('naturalHeight');
 				var imageWidth = img.get('naturalWidth');
 

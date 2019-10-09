@@ -14,6 +14,7 @@
 
 package com.liferay.data.engine.rest.internal.resource.v1_0;
 
+import com.liferay.data.engine.field.type.FieldTypeTracker;
 import com.liferay.data.engine.rest.dto.v1_0.DataDefinition;
 import com.liferay.data.engine.rest.dto.v1_0.DataDefinitionField;
 import com.liferay.data.engine.rest.dto.v1_0.DataDefinitionRule;
@@ -60,9 +61,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.ws.rs.BadRequestException;
+import javax.validation.ValidationException;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
@@ -75,11 +75,6 @@ import org.osgi.service.component.annotations.ServiceScope;
 	scope = ServiceScope.PROTOTYPE, service = DataRecordResource.class
 )
 public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
-
-	@Activate
-	public void activate() {
-		_dataRecordExporter = new DataRecordExporter(_ddlRecordSetLocalService);
-	}
 
 	@Override
 	public void deleteDataRecord(Long dataRecordId) throws Exception {
@@ -96,7 +91,10 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 		DataStorage dataStorage = _getDataStorage(
 			ddmStructure.getStorageType());
 
-		dataStorage.delete(dataRecordId);
+		dataStorage.delete(ddlRecord.getDDMStorageId());
+
+		_ddmStorageLinkLocalService.deleteClassStorageLink(
+			ddlRecord.getDDMStorageId());
 
 		_ddlRecordLocalService.deleteDDLRecord(dataRecordId);
 	}
@@ -127,7 +125,7 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 		throws Exception {
 
 		if (pagination.getPageSize() > 250) {
-			throw new BadRequestException(
+			throw new ValidationException(
 				LanguageUtil.format(
 					contextAcceptLanguage.getPreferredLocale(),
 					"page-size-is-greater-than-x", 250));
@@ -137,7 +135,10 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 			PermissionThreadLocal.getPermissionChecker(),
 			dataRecordCollectionId, DataActionKeys.EXPORT_DATA_RECORDS);
 
-		return _dataRecordExporter.export(
+		DataRecordExporter dataRecordExporter = new DataRecordExporter(
+			_ddlRecordSetLocalService, _fieldTypeTracker);
+
+		return dataRecordExporter.export(
 			transform(
 				_ddlRecordLocalService.getRecords(
 					dataRecordCollectionId, pagination.getStartPosition(),
@@ -151,7 +152,7 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 		throws Exception {
 
 		if (pagination.getPageSize() > 250) {
-			throw new BadRequestException(
+			throw new ValidationException(
 				LanguageUtil.format(
 					contextAcceptLanguage.getPreferredLocale(),
 					"page-size-is-greater-than-x", 250));
@@ -198,19 +199,32 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 		DDMStructure ddmStructure = ddlRecordSet.getDDMStructure();
 
 		_validate(
-			DataDefinitionUtil.toDataDefinition(ddmStructure), dataRecord);
+			DataDefinitionUtil.toDataDefinition(
+				ddmStructure, _fieldTypeTracker),
+			dataRecord);
 
 		DataStorage dataStorage = _getDataStorage(
 			ddmStructure.getStorageType());
 
+		long ddmStorageId = dataStorage.save(
+			ddlRecordSet.getRecordSetId(), dataRecord.getDataRecordValues(),
+			ddlRecordSet.getGroupId());
+
+		DDLRecordSetVersion ddlRecordSetVersion =
+			ddlRecordSet.getRecordSetVersion();
+
+		DDMStructureVersion ddmStructureVersion =
+			ddlRecordSetVersion.getDDMStructureVersion();
+
+		_ddmStorageLinkLocalService.addStorageLink(
+			_portal.getClassNameId(DataRecord.class.getName()), ddmStorageId,
+			ddmStructureVersion.getStructureVersionId(), new ServiceContext());
+
 		return _toDataRecord(
 			_ddlRecordLocalService.addRecord(
 				PrincipalThreadLocal.getUserId(), ddlRecordSet.getGroupId(),
-				dataStorage.save(
-					ddlRecordSet.getRecordSetId(),
-					dataRecord.getDataRecordValues(),
-					ddlRecordSet.getGroupId()),
-				dataRecord.getDataRecordCollectionId(), new ServiceContext()));
+				ddmStorageId, dataRecord.getDataRecordCollectionId(),
+				new ServiceContext()));
 	}
 
 	@Override
@@ -232,7 +246,9 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 		DDMStructure ddmStructure = ddlRecordSet.getDDMStructure();
 
 		_validate(
-			DataDefinitionUtil.toDataDefinition(ddmStructure), dataRecord);
+			DataDefinitionUtil.toDataDefinition(
+				ddmStructure, _fieldTypeTracker),
+			dataRecord);
 
 		DataStorage dataStorage = _getDataStorage(
 			ddmStructure.getStorageType());
@@ -244,16 +260,6 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 		_ddlRecordLocalService.updateRecord(
 			PrincipalThreadLocal.getUserId(), dataRecordId, ddmStorageId,
 			new ServiceContext());
-
-		DDLRecordSetVersion ddlRecordSetVersion =
-			ddlRecordSet.getRecordSetVersion();
-
-		DDMStructureVersion ddmStructureVersion =
-			ddlRecordSetVersion.getDDMStructureVersion();
-
-		_ddmStorageLinkLocalService.addStorageLink(
-			_portal.getClassNameId(DataRecord.class.getName()), ddmStorageId,
-			ddmStructureVersion.getStructureVersionId(), new ServiceContext());
 
 		return dataRecord;
 	}
@@ -271,14 +277,14 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 
 	private DataStorage _getDataStorage(String dataStorageType) {
 		if (Validator.isNull(dataStorageType)) {
-			throw new BadRequestException("Data storage type is null");
+			throw new ValidationException("Data storage type is null");
 		}
 
 		DataStorage dataStorage = _dataStorageTracker.getDataStorage(
 			dataStorageType);
 
 		if (dataStorage == null) {
-			throw new BadRequestException(
+			throw new ValidationException(
 				"Unsupported data storage type: " + dataStorageType);
 		}
 
@@ -323,7 +329,7 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 		Set<String> dataDefinitionFieldNames = Stream.of(
 			dataDefinition.getDataDefinitionFields()
 		).map(
-			dataDefinitionField -> dataDefinitionField.getName()
+			DataDefinitionField::getName
 		).collect(
 			Collectors.toSet()
 		);
@@ -341,7 +347,7 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 		);
 
 		if (!missingFieldNames.isEmpty()) {
-			throw new BadRequestException(
+			throw new ValidationException(
 				"Missing fields: " +
 					ArrayUtil.toStringArray(missingFieldNames));
 		}
@@ -405,11 +411,9 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 		}
 
 		if (!errorCodesMap.isEmpty()) {
-			throw new BadRequestException(errorCodesMap.toString());
+			throw new ValidationException(errorCodesMap.toString());
 		}
 	}
-
-	private DataRecordExporter _dataRecordExporter;
 
 	@Reference
 	private DataRuleFunctionTracker _dataRuleFunctionTracker;
@@ -431,6 +435,9 @@ public class DataRecordResourceImpl extends BaseDataRecordResourceImpl {
 
 	@Reference
 	private DDMStructureLocalService _ddmStructureLocalService;
+
+	@Reference
+	private FieldTypeTracker _fieldTypeTracker;
 
 	private ModelResourcePermission<InternalDataRecordCollection>
 		_modelResourcePermission;

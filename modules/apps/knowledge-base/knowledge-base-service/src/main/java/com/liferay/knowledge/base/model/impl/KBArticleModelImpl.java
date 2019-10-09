@@ -53,8 +53,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the KBArticle service. Represents a row in the &quot;KBArticle&quot; database table, with each column mapped to a property of this class.
  *
@@ -67,11 +65,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class KBArticleModelImpl
 	extends BaseModelImpl<KBArticle> implements KBArticleModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a kb article model instance should use the <code>KBArticle</code> interface instead.
@@ -79,11 +76,11 @@ public class KBArticleModelImpl
 	public static final String TABLE_NAME = "KBArticle";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"kbArticleId", Types.BIGINT},
-		{"resourcePrimKey", Types.BIGINT}, {"groupId", Types.BIGINT},
-		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
-		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
-		{"modifiedDate", Types.TIMESTAMP},
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"kbArticleId", Types.BIGINT}, {"resourcePrimKey", Types.BIGINT},
+		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
+		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
+		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
 		{"rootResourcePrimKey", Types.BIGINT},
 		{"parentResourceClassNameId", Types.BIGINT},
 		{"parentResourcePrimKey", Types.BIGINT}, {"kbFolderId", Types.BIGINT},
@@ -101,6 +98,7 @@ public class KBArticleModelImpl
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("kbArticleId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("resourcePrimKey", Types.BIGINT);
@@ -133,7 +131,7 @@ public class KBArticleModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table KBArticle (uuid_ VARCHAR(75) null,kbArticleId LONG not null primary key,resourcePrimKey LONG,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,rootResourcePrimKey LONG,parentResourceClassNameId LONG,parentResourcePrimKey LONG,kbFolderId LONG,version INTEGER,title STRING null,urlTitle VARCHAR(75) null,content TEXT null,description STRING null,priority DOUBLE,sections STRING null,viewCount INTEGER,latest BOOLEAN,main BOOLEAN,sourceURL STRING null,lastPublishDate DATE null,status INTEGER,statusByUserId LONG,statusByUserName VARCHAR(75) null,statusDate DATE null)";
+		"create table KBArticle (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,kbArticleId LONG not null primary key,resourcePrimKey LONG,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,rootResourcePrimKey LONG,parentResourceClassNameId LONG,parentResourcePrimKey LONG,kbFolderId LONG,version INTEGER,title STRING null,urlTitle VARCHAR(75) null,content TEXT null,description STRING null,priority DOUBLE,sections STRING null,viewCount INTEGER,latest BOOLEAN,main BOOLEAN,sourceURL STRING null,lastPublishDate DATE null,status INTEGER,statusByUserId LONG,statusByUserName VARCHAR(75) null,statusDate DATE null)";
 
 	public static final String TABLE_SQL_DROP = "drop table KBArticle";
 
@@ -148,21 +146,6 @@ public class KBArticleModelImpl
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
 
 	public static final String TX_MANAGER = "liferayTransactionManager";
-
-	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.knowledge.base.service.util.ServiceProps.get(
-			"value.object.entity.cache.enabled.com.liferay.knowledge.base.model.KBArticle"),
-		true);
-
-	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.knowledge.base.service.util.ServiceProps.get(
-			"value.object.finder.cache.enabled.com.liferay.knowledge.base.model.KBArticle"),
-		true);
-
-	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(
-		com.liferay.knowledge.base.service.util.ServiceProps.get(
-			"value.object.column.bitmask.enabled.com.liferay.knowledge.base.model.KBArticle"),
-		true);
 
 	public static final long COMPANYID_COLUMN_BITMASK = 1L;
 
@@ -190,6 +173,14 @@ public class KBArticleModelImpl
 
 	public static final long MODIFIEDDATE_COLUMN_BITMASK = 4096L;
 
+	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
+		_entityCacheEnabled = entityCacheEnabled;
+	}
+
+	public static void setFinderCacheEnabled(boolean finderCacheEnabled) {
+		_finderCacheEnabled = finderCacheEnabled;
+	}
+
 	/**
 	 * Converts the soap model instance into a normal model instance.
 	 *
@@ -203,6 +194,7 @@ public class KBArticleModelImpl
 
 		KBArticle model = new KBArticleImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
 		model.setKbArticleId(soapModel.getKbArticleId());
 		model.setResourcePrimKey(soapModel.getResourcePrimKey());
@@ -256,10 +248,6 @@ public class KBArticleModelImpl
 
 		return models;
 	}
-
-	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
-		com.liferay.knowledge.base.service.util.ServiceProps.get(
-			"lock.expiration.time.com.liferay.knowledge.base.model.KBArticle"));
 
 	public KBArticleModelImpl() {
 	}
@@ -385,6 +373,10 @@ public class KBArticleModelImpl
 		Map<String, BiConsumer<KBArticle, ?>> attributeSetterBiConsumers =
 			new LinkedHashMap<String, BiConsumer<KBArticle, ?>>();
 
+		attributeGetterFunctions.put("mvccVersion", KBArticle::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<KBArticle, Long>)KBArticle::setMvccVersion);
 		attributeGetterFunctions.put("uuid", KBArticle::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid", (BiConsumer<KBArticle, String>)KBArticle::setUuid);
@@ -502,6 +494,17 @@ public class KBArticleModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -1185,6 +1188,7 @@ public class KBArticleModelImpl
 	public Object clone() {
 		KBArticleImpl kbArticleImpl = new KBArticleImpl();
 
+		kbArticleImpl.setMvccVersion(getMvccVersion());
 		kbArticleImpl.setUuid(getUuid());
 		kbArticleImpl.setKbArticleId(getKbArticleId());
 		kbArticleImpl.setResourcePrimKey(getResourcePrimKey());
@@ -1266,12 +1270,12 @@ public class KBArticleModelImpl
 
 	@Override
 	public boolean isEntityCacheEnabled() {
-		return ENTITY_CACHE_ENABLED;
+		return _entityCacheEnabled;
 	}
 
 	@Override
 	public boolean isFinderCacheEnabled() {
-		return FINDER_CACHE_ENABLED;
+		return _finderCacheEnabled;
 	}
 
 	@Override
@@ -1330,6 +1334,8 @@ public class KBArticleModelImpl
 	@Override
 	public CacheModel<KBArticle> toCacheModel() {
 		KBArticleCacheModel kbArticleCacheModel = new KBArticleCacheModel();
+
+		kbArticleCacheModel.mvccVersion = getMvccVersion();
 
 		kbArticleCacheModel.uuid = getUuid();
 
@@ -1545,6 +1551,10 @@ public class KBArticleModelImpl
 
 	}
 
+	private static boolean _entityCacheEnabled;
+	private static boolean _finderCacheEnabled;
+
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _kbArticleId;

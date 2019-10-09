@@ -26,6 +26,7 @@ import java.util.List;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
@@ -53,14 +54,19 @@ public class NestedFieldsContainerRequestFilter
 			List<String> fieldNames = Arrays.asList(
 				nestedFields.split("\\s*,\\s*"));
 
-			MultivaluedMap<String, String> pathParameters =
-				uriInfo.getPathParameters();
-
 			NestedFieldsContextThreadLocal.setNestedFieldsContext(
 				new NestedFieldsContext(
-					fieldNames, JAXRSUtils.getCurrentMessage(), pathParameters,
+					fieldNames, JAXRSUtils.getCurrentMessage(),
+					uriInfo.getPathParameters(),
+					_getResourceVersion(uriInfo.getPathSegments()),
 					queryParameters));
 		}
+	}
+
+	private String _getResourceVersion(List<PathSegment> pathSegments) {
+		PathSegment pathSegment = pathSegments.get(0);
+
+		return pathSegment.getPath();
 	}
 
 }

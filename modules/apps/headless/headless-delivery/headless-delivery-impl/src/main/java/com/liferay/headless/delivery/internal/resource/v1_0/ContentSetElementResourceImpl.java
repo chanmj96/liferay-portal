@@ -27,17 +27,13 @@ import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.segments.context.Context;
 import com.liferay.segments.provider.SegmentsEntryProviderRegistry;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedMap;
+import java.util.Enumeration;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -58,10 +54,8 @@ public class ContentSetElementResourceImpl
 			Long contentSetId, Pagination pagination)
 		throws Exception {
 
-		AssetListEntry assetListEntry =
-			_assetListEntryService.getAssetListEntry(contentSetId);
-
-		return _getContentSetContentSetElementsPage(assetListEntry, pagination);
+		return _getContentSetContentSetElementsPage(
+			_assetListEntryService.getAssetListEntry(contentSetId), pagination);
 	}
 
 	@Override
@@ -88,50 +82,42 @@ public class ContentSetElementResourceImpl
 		return _getContentSetContentSetElementsPage(assetListEntry, pagination);
 	}
 
-	private com.liferay.segments.context.Context _createSegmentsContext() {
-		com.liferay.segments.context.Context context =
-			new com.liferay.segments.context.Context();
+	private Context _createSegmentsContext() {
+		Context context = new Context();
 
-		MultivaluedMap<String, String> multivaluedMap =
-			_httpHeaders.getRequestHeaders();
+		Enumeration<String> headerNames =
+			contextHttpServletRequest.getHeaderNames();
 
-		for (Map.Entry<String, List<String>> entry :
-				multivaluedMap.entrySet()) {
+		while (headerNames.hasMoreElements()) {
+			String key = headerNames.nextElement();
 
-			String key = StringUtil.toLowerCase(entry.getKey());
-
-			List<String> values = entry.getValue();
-
-			String value = values.get(0);
+			String value = contextHttpServletRequest.getHeader(key);
 
 			if (key.equals("accept-language")) {
 				context.put(
-					com.liferay.segments.context.Context.LANGUAGE_ID,
-					value.replace("-", "_"));
+					Context.LANGUAGE_ID, StringUtil.replace(value, '-', '_'));
 			}
 			else if (key.equals("host")) {
-				context.put(com.liferay.segments.context.Context.URL, value);
+				context.put(Context.URL, value);
 			}
 			else if (key.equals("referer")) {
-				context.put(
-					com.liferay.segments.context.Context.REFERRER_URL, value);
+				context.put(Context.REFERRER_URL, value);
 			}
 			else if (key.equals("user-agent")) {
-				context.put(
-					com.liferay.segments.context.Context.USER_AGENT, value);
+				context.put(Context.USER_AGENT, value);
 			}
 			else if (key.startsWith("x-")) {
 				context.put(
-					CamelCaseUtil.toCamelCase(key.replace("x-", "")), value);
+					CamelCaseUtil.toCamelCase(
+						StringUtil.replace(key, "x-", "")),
+					value);
 			}
 			else {
 				context.put(key, value);
 			}
 		}
 
-		context.put(
-			com.liferay.segments.context.Context.LOCAL_DATE,
-			LocalDate.from(ZonedDateTime.now()));
+		context.put(Context.LOCAL_DATE, LocalDate.from(ZonedDateTime.now()));
 
 		return context;
 	}
@@ -194,9 +180,6 @@ public class ContentSetElementResourceImpl
 
 	@Reference
 	private AssetListEntryService _assetListEntryService;
-
-	@Context
-	private HttpHeaders _httpHeaders;
 
 	@Reference
 	private SegmentsEntryProviderRegistry _segmentsEntryProviderRegistry;

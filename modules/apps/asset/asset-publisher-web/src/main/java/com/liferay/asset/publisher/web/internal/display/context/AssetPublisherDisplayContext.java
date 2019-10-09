@@ -47,9 +47,9 @@ import com.liferay.asset.util.AssetHelper;
 import com.liferay.asset.util.AssetPublisherAddItemHolder;
 import com.liferay.document.library.kernel.document.conversion.DocumentConversionUtil;
 import com.liferay.info.display.contributor.InfoDisplayObjectProvider;
-import com.liferay.info.provider.DefaultInfoListProviderContext;
-import com.liferay.info.provider.InfoListProvider;
-import com.liferay.info.provider.InfoListProviderTracker;
+import com.liferay.info.list.provider.DefaultInfoListProviderContext;
+import com.liferay.info.list.provider.InfoListProvider;
+import com.liferay.info.list.provider.InfoListProviderTracker;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -1104,9 +1104,11 @@ public class AssetPublisherDisplayContext {
 	}
 
 	public List<Long> getVocabularyIds() throws PortalException {
+		long[] groupIds = PortalUtil.getCurrentAndAncestorSiteGroupIds(
+			getReferencedModelsGroupIds());
+
 		List<AssetVocabulary> vocabularies =
-			AssetVocabularyServiceUtil.getGroupsVocabularies(
-				getReferencedModelsGroupIds());
+			AssetVocabularyServiceUtil.getGroupsVocabularies(groupIds);
 
 		return ListUtil.toList(
 			vocabularies, AssetVocabulary.VOCABULARY_ID_ACCESSOR);
@@ -1341,9 +1343,7 @@ public class AssetPublisherDisplayContext {
 	}
 
 	public boolean isPaginationTypeNone() {
-		String paginationType = getPaginationType();
-
-		if (Objects.equals(paginationType, PAGINATION_TYPE_NONE)) {
+		if (Objects.equals(getPaginationType(), PAGINATION_TYPE_NONE)) {
 			return true;
 		}
 
@@ -1830,6 +1830,7 @@ public class AssetPublisherDisplayContext {
 			_httpServletRequest, "ddmStructureDisplayFieldValue",
 			_portletPreferences.getValue(
 				"ddmStructureDisplayFieldValue", StringPool.BLANK));
+
 		_ddmStructureFieldName = ParamUtil.getString(
 			_httpServletRequest, "ddmStructureFieldName",
 			_portletPreferences.getValue(

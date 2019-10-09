@@ -12,22 +12,27 @@
  * details.
  */
 
-/* eslint no-unused-vars: "warn" */
-
+import 'clay-alert';
 import 'clay-button';
 import 'clay-select';
 import 'clay-sticker';
-import {ClayStripe} from 'clay-alert';
+import {PortletBase} from 'frontend-js-web';
 import Soy from 'metal-soy';
 import {Config} from 'metal-state';
+
 import templates from './ManageCollaborators.soy';
-import {PortletBase} from 'frontend-js-web';
 
 /**
  * Handles actions to delete or change permissions of the
  * collaborators for a file entry.
  */
 class ManageCollaborators extends PortletBase {
+	constructor(config, ...args) {
+		super(config, ...args);
+
+		this._classNameId = config.classNameId;
+		this._classPK = config.classPK;
+	}
 	/**
 	 * @inheritDoc
 	 */
@@ -306,6 +311,10 @@ class ManageCollaborators extends PortletBase {
 					  });
 			})
 			.then(json => {
+				parent.Liferay.fire('sharing:changed', {
+					classNameId: this._classNameId,
+					classPK: this._classPK
+				});
 				this._loadingResponse = false;
 				this._showNotification(json.successMessage);
 			})
@@ -406,17 +415,17 @@ ManageCollaborators.STATE = {
 	).required(),
 
 	/**
+	 * Id of the dialog
+	 * @type {String}
+	 */
+	dialogId: Config.string().required,
+
+	/**
 	 * Id of the expanded collaborator
 	 * @memberof ManageCollaborators
 	 * @type {String}
 	 */
 	expandedCollaboratorId: Config.string(),
-
-	/**
-	 * Id of the dialog
-	 * @type {String}
-	 */
-	dialogId: Config.string().required,
 
 	/**
 	 * Path to images.

@@ -12,9 +12,9 @@
  * details.
  */
 
+import {cleanup, render} from '@testing-library/react';
+import SelectEntityInput from '../../../../src/main/resources/META-INF/resources/js/components/inputs/SelectEntityInput.es';
 import React from 'react';
-import SelectEntityInput from 'components/inputs/SelectEntityInput.es';
-import {cleanup, render} from 'react-testing-library';
 
 const ENTITY_SELECT_INPUT_TESTID = 'entity-select-input';
 

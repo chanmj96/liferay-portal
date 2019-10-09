@@ -16,6 +16,7 @@ package com.liferay.dynamic.data.mapping.service;
 
 import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMStructureLayout;
+import com.liferay.dynamic.data.mapping.model.DDMStructureVersion;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
@@ -63,7 +64,7 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface DDMStructureLayoutLocalService
 	extends BaseLocalService, PersistedModelLocalService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this interface directly. Always use {@link DDMStructureLayoutLocalServiceUtil} to access the ddm structure layout local service. Add custom service methods to <code>com.liferay.dynamic.data.mapping.service.impl.DDMStructureLayoutLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface.
@@ -133,6 +134,10 @@ public interface DDMStructureLayoutLocalService
 	 */
 	@Indexable(type = IndexableType.DELETE)
 	public DDMStructureLayout deleteDDMStructureLayout(long structureLayoutId)
+		throws PortalException;
+
+	public void deleteDDMStructureLayouts(
+			long classNameId, DDMStructureVersion ddmStructureVersion)
 		throws PortalException;
 
 	/**
@@ -227,6 +232,9 @@ public interface DDMStructureLayoutLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DDMStructureLayout fetchDDMStructureLayoutByUuidAndGroupId(
 		String uuid, long groupId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public DDMStructureLayout fetchStructureLayout(long structureLayoutId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DDMStructureLayout fetchStructureLayout(
@@ -350,7 +358,24 @@ public interface DDMStructureLayoutLocalService
 		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<DDMStructureLayout> getStructureLayouts(
+		long groupId, long classNameId, int start, int end,
+		OrderByComparator<DDMStructureLayout> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<DDMStructureLayout> getStructureLayouts(
+		long groupId, long classNameId, long structureVersionId, int start,
+		int end, OrderByComparator<DDMStructureLayout> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getStructureLayoutsCount(long groupId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getStructureLayoutsCount(long groupId, long classNameId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getStructureLayoutsCount(
+		long groupId, long classNameId, long structureVersionId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<DDMStructureLayout> search(

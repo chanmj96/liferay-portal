@@ -50,10 +50,10 @@ import org.osgi.service.component.annotations.Reference;
  */
 public abstract class CalendarNotificationTemplateServiceBaseImpl
 	extends BaseServiceImpl
-	implements CalendarNotificationTemplateService, AopService,
+	implements AopService, CalendarNotificationTemplateService,
 			   IdentifiableOSGiService {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. Use <code>CalendarNotificationTemplateService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.liferay.calendar.service.CalendarNotificationTemplateServiceUtil</code>.

@@ -29,6 +29,37 @@ import javax.annotation.Generated;
 @Generated("")
 public class DataDefinitionField {
 
+	public static enum IndexType {
+
+		ALL("all"), KEYWORD("keyword"), NONE("none"), TEXT("text");
+
+		public static IndexType create(String value) {
+			for (IndexType indexType : values()) {
+				if (Objects.equals(indexType.getValue(), value)) {
+					return indexType;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private IndexType(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
+
 	public Map<String, Object> getCustomProperties() {
 		return customProperties;
 	}
@@ -113,6 +144,35 @@ public class DataDefinitionField {
 
 	protected Long id;
 
+	public IndexType getIndexType() {
+		return indexType;
+	}
+
+	public String getIndexTypeAsString() {
+		if (indexType == null) {
+			return null;
+		}
+
+		return indexType.toString();
+	}
+
+	public void setIndexType(IndexType indexType) {
+		this.indexType = indexType;
+	}
+
+	public void setIndexType(
+		UnsafeSupplier<IndexType, Exception> indexTypeUnsafeSupplier) {
+
+		try {
+			indexType = indexTypeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected IndexType indexType;
+
 	public Boolean getIndexable() {
 		return indexable;
 	}
@@ -195,6 +255,52 @@ public class DataDefinitionField {
 
 	protected String name;
 
+	public DataDefinitionField[] getNestedDataDefinitionFields() {
+		return nestedDataDefinitionFields;
+	}
+
+	public void setNestedDataDefinitionFields(
+		DataDefinitionField[] nestedDataDefinitionFields) {
+
+		this.nestedDataDefinitionFields = nestedDataDefinitionFields;
+	}
+
+	public void setNestedDataDefinitionFields(
+		UnsafeSupplier<DataDefinitionField[], Exception>
+			nestedDataDefinitionFieldsUnsafeSupplier) {
+
+		try {
+			nestedDataDefinitionFields =
+				nestedDataDefinitionFieldsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected DataDefinitionField[] nestedDataDefinitionFields;
+
+	public Boolean getReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(Boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+
+	public void setReadOnly(
+		UnsafeSupplier<Boolean, Exception> readOnlyUnsafeSupplier) {
+
+		try {
+			readOnly = readOnlyUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean readOnly;
+
 	public Boolean getRepeatable() {
 		return repeatable;
 	}
@@ -216,6 +322,48 @@ public class DataDefinitionField {
 
 	protected Boolean repeatable;
 
+	public Boolean getRequired() {
+		return required;
+	}
+
+	public void setRequired(Boolean required) {
+		this.required = required;
+	}
+
+	public void setRequired(
+		UnsafeSupplier<Boolean, Exception> requiredUnsafeSupplier) {
+
+		try {
+			required = requiredUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean required;
+
+	public Boolean getShowLabel() {
+		return showLabel;
+	}
+
+	public void setShowLabel(Boolean showLabel) {
+		this.showLabel = showLabel;
+	}
+
+	public void setShowLabel(
+		UnsafeSupplier<Boolean, Exception> showLabelUnsafeSupplier) {
+
+		try {
+			showLabel = showLabelUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean showLabel;
+
 	public Map<String, Object> getTip() {
 		return tip;
 	}
@@ -236,6 +384,27 @@ public class DataDefinitionField {
 	}
 
 	protected Map<String, Object> tip;
+
+	public Boolean getVisible() {
+		return visible;
+	}
+
+	public void setVisible(Boolean visible) {
+		this.visible = visible;
+	}
+
+	public void setVisible(
+		UnsafeSupplier<Boolean, Exception> visibleUnsafeSupplier) {
+
+		try {
+			visible = visibleUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Boolean visible;
 
 	@Override
 	public boolean equals(Object object) {

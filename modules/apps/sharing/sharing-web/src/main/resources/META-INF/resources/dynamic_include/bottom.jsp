@@ -27,7 +27,7 @@ sharingURL.setWindowState(LiferayWindowState.POP_UP);
 %>
 
 <aui:script sandbox="<%= true %>">
-	function showDialog(uri, title, namespace, refreshOnClose) {
+	function showDialog(uri, title) {
 		Liferay.Util.openWindow(
 			{
 				dialog: {
@@ -37,14 +37,7 @@ sharingURL.setWindowState(LiferayWindowState.POP_UP);
 					destroyOnHide: true,
 					modal: true,
 					height: 540,
-					width: 600,
-					on: {
-						visibleChange: function(event) {
-							if (refreshOnClose && !event.newVal) {
-								Liferay.Portlet.refresh('#p_p_id' + namespace);
-							}
-						}
-					}
+					width: 600
 				},
 				id: 'sharingDialog',
 				title: title,
@@ -58,29 +51,39 @@ sharingURL.setWindowState(LiferayWindowState.POP_UP);
 	Liferay.provide(
 		Sharing,
 		'share',
-		function(classNameId, classPK, title, namespace, refreshOnClose) {
-			var sharingURL = new Liferay.PortletURL.createURL('<%= sharingURL.toString() %>');
+		function(classNameId, classPK, title) {
+			var sharingParameters = {
+				classNameId: classNameId,
+				classPK: classPK
+			};
 
-			sharingURL.setParameter('classNameId', classNameId);
-			sharingURL.setParameter('classPK', classPK);
+			var sharingURL = Liferay.Util.PortletURL.createPortletURL(
+				'<%= sharingURL.toString() %>',
+				sharingParameters
+			);
 
-			showDialog(sharingURL, title, namespace, refreshOnClose);
+			showDialog(sharingURL.toString(), title);
 		},
-		['liferay-portlet-url', 'liferay-util-window']
+		['liferay-util-window']
 	);
 
 	Liferay.provide(
 		Sharing,
 		'manageCollaborators',
-		function(classNameId, classPK, namespace, refreshOnClose) {
-			var manageCollaboratorsURL = new Liferay.PortletURL.createURL('<%= manageCollaboratorsURL.toString() %>');
+		function(classNameId, classPK) {
+			var manageCollaboratorsParameters = {
+				classNameId: classNameId,
+				classPK: classPK
+			};
 
-			manageCollaboratorsURL.setParameter('classNameId', classNameId);
-			manageCollaboratorsURL.setParameter('classPK', classPK);
+			var manageCollaboratorsURL = Liferay.Util.PortletURL.createPortletURL(
+				'<%= manageCollaboratorsURL.toString() %>',
+				manageCollaboratorsParameters
+			);
 
-			showDialog(manageCollaboratorsURL, '<%= LanguageUtil.get(resourceBundle, "manage-collaborators") %>', namespace, refreshOnClose);
+			showDialog(manageCollaboratorsURL.toString(), '<%= LanguageUtil.get(resourceBundle, "manage-collaborators") %>');
 		},
-		['liferay-portlet-url', 'liferay-util-window']
+		['liferay-util-window']
 	);
 
 	Liferay.Sharing = Sharing;

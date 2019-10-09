@@ -12,50 +12,50 @@
  * details.
  */
 
-import 'clay-dropdown';
 import {PortletBase} from 'frontend-js-web';
 import Soy, {Config} from 'metal-soy';
 
+import '../../common/AssetSelector.es';
 import './FloatingToolbarMappingPanelDelegateTemplate.soy';
 import {ADD_MAPPED_ASSET_ENTRY} from '../../../actions/actions.es';
-import {COMPATIBLE_TYPES} from '../../../utils/constants';
+import {
+	BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR,
+	COMPATIBLE_TYPES,
+	EDITABLE_FRAGMENT_ENTRY_PROCESSOR,
+	FRAGMENTS_EDITOR_ITEM_TYPES,
+	MAPPING_SOURCE_TYPE_IDS
+} from '../../../utils/constants';
 import {encodeAssetId} from '../../../utils/FragmentsEditorIdUtils.es';
-import {openAssetBrowser} from '../../../utils/FragmentsEditorDialogUtils';
-import {setIn} from '../../../utils/FragmentsEditorUpdateUtils.es';
-import {updateEditableValuesAction} from '../../../actions/updateEditableValue.es';
 import getConnectedComponent from '../../../store/ConnectedComponent.es';
+import {getMappingSourceTypes} from '../../../utils/FragmentsEditorGetUtils.es';
+import {
+	openAssetBrowser,
+	openCreateContentDialog
+} from '../../../utils/FragmentsEditorDialogUtils';
+import {setIn} from '../../../utils/FragmentsEditorUpdateUtils.es';
+import {
+	updateEditableValueFieldIdAction,
+	updateEditableValueMappedFieldAction
+} from '../../../actions/updateEditableValue.es';
 import templates from './FloatingToolbarMappingPanel.soy';
-
-const SOURCE_TYPE_IDS = {
-	content: 'specific_content',
-	structure: 'structure'
-};
 
 /**
  * FloatingToolbarMappingPanel
  */
 class FloatingToolbarMappingPanel extends PortletBase {
 	/**
-	 * @param {string} subtypeLabel
-	 * @return {Array<{id: string, label: string}>} Source types
+	 * @return {boolean} Mapping values are empty
 	 * @private
 	 * @static
 	 * @review
 	 */
-	static _getSourceTypes(subtypeLabel) {
-		return [
-			{
-				id: SOURCE_TYPE_IDS.structure,
-				label: Liferay.Util.sub(
-					Liferay.Language.get('x-default'),
-					subtypeLabel
-				)
-			},
-			{
-				id: SOURCE_TYPE_IDS.content,
-				label: Liferay.Language.get('specific-content')
-			}
-		];
+	static emptyEditableValues(editableValues) {
+		return (
+			!editableValues.classNameId &&
+			!editableValues.classPK &&
+			!editableValues.fieldId &&
+			!editableValues.mappedField
+		);
 	}
 
 	/**
@@ -73,7 +73,11 @@ class FloatingToolbarMappingPanel extends PortletBase {
 			nextState.mappedAssetEntries.map(encodeAssetId)
 		);
 
-		nextState = setIn(nextState, ['_sourceTypeIds'], SOURCE_TYPE_IDS);
+		nextState = setIn(
+			nextState,
+			['_sourceTypeIds'],
+			MAPPING_SOURCE_TYPE_IDS
+		);
 
 		if (
 			nextState.mappingFieldsURL &&
@@ -83,7 +87,7 @@ class FloatingToolbarMappingPanel extends PortletBase {
 			nextState = setIn(
 				nextState,
 				['_sourceTypes'],
-				FloatingToolbarMappingPanel._getSourceTypes(
+				getMappingSourceTypes(
 					nextState.selectedMappingTypes.subtype
 						? nextState.selectedMappingTypes.subtype.label
 						: nextState.selectedMappingTypes.type.label
@@ -93,14 +97,15 @@ class FloatingToolbarMappingPanel extends PortletBase {
 
 		if (
 			nextState.mappedAssetEntries &&
-			nextState.item.editableValues.classNameId &&
-			nextState.item.editableValues.classPK
+			nextState._selectedAssetEntry &&
+			nextState._selectedAssetEntry.classNameId &&
+			nextState._selectedAssetEntry.classPK
 		) {
 			const mappedAssetEntry = nextState.mappedAssetEntries.find(
 				assetEntry =>
-					nextState.item.editableValues.classNameId ===
+					nextState._selectedAssetEntry.classNameId ===
 						assetEntry.classNameId &&
-					nextState.item.editableValues.classPK === assetEntry.classPK
+					nextState._selectedAssetEntry.classPK === assetEntry.classPK
 			);
 
 			if (mappedAssetEntry) {
@@ -128,14 +133,16 @@ class FloatingToolbarMappingPanel extends PortletBase {
 	 */
 	rendered(firstRender) {
 		if (firstRender) {
-			this._selectedSourceTypeId = SOURCE_TYPE_IDS.content;
+			this._selectedAssetEntry.classNameId = this.item.editableValues.classNameId;
+			this._selectedAssetEntry.classPK = this.item.editableValues.classPK;
+			this._selectedSourceTypeId = MAPPING_SOURCE_TYPE_IDS.content;
 
 			if (
 				this.item &&
 				this.mappingFieldsURL &&
 				!this.item.editableValues.classNameId
 			) {
-				this._selectedSourceTypeId = SOURCE_TYPE_IDS.structure;
+				this._selectedSourceTypeId = MAPPING_SOURCE_TYPE_IDS.structure;
 			}
 		}
 	}
@@ -147,7 +154,13 @@ class FloatingToolbarMappingPanel extends PortletBase {
 	 * @review
 	 */
 	syncItem(newItem, oldItem) {
-		if (!oldItem || newItem.editableValues !== oldItem.editableValues) {
+		if (
+			!oldItem ||
+			newItem.editableValues.classNameId !==
+				oldItem.editableValues.classNameId ||
+			newItem.editableValues.mappedField !==
+				oldItem.editableValues.mappedField
+		) {
 			this._loadFields();
 		}
 	}
@@ -159,27 +172,11 @@ class FloatingToolbarMappingPanel extends PortletBase {
 	 */
 	_clearEditableValues() {
 		this.store.dispatch(
-			updateEditableValuesAction(
+			updateEditableValueFieldIdAction(
 				this.item.fragmentEntryLinkId,
+				this._getFragmentEntryProcessor(),
 				this.item.editableId,
-				[
-					{
-						content: '',
-						editableValueId: 'classNameId'
-					},
-					{
-						content: '',
-						editableValueId: 'classPK'
-					},
-					{
-						content: '',
-						editableValueId: 'fieldId'
-					},
-					{
-						content: '',
-						editableValueId: 'mappedField'
-					}
-				]
+				{}
 			)
 		);
 	}
@@ -191,6 +188,18 @@ class FloatingToolbarMappingPanel extends PortletBase {
 	 */
 	_clearFields() {
 		this._fields = [];
+	}
+
+	/**
+	 * Gets right processor depending on itemType
+	 * @private
+	 * @review
+	 */
+	_getFragmentEntryProcessor() {
+		return this.itemType ===
+			FRAGMENTS_EDITOR_ITEM_TYPES.backgroundImageEditable
+			? BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR
+			: EDITABLE_FRAGMENT_ENTRY_PROCESSOR;
 	}
 
 	/**
@@ -209,18 +218,12 @@ class FloatingToolbarMappingPanel extends PortletBase {
 			callback: selectedAssetEntry => {
 				this._selectAssetEntry(selectedAssetEntry);
 
-				this.store.dispatch(
-					Object.assign({}, selectedAssetEntry, {
-						type: ADD_MAPPED_ASSET_ENTRY
-					})
-				);
-
 				requestAnimationFrame(() => {
 					this.refs.panel.focus();
 				});
 			},
-			modalTitle: assetBrowserWindowTitle,
-			portletNamespace: this.portletNamespace
+			eventName: `${this.portletNamespace}selectAsset`,
+			modalTitle: assetBrowserWindowTitle
 		});
 	}
 
@@ -243,6 +246,15 @@ class FloatingToolbarMappingPanel extends PortletBase {
 	}
 
 	/**
+	 * Opens content creation dialog
+	 * @private
+	 * @review
+	 */
+	_handleCreateContentClick() {
+		openCreateContentDialog(this.store);
+	}
+
+	/**
 	 * Handle field option change
 	 * @param {Event} event
 	 * @private
@@ -251,30 +263,32 @@ class FloatingToolbarMappingPanel extends PortletBase {
 	_handleFieldOptionChange(event) {
 		const fieldId = event.delegateTarget.value;
 
-		if (this._selectedSourceTypeId === SOURCE_TYPE_IDS.content) {
+		const shouldRemoveValues = fieldId === '';
+
+		if (this._selectedSourceTypeId === MAPPING_SOURCE_TYPE_IDS.content) {
 			this.store.dispatch(
-				updateEditableValuesAction(
+				updateEditableValueFieldIdAction(
 					this.item.fragmentEntryLinkId,
+					this._getFragmentEntryProcessor(),
 					this.item.editableId,
-					[
-						{
-							content: fieldId,
-							editableValueId: 'fieldId'
-						}
-					]
+					{
+						classNameId: shouldRemoveValues
+							? ''
+							: this._selectedAssetEntry.classNameId,
+						classPK: shouldRemoveValues
+							? ''
+							: this._selectedAssetEntry.classPK,
+						fieldId
+					}
 				)
 			);
-		} else if (this._selectedSourceTypeId === SOURCE_TYPE_IDS.structure) {
+		} else {
 			this.store.dispatch(
-				updateEditableValuesAction(
+				updateEditableValueMappedFieldAction(
 					this.item.fragmentEntryLinkId,
+					this._getFragmentEntryProcessor(),
 					this.item.editableId,
-					[
-						{
-							content: fieldId,
-							editableValueId: 'mappedField'
-						}
-					]
+					fieldId
 				)
 			);
 		}
@@ -289,7 +303,15 @@ class FloatingToolbarMappingPanel extends PortletBase {
 	_handleSourceTypeChange(event) {
 		this._selectedSourceTypeId = event.delegateTarget.value;
 
-		this._clearEditableValues();
+		if (
+			FloatingToolbarMappingPanel.emptyEditableValues(
+				this.item.editableValues
+			)
+		) {
+			this._loadFields();
+		} else {
+			this._clearEditableValues();
+		}
 	}
 
 	/**
@@ -302,7 +324,7 @@ class FloatingToolbarMappingPanel extends PortletBase {
 
 		this._clearFields();
 
-		if (this._selectedSourceTypeId === SOURCE_TYPE_IDS.structure) {
+		if (this._selectedSourceTypeId === MAPPING_SOURCE_TYPE_IDS.structure) {
 			const data = {
 				classNameId: this.selectedMappingTypes.type.id
 			};
@@ -313,13 +335,13 @@ class FloatingToolbarMappingPanel extends PortletBase {
 
 			promise = this.fetch(this.mappingFieldsURL, data);
 		} else if (
-			this._selectedSourceTypeId === SOURCE_TYPE_IDS.content &&
-			this.item.editableValues.classNameId &&
-			this.item.editableValues.classPK
+			this._selectedSourceTypeId === MAPPING_SOURCE_TYPE_IDS.content &&
+			this._selectedAssetEntry.classNameId &&
+			this._selectedAssetEntry.classPK
 		) {
 			promise = this.fetch(this.getAssetMappingFieldsURL, {
-				classNameId: this.item.editableValues.classNameId,
-				classPK: this.item.editableValues.classPK
+				classNameId: this._selectedAssetEntry.classNameId,
+				classPK: this._selectedAssetEntry.classPK
 			});
 		}
 
@@ -347,26 +369,28 @@ class FloatingToolbarMappingPanel extends PortletBase {
 	 * @review
 	 */
 	_selectAssetEntry(assetEntry) {
+		this._selectedAssetEntry = assetEntry;
+
 		this.store.dispatch(
-			updateEditableValuesAction(
+			updateEditableValueFieldIdAction(
 				this.item.fragmentEntryLinkId,
+				this._getFragmentEntryProcessor(),
 				this.item.editableId,
-				[
-					{
-						content: assetEntry.classNameId,
-						editableValueId: 'classNameId'
-					},
-					{
-						content: assetEntry.classPK,
-						editableValueId: 'classPK'
-					},
-					{
-						content: '',
-						editableValueId: 'fieldId'
-					}
-				]
+				{
+					classNameId: '',
+					classPK: '',
+					fieldId: ''
+				}
 			)
 		);
+
+		this.store.dispatch(
+			Object.assign({}, this._selectedAssetEntry, {
+				type: ADD_MAPPED_ASSET_ENTRY
+			})
+		);
+
+		this._loadFields();
 	}
 }
 
@@ -377,22 +401,6 @@ class FloatingToolbarMappingPanel extends PortletBase {
  * @type {object}
  */
 FloatingToolbarMappingPanel.STATE = {
-	/**
-	 * @default undefined
-	 * @memberof FloatingToolbarMappingPanel
-	 * @review
-	 * @type {object}
-	 */
-	item: Config.required(),
-
-	/**
-	 * @default undefined
-	 * @memberof FloatingToolbarMappingPanel
-	 * @review
-	 * @type {string}
-	 */
-	itemId: Config.string().required(),
-
 	/**
 	 * @default []
 	 * @memberOf FloatingToolbarMappingPanel
@@ -410,25 +418,67 @@ FloatingToolbarMappingPanel.STATE = {
 	 * @review
 	 * @type {string}
 	 */
+	_selectedAssetEntry: Config.object()
+		.internal()
+		.value({}),
+
+	/**
+	 * @default undefined
+	 * @memberof FloatingToolbarMappingPanel
+	 * @review
+	 * @type {string}
+	 */
 	_selectedSourceTypeId: Config.oneOf(
-		Object.values(SOURCE_TYPE_IDS)
-	).internal()
+		Object.values(MAPPING_SOURCE_TYPE_IDS)
+	).internal(),
+
+	/**
+	 * @default undefined
+	 * @memberof FloatingToolbarMappingPanel
+	 * @review
+	 * @type {object}
+	 */
+	item: Config.required(),
+
+	/**
+	 * @default undefined
+	 * @memberof FloatingToolbarMappingPanel
+	 * @review
+	 * @type {string}
+	 */
+	itemId: Config.string().required(),
+
+	/**
+	 * @default undefined
+	 * @memberof FloatingToolbarMappingPanel
+	 * @review
+	 * @type {string}
+	 */
+	itemType: Config.string().required()
 };
 
 const ConnectedFloatingToolbarMappingPanel = getConnectedComponent(
 	FloatingToolbarMappingPanel,
 	[
 		'assetBrowserLinks',
+		'contentCreationEnabled',
+		'defaultSegmentsExperienceId',
 		'getAssetMappingFieldsURL',
+		'languageId',
 		'mappedAssetEntries',
 		'mappingFieldsURL',
 		'portletNamespace',
-		'selectedMappingTypes',
-		'spritemap'
+		'segmentsExperienceId',
+		'selectedItems',
+		'selectedMappingTypes'
 	]
 );
 
 Soy.register(ConnectedFloatingToolbarMappingPanel, templates);
 
-export {ConnectedFloatingToolbarMappingPanel, FloatingToolbarMappingPanel};
+export {
+	ConnectedFloatingToolbarMappingPanel,
+	FloatingToolbarMappingPanel,
+	MAPPING_SOURCE_TYPE_IDS
+};
 export default ConnectedFloatingToolbarMappingPanel;

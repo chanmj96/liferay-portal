@@ -29,6 +29,7 @@ import com.liferay.fragment.service.FragmentCollectionLocalService;
 import com.liferay.fragment.service.FragmentCollectionService;
 import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.fragment.service.FragmentEntryService;
+import com.liferay.fragment.validator.FragmentEntryValidator;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -142,15 +143,13 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 				if (fragmentCollection == null) {
 					Locale locale = _portal.getSiteDefaultLocale(groupId);
 
-					ServiceContext serviceContext =
-						ServiceContextThreadLocal.getServiceContext();
-
 					fragmentCollection =
 						_fragmentCollectionService.addFragmentCollection(
 							groupId, _DEFAULT_FRAGMENT_COLLECTION_KEY,
 							LanguageUtil.get(
 								locale, _DEFAULT_FRAGMENT_COLLECTION_KEY),
-							StringPool.BLANK, serviceContext);
+							StringPool.BLANK,
+							ServiceContextThreadLocal.getServiceContext());
 				}
 
 				fragmentCollectionId =
@@ -175,13 +174,10 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 				groupId, fragmentCollectionKey);
 
 		if (fragmentCollection == null) {
-			ServiceContext serviceContext =
-				ServiceContextThreadLocal.getServiceContext();
-
 			fragmentCollection =
 				_fragmentCollectionService.addFragmentCollection(
 					groupId, fragmentCollectionKey, name, description,
-					serviceContext);
+					ServiceContextThreadLocal.getServiceContext());
 		}
 		else if (overwrite) {
 			fragmentCollection =
@@ -220,6 +216,8 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 		try {
 			_fragmentEntryProcessorRegistry.validateFragmentEntryHTML(
 				html, configuration);
+
+			_fragmentEntryValidator.validateConfiguration(configuration);
 		}
 		catch (PortalException pe) {
 			if (_log.isDebugEnabled()) {
@@ -235,13 +233,10 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 			StringUtil.toLowerCase(StringUtil.trim(typeLabel)));
 
 		if (fragmentEntry == null) {
-			ServiceContext serviceContext =
-				ServiceContextThreadLocal.getServiceContext();
-
 			return _fragmentEntryService.addFragmentEntry(
 				fragmentCollection.getGroupId(), fragmentCollectionId,
 				fragmentEntryKey, name, css, html, js, configuration, 0, type,
-				status, serviceContext);
+				status, ServiceContextThreadLocal.getServiceContext());
 		}
 
 		return _fragmentEntryService.updateFragmentEntry(
@@ -705,6 +700,9 @@ public class FragmentsImporterImpl implements FragmentsImporter {
 
 	@Reference
 	private FragmentEntryService _fragmentEntryService;
+
+	@Reference
+	private FragmentEntryValidator _fragmentEntryValidator;
 
 	private List<String> _invalidFragmentEntriesNames;
 

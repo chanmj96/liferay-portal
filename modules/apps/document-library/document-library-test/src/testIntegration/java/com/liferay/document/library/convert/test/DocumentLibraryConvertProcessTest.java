@@ -27,7 +27,7 @@ import com.liferay.document.library.kernel.store.Store;
 import com.liferay.document.library.kernel.util.DLPreviewableProcessor;
 import com.liferay.document.library.kernel.util.DLProcessor;
 import com.liferay.document.library.kernel.util.DLProcessorRegistry;
-import com.liferay.document.library.kernel.util.ImageProcessor;
+import com.liferay.document.library.kernel.util.ImageProcessorUtil;
 import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.constants.MBMessageConstants;
 import com.liferay.message.boards.model.MBMessage;
@@ -73,7 +73,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,7 +82,6 @@ import org.junit.runner.RunWith;
  * @author Sergio González
  * @author Manuel de la Peña
  */
-@Ignore
 @RunWith(Arquillian.class)
 public class DocumentLibraryConvertProcessTest {
 
@@ -274,7 +272,8 @@ public class DocumentLibraryConvertProcessTest {
 			folder.getFolderId(), "liferay.jpg", ContentTypes.IMAGE_JPEG,
 			FileUtil.getBytes(getClass(), "dependencies/liferay.jpg"));
 
-		_imageProcessor.generateImages(null, folderFileEntry.getFileVersion());
+		ImageProcessorUtil.generateImages(
+			null, folderFileEntry.getFileVersion());
 
 		_convertProcess.convert();
 
@@ -375,9 +374,6 @@ public class DocumentLibraryConvertProcessTest {
 
 	@Inject
 	private ImageLocalService _imageLocalService;
-
-	@Inject
-	private ImageProcessor _imageProcessor;
 
 	@Inject
 	private MBMessageLocalService _mbMessageLocalService;

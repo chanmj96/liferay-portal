@@ -12,7 +12,7 @@
  * details.
  */
 
-import RuleList from 'source/components/RuleList/RuleList.es';
+import RuleList from '../../../src/main/resources/META-INF/resources/js/components/RuleList/RuleList.es';
 
 let component;
 
@@ -78,6 +78,7 @@ describe('RuleList', () => {
 	beforeEach(() => {
 		jest.useFakeTimers();
 	});
+
 	afterEach(() => {
 		if (component) {
 			component.dispose();

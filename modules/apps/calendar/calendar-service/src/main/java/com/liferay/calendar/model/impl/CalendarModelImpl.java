@@ -58,8 +58,6 @@ import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the Calendar service. Represents a row in the &quot;Calendar&quot; database table, with each column mapped to a property of this class.
  *
@@ -72,11 +70,10 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class CalendarModelImpl
 	extends BaseModelImpl<Calendar> implements CalendarModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a calendar model instance should use the <code>Calendar</code> interface instead.
@@ -84,21 +81,22 @@ public class CalendarModelImpl
 	public static final String TABLE_NAME = "Calendar";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"calendarId", Types.BIGINT},
-		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
-		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
-		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
-		{"calendarResourceId", Types.BIGINT}, {"name", Types.VARCHAR},
-		{"description", Types.VARCHAR}, {"timeZoneId", Types.VARCHAR},
-		{"color", Types.INTEGER}, {"defaultCalendar", Types.BOOLEAN},
-		{"enableComments", Types.BOOLEAN}, {"enableRatings", Types.BOOLEAN},
-		{"lastPublishDate", Types.TIMESTAMP}
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"calendarId", Types.BIGINT}, {"groupId", Types.BIGINT},
+		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
+		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
+		{"modifiedDate", Types.TIMESTAMP}, {"calendarResourceId", Types.BIGINT},
+		{"name", Types.VARCHAR}, {"description", Types.VARCHAR},
+		{"timeZoneId", Types.VARCHAR}, {"color", Types.INTEGER},
+		{"defaultCalendar", Types.BOOLEAN}, {"enableComments", Types.BOOLEAN},
+		{"enableRatings", Types.BOOLEAN}, {"lastPublishDate", Types.TIMESTAMP}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("calendarId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -119,7 +117,7 @@ public class CalendarModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table Calendar (uuid_ VARCHAR(75) null,calendarId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,calendarResourceId LONG,name STRING null,description STRING null,timeZoneId VARCHAR(75) null,color INTEGER,defaultCalendar BOOLEAN,enableComments BOOLEAN,enableRatings BOOLEAN,lastPublishDate DATE null)";
+		"create table Calendar (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,calendarId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,calendarResourceId LONG,name STRING null,description STRING null,timeZoneId VARCHAR(75) null,color INTEGER,defaultCalendar BOOLEAN,enableComments BOOLEAN,enableRatings BOOLEAN,lastPublishDate DATE null)";
 
 	public static final String TABLE_SQL_DROP = "drop table Calendar";
 
@@ -166,6 +164,7 @@ public class CalendarModelImpl
 
 		Calendar model = new CalendarImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
 		model.setCalendarId(soapModel.getCalendarId());
 		model.setGroupId(soapModel.getGroupId());
@@ -331,6 +330,10 @@ public class CalendarModelImpl
 		Map<String, BiConsumer<Calendar, ?>> attributeSetterBiConsumers =
 			new LinkedHashMap<String, BiConsumer<Calendar, ?>>();
 
+		attributeGetterFunctions.put("mvccVersion", Calendar::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<Calendar, Long>)Calendar::setMvccVersion);
 		attributeGetterFunctions.put("uuid", Calendar::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid", (BiConsumer<Calendar, String>)Calendar::setUuid);
@@ -400,6 +403,17 @@ public class CalendarModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -1023,6 +1037,7 @@ public class CalendarModelImpl
 	public Object clone() {
 		CalendarImpl calendarImpl = new CalendarImpl();
 
+		calendarImpl.setMvccVersion(getMvccVersion());
 		calendarImpl.setUuid(getUuid());
 		calendarImpl.setCalendarId(getCalendarId());
 		calendarImpl.setGroupId(getGroupId());
@@ -1128,6 +1143,8 @@ public class CalendarModelImpl
 	@Override
 	public CacheModel<Calendar> toCacheModel() {
 		CalendarCacheModel calendarCacheModel = new CalendarCacheModel();
+
+		calendarCacheModel.mvccVersion = getMvccVersion();
 
 		calendarCacheModel.uuid = getUuid();
 
@@ -1290,6 +1307,7 @@ public class CalendarModelImpl
 	private static boolean _entityCacheEnabled;
 	private static boolean _finderCacheEnabled;
 
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _calendarId;

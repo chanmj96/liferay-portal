@@ -12,6 +12,7 @@
  * details.
  */
 
+import CreateContentDialog from '../components/content/CreateContentDialog.es';
 import {UPDATE_LAST_SAVE_DATE} from '../actions/actions.es';
 
 /**
@@ -24,27 +25,22 @@ let _widgetConfigurationChangeHandler = null;
 /**
  * Possible types that can be returned by the image selector
  */
-const IMAGE_SELECTOR_RETURN_TYPES = {
-	downloadUrl:
-		'com.liferay.item.selector.criteria.DownloadURLItemSelectorReturnType',
-	fileEntryItemSelector:
-		'com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType',
-	url: 'URL'
-};
+const DOWNLOAD_FILE_ENTRY_IMAGE_SELECTOR_RETURN_TYPE =
+	'com.liferay.item.selector.criteria.DownloadFileEntryItemSelectorReturnType';
 
 /**
  * @param {object} options
  * @param {function} options.callback
  * @param {string} options.assetBrowserURL
+ * @param {string} options.eventName
  * @param {string} options.modalTitle
- * @param {string} options.portletNamespace
  * @param {function} [options.destroyedCallback=null]
  */
 function openAssetBrowser({
 	assetBrowserURL,
 	callback,
+	eventName,
 	modalTitle,
-	portletNamespace,
 	destroyedCallback = null
 }) {
 	Liferay.Util.selectEntity(
@@ -54,13 +50,14 @@ function openAssetBrowser({
 				destroyOnHide: true,
 				modal: true
 			},
-			eventName: `${portletNamespace}selectAsset`,
+			eventName,
 			title: modalTitle,
 			uri: assetBrowserURL
 		},
 		event => {
 			if (event.assetclassnameid) {
 				callback({
+					className: event.assetclassname,
 					classNameId: event.assetclassnameid,
 					classPK: event.assetclasspk,
 					title: event.assettitle
@@ -70,6 +67,16 @@ function openAssetBrowser({
 			}
 		}
 	);
+}
+
+/**
+ * @param {object} store Store
+ * @return {CreateContentDialog}
+ */
+function openCreateContentDialog(store) {
+	return new CreateContentDialog({
+		store
+	});
 }
 
 /**
@@ -93,25 +100,25 @@ function openImageSelector({
 					const selectedItem = event.newVal || {};
 
 					const {returnType, value} = selectedItem;
-					let selectedImageURL = '';
+					const selectedImage = {};
 
-					if (
-						returnType ===
-							IMAGE_SELECTOR_RETURN_TYPES.downloadUrl ||
-						returnType === IMAGE_SELECTOR_RETURN_TYPES.url
-					) {
-						selectedImageURL = value;
+					if (returnType === 'URL') {
+						selectedImage.title = value;
+						selectedImage.url = value;
 					}
 
 					if (
 						returnType ===
-						IMAGE_SELECTOR_RETURN_TYPES.fileEntryItemSelector
+						DOWNLOAD_FILE_ENTRY_IMAGE_SELECTOR_RETURN_TYPE
 					) {
-						selectedImageURL = JSON.parse(value).url;
+						const fileEntry = JSON.parse(value);
+
+						selectedImage.title = fileEntry.title;
+						selectedImage.url = fileEntry.url;
 					}
 
-					if (selectedImageURL) {
-						callback(selectedImageURL);
+					if (selectedImage.url) {
+						callback(selectedImage);
 					}
 				},
 
@@ -173,6 +180,7 @@ function stopListeningWidgetConfigurationChange() {
 
 export {
 	openAssetBrowser,
+	openCreateContentDialog,
 	openImageSelector,
 	startListeningWidgetConfigurationChange,
 	stopListeningWidgetConfigurationChange

@@ -12,15 +12,15 @@
  * details.
  */
 
-/* eslint no-unused-vars: "warn" */
-
+import 'asset-taglib/asset_tags_selector/AssetTagsSelector.es';
 import 'clay-multi-select';
 import 'clay-radio';
+import 'frontend-js-web/liferay/compat/modal/Modal.es';
+import {fetch} from 'frontend-js-web';
 import Component from 'metal-component';
-import {Config} from 'metal-state';
 import Soy from 'metal-soy';
-import 'asset-taglib/asset_tags_selector/AssetTagsSelector.es';
-import {Modal} from 'frontend-js-web';
+import {Config} from 'metal-state';
+
 import templates from './EditTags.soy';
 
 /**
@@ -72,22 +72,17 @@ class EditTags extends Component {
 	 * @param {Function} callback Callback function
 	 */
 	_fetchTagsRequest(url, method, bodyData) {
-		const body = JSON.stringify(bodyData);
-
-		const headers = new Headers();
-		headers.append('Content-Type', 'application/json');
-		headers.append('X-CSRF-Token', Liferay.authToken);
-
-		const request = {
-			body,
-			credentials: 'include',
-			headers,
+		const init = {
+			body: JSON.stringify(bodyData),
+			headers: {
+				'content-type': 'application/json'
+			},
 			method
 		};
 
-		return fetch(this.pathModule + url, request)
+		return fetch(this.pathModule + url, init)
 			.then(response => response.json())
-			.catch(xhr => {
+			.catch(() => {
 				this.close();
 			});
 	}
@@ -133,7 +128,7 @@ class EditTags extends Component {
 					(responseTags.items || []).map(item => item.name)
 				);
 				this.description = this._getDescription(responseSelection.size);
-				this.multiple = this.fileEntries.length > 1 || this.selectAll;
+				this.multiple = this.selectAll || this.fileEntries.length > 1;
 			}
 		});
 	}
@@ -194,7 +189,7 @@ class EditTags extends Component {
 				keywordsToAdd: addedTags,
 				keywordsToRemove: removedTags
 			}
-		).then(response => {
+		).then(() => {
 			instance.close();
 
 			if (instance._bulkStatusComponent) {
@@ -345,16 +340,6 @@ EditTags.STATE = {
 	namespace: Config.string().required(),
 
 	/**
-	 * RepositoryId
-	 *
-	 * @instance
-	 * @memberof EditTags
-	 * @review
-	 * @type {String}
-	 */
-	repositoryId: Config.string().required(),
-
-	/**
 	 * PathModule
 	 *
 	 * @instance
@@ -363,6 +348,16 @@ EditTags.STATE = {
 	 * @type {String}
 	 */
 	pathModule: Config.string().required(),
+
+	/**
+	 * RepositoryId
+	 *
+	 * @instance
+	 * @memberof EditTags
+	 * @review
+	 * @type {String}
+	 */
+	repositoryId: Config.string().required(),
 
 	/**
 	 * Flag that indicate if "select all" checkbox
@@ -387,17 +382,6 @@ EditTags.STATE = {
 
 	/**
 	 * Url to backend service that provides
-	 * the common tags info.
-	 *
-	 * @instance
-	 * @memberof EditTags
-	 * @review
-	 * @type {String}
-	 */
-	urlTags: Config.string().value('/bulk/v1.0/keywords/common'),
-
-	/**
-	 * Url to backend service that provides
 	 * the selection information.
 	 *
 	 * @instance
@@ -406,6 +390,17 @@ EditTags.STATE = {
 	 * @type {String}
 	 */
 	urlSelection: Config.string().value('/bulk/v1.0/bulk-selection'),
+
+	/**
+	 * Url to backend service that provides
+	 * the common tags info.
+	 *
+	 * @instance
+	 * @memberof EditTags
+	 * @review
+	 * @type {String}
+	 */
+	urlTags: Config.string().value('/bulk/v1.0/keywords/common'),
 
 	/**
 	 * Url to backend service that updates

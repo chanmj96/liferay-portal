@@ -14,6 +14,7 @@
 	{@param key: string}
 	{@param row: ?}
 	{@param rowId: string}
+	{@param? _backgroundImageValue: string}
 	{@param? _columnResizerVisible: bool}
 	{@param? _fragmentsEditorRowTypes: ?}
 	{@param? _handleResizerMouseDown: any}
@@ -98,8 +99,8 @@
 	{/let}
 
 	{let $rowStyle kind="text"}
-		{if $row.config and $row.config.backgroundImage}
-			background-image: url({$row.config.backgroundImage});
+		{if $_backgroundImageValue}
+			background-image: url({$_backgroundImageValue});
 			background-position: 50% 50%;
 			background-repeat: no-repeat;
 			background-size: cover;
@@ -119,6 +120,13 @@
 	>
 		<nav class="fragments-editor__topper tbar">
 			<ul class="tbar-nav">
+				<li class="fragments-editor__drag-handler fragments-editor__topper__item pr-0 tbar-item">
+					<div>
+						<svg class="fragments-editor__topper__drag-icon lexicon-icon">
+							<use xlink:href="{$spritemap ?: ''}#drag"></use>
+						</svg>
+					</div>
+				</li>
 				<li class="fragments-editor__drag-handler fragments-editor__topper__item fragments-editor__topper__title tbar-item tbar-item-expand">
 					{msg desc=""}section{/msg}
 				</li>
@@ -247,7 +255,6 @@
 	{@param? store: ?}
 
 	{let $columnClasses kind="text"}
-		col
 		{sp}fragments-editor__drop-target
 		{sp}fragment-entry-link-list__col
 
@@ -262,7 +269,7 @@
 		{/if}
 
 		{if $size}
-			{sp}col-{$size}
+			{sp}col-md-{$size}
 		{/if}
 	{/let}
 

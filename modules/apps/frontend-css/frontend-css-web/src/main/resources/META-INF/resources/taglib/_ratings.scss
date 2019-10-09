@@ -1,5 +1,3 @@
-@import 'mixins';
-
 .taglib-ratings {
 	&.stars {
 		.liferay-rating-score {
@@ -9,6 +7,10 @@
 		.liferay-rating-vote,
 		.liferay-rating-score {
 			display: inline-block;
+		}
+
+		.lexicon-icon {
+			pointer-events: none;
 		}
 	}
 
@@ -40,5 +42,13 @@
 		.rating-input {
 			margin-left: 1px;
 		}
+	}
+
+	.icon-star-off svg.lexicon-icon-star {
+		display: none;
+	}
+
+	.icon-star-on svg.lexicon-icon-star-o {
+		display: none;
 	}
 }

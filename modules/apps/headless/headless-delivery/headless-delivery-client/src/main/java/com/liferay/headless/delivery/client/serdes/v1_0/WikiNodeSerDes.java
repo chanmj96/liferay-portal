@@ -20,11 +20,11 @@ import com.liferay.headless.delivery.client.json.BaseJSONParser;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.annotation.Generated;
 
@@ -137,6 +137,16 @@ public class WikiNodeSerDes {
 			sb.append("\"");
 		}
 
+		if (wikiNode.getNumberOfWikiPages() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"numberOfWikiPages\": ");
+
+			sb.append(wikiNode.getNumberOfWikiPages());
+		}
+
 		if (wikiNode.getSiteId() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -177,7 +187,7 @@ public class WikiNodeSerDes {
 			return null;
 		}
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new TreeMap<>();
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -218,6 +228,15 @@ public class WikiNodeSerDes {
 			map.put("name", String.valueOf(wikiNode.getName()));
 		}
 
+		if (wikiNode.getNumberOfWikiPages() == null) {
+			map.put("numberOfWikiPages", null);
+		}
+		else {
+			map.put(
+				"numberOfWikiPages",
+				String.valueOf(wikiNode.getNumberOfWikiPages()));
+		}
+
 		if (wikiNode.getSiteId() == null) {
 			map.put("siteId", null);
 		}
@@ -235,44 +254,7 @@ public class WikiNodeSerDes {
 		return map;
 	}
 
-	private static String _escape(Object object) {
-		String string = String.valueOf(object);
-
-		string = string.replace("\\", "\\\\");
-
-		return string.replace("\"", "\\\"");
-	}
-
-	private static String _toJSON(Map<String, ?> map) {
-		StringBuilder sb = new StringBuilder("{");
-
-		@SuppressWarnings("unchecked")
-		Set set = map.entrySet();
-
-		@SuppressWarnings("unchecked")
-		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
-
-		while (iterator.hasNext()) {
-			Map.Entry<String, ?> entry = iterator.next();
-
-			sb.append("\"");
-			sb.append(entry.getKey());
-			sb.append("\":");
-			sb.append("\"");
-			sb.append(entry.getValue());
-			sb.append("\"");
-
-			if (iterator.hasNext()) {
-				sb.append(",");
-			}
-		}
-
-		sb.append("}");
-
-		return sb.toString();
-	}
-
-	private static class WikiNodeJSONParser extends BaseJSONParser<WikiNode> {
+	public static class WikiNodeJSONParser extends BaseJSONParser<WikiNode> {
 
 		@Override
 		protected WikiNode createDTO() {
@@ -322,6 +304,12 @@ public class WikiNodeSerDes {
 					wikiNode.setName((String)jsonParserFieldValue);
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "numberOfWikiPages")) {
+				if (jsonParserFieldValue != null) {
+					wikiNode.setNumberOfWikiPages(
+						Integer.valueOf((String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "siteId")) {
 				if (jsonParserFieldValue != null) {
 					wikiNode.setSiteId(
@@ -341,6 +329,70 @@ public class WikiNodeSerDes {
 			}
 		}
 
+	}
+
+	private static String _escape(Object object) {
+		String string = String.valueOf(object);
+
+		string = string.replace("\\", "\\\\");
+
+		return string.replace("\"", "\\\"");
+	}
+
+	private static String _toJSON(Map<String, ?> map) {
+		StringBuilder sb = new StringBuilder("{");
+
+		@SuppressWarnings("unchecked")
+		Set set = map.entrySet();
+
+		@SuppressWarnings("unchecked")
+		Iterator<Map.Entry<String, ?>> iterator = set.iterator();
+
+		while (iterator.hasNext()) {
+			Map.Entry<String, ?> entry = iterator.next();
+
+			sb.append("\"");
+			sb.append(entry.getKey());
+			sb.append("\":");
+
+			Object value = entry.getValue();
+
+			Class<?> valueClass = value.getClass();
+
+			if (value instanceof Map) {
+				sb.append(_toJSON((Map)value));
+			}
+			else if (valueClass.isArray()) {
+				Object[] values = (Object[])value;
+
+				sb.append("[");
+
+				for (int i = 0; i < values.length; i++) {
+					sb.append("\"");
+					sb.append(_escape(values[i]));
+					sb.append("\"");
+
+					if ((i + 1) < values.length) {
+						sb.append(", ");
+					}
+				}
+
+				sb.append("]");
+			}
+			else {
+				sb.append("\"");
+				sb.append(_escape(entry.getValue()));
+				sb.append("\"");
+			}
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 }

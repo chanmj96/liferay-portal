@@ -23,11 +23,12 @@ import com.liferay.portal.kernel.messaging.DestinationFactory;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.segments.asah.connector.internal.cache.AsahSegmentsEntryCache;
 import com.liferay.segments.asah.connector.internal.constants.SegmentsAsahDestinationNames;
 import com.liferay.segments.asah.connector.internal.context.contributor.SegmentsAsahRequestContextContributor;
-import com.liferay.segments.constants.SegmentsConstants;
+import com.liferay.segments.constants.SegmentsEntryConstants;
 import com.liferay.segments.context.Context;
 import com.liferay.segments.model.SegmentsEntryRel;
 import com.liferay.segments.provider.SegmentsEntryProvider;
@@ -36,6 +37,8 @@ import com.liferay.segments.service.SegmentsEntryRelLocalService;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -47,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = "segments.entry.provider.source=" + SegmentsConstants.SOURCE_ASAH_FARO_BACKEND,
+	property = "segments.entry.provider.source=" + SegmentsEntryConstants.SOURCE_ASAH_FARO_BACKEND,
 	service = SegmentsEntryProvider.class
 )
 public class AsahSegmentsEntryProvider implements SegmentsEntryProvider {
@@ -118,7 +121,7 @@ public class AsahSegmentsEntryProvider implements SegmentsEntryProvider {
 	}
 
 	@Activate
-	protected void activate() {
+	protected void activate(BundleContext bundleContext) {
 		DestinationConfiguration destinationConfiguration =
 			new DestinationConfiguration(
 				DestinationConfiguration.DESTINATION_TYPE_PARALLEL,
@@ -127,13 +130,15 @@ public class AsahSegmentsEntryProvider implements SegmentsEntryProvider {
 		Destination destination = _destinationFactory.createDestination(
 			destinationConfiguration);
 
-		_messageBus.addDestination(destination);
+		_destinationServiceRegistration = bundleContext.registerService(
+			Destination.class, destination,
+			MapUtil.singletonDictionary(
+				"destination.name", destination.getName()));
 	}
 
 	@Deactivate
 	protected void deactivate() {
-		_messageBus.removeDestination(
-			SegmentsAsahDestinationNames.INDIVIDUAL_SEGMENTS);
+		_destinationServiceRegistration.unregister();
 	}
 
 	private void _sendMessage(String userId) {
@@ -153,6 +158,8 @@ public class AsahSegmentsEntryProvider implements SegmentsEntryProvider {
 
 	@Reference
 	private DestinationFactory _destinationFactory;
+
+	private ServiceRegistration<Destination> _destinationServiceRegistration;
 
 	@Reference
 	private MessageBus _messageBus;

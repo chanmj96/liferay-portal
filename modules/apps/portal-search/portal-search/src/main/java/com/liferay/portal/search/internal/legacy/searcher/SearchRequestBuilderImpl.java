@@ -22,6 +22,7 @@ import com.liferay.portal.search.filter.ComplexQueryPart;
 import com.liferay.portal.search.groupby.GroupByRequest;
 import com.liferay.portal.search.internal.searcher.SearchRequestImpl;
 import com.liferay.portal.search.query.Query;
+import com.liferay.portal.search.rescore.Rescore;
 import com.liferay.portal.search.searcher.FacetContext;
 import com.liferay.portal.search.searcher.SearchRequest;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
@@ -31,13 +32,15 @@ import com.liferay.portal.search.stats.StatsRequest;
 
 import java.io.Serializable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * @author André de Oliveira
@@ -95,7 +98,7 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 	public SearchRequestBuilder addFederatedSearchRequest(
 		SearchRequest searchRequest) {
 
-		addFederatedSearchRequests(Stream.of(searchRequest));
+		addFederatedSearchRequests(Arrays.asList(searchRequest));
 
 		return this;
 	}
@@ -322,10 +325,22 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 		return this;
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #rescores(List)}
+	 */
+	@Deprecated
 	@Override
 	public SearchRequestBuilder rescoreQuery(Query query) {
 		withSearchRequestImpl(
 			searchRequestImpl -> searchRequestImpl.setRescoreQuery(query));
+
+		return this;
+	}
+
+	@Override
+	public SearchRequestBuilder rescores(List<Rescore> rescores) {
+		withSearchRequestImpl(
+			searchRequestImpl -> searchRequestImpl.setRescores(rescores));
 
 		return this;
 	}
@@ -408,20 +423,28 @@ public class SearchRequestBuilderImpl implements SearchRequestBuilder {
 		return value;
 	}
 
-	protected void addFederatedSearchRequests(Stream<SearchRequest> stream) {
+	protected void addFederatedSearchRequests(
+		List<SearchRequest> searchRequests) {
+
 		withSearchRequestImpl(
-			searchRequestImpl -> stream.forEach(
+			searchRequestImpl -> searchRequests.forEach(
 				searchRequestImpl::addFederatedSearchRequest));
 	}
 
-	protected Stream<SearchRequest> buildFederatedSearchRequests() {
+	protected List<SearchRequest> buildFederatedSearchRequests() {
 		Collection<SearchRequestBuilder> searchRequestBuilders =
 			_federatedSearchRequestBuildersMap.values();
 
-		return searchRequestBuilders.stream(
-		).map(
-			SearchRequestBuilder::build
-		);
+		List<SearchRequest> searchRequests = new ArrayList<>(
+			searchRequestBuilders.size());
+
+		for (SearchRequestBuilder searchRequestBuilder :
+				searchRequestBuilders) {
+
+			searchRequests.add(searchRequestBuilder.build());
+		}
+
+		return searchRequests;
 	}
 
 	protected SearchRequestBuilder newFederatedSearchRequestBuilder(

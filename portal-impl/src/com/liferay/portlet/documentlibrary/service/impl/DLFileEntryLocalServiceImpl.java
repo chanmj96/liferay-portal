@@ -81,7 +81,6 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.event.RepositoryEventTrigger;
 import com.liferay.portal.kernel.repository.event.RepositoryEventType;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexable;
@@ -1795,9 +1794,8 @@ public class DLFileEntryLocalServiceImpl
 					return;
 				}
 
-				Document document = indexer.getDocument(dlFileEntry);
-
-				indexableActionableDynamicQuery.addDocuments(document);
+				indexableActionableDynamicQuery.addDocuments(
+					indexer.getDocument(dlFileEntry));
 			});
 
 		indexableActionableDynamicQuery.performActions();
@@ -1939,17 +1937,14 @@ public class DLFileEntryLocalServiceImpl
 
 	@Override
 	public DLFileEntry updateStatus(
-			long userId, long fileVersionId, int status,
-			ServiceContext serviceContext,
+			long userId, DLFileEntry dlFileEntry, DLFileVersion dlFileVersion,
+			int status, ServiceContext serviceContext,
 			Map<String, Serializable> workflowContext)
 		throws PortalException {
 
 		// File version
 
 		User user = userPersistence.findByPrimaryKey(userId);
-
-		DLFileVersion dlFileVersion = dlFileVersionPersistence.findByPrimaryKey(
-			fileVersionId);
 
 		int oldStatus = dlFileVersion.getStatus();
 
@@ -1958,12 +1953,9 @@ public class DLFileEntryLocalServiceImpl
 		dlFileVersion.setStatusByUserName(user.getFullName());
 		dlFileVersion.setStatusDate(new Date());
 
-		dlFileVersionPersistence.update(dlFileVersion);
+		dlFileVersion = dlFileVersionPersistence.update(dlFileVersion);
 
 		// File entry
-
-		DLFileEntry dlFileEntry = dlFileEntryPersistence.findByPrimaryKey(
-			dlFileVersion.getFileEntryId());
 
 		if (status == WorkflowConstants.STATUS_APPROVED) {
 			int compare = DLUtil.compareVersions(
@@ -1982,7 +1974,7 @@ public class DLFileEntryLocalServiceImpl
 				dlFileEntry.setVersion(dlFileVersion.getVersion());
 				dlFileEntry.setSize(dlFileVersion.getSize());
 
-				dlFileEntryPersistence.update(dlFileEntry);
+				dlFileEntry = dlFileEntryPersistence.update(dlFileEntry);
 			}
 		}
 		else {
@@ -2009,7 +2001,7 @@ public class DLFileEntryLocalServiceImpl
 
 				dlFileEntry.setVersion(newVersion);
 
-				dlFileEntryPersistence.update(dlFileEntry);
+				dlFileEntry = dlFileEntryPersistence.update(dlFileEntry);
 			}
 
 			// Indexer
@@ -2057,27 +2049,30 @@ public class DLFileEntryLocalServiceImpl
 	}
 
 	@Override
+	public DLFileEntry updateStatus(
+			long userId, long fileVersionId, int status,
+			ServiceContext serviceContext,
+			Map<String, Serializable> workflowContext)
+		throws PortalException {
+
+		DLFileVersion dlFileVersion = dlFileVersionPersistence.findByPrimaryKey(
+			fileVersionId);
+
+		DLFileEntry dlFileEntry = dlFileEntryPersistence.findByPrimaryKey(
+			dlFileVersion.getFileEntryId());
+
+		return updateStatus(
+			userId, dlFileEntry, dlFileVersion, status, serviceContext,
+			workflowContext);
+	}
+
+	@Override
 	public void validateFile(
 			long groupId, long folderId, long fileEntryId, String fileName,
 			String title)
 		throws PortalException {
 
-		if (folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-			DLFolder parentDLFolder = dlFolderPersistence.findByPrimaryKey(
-				folderId);
-
-			if (groupId != parentDLFolder.getGroupId()) {
-				throw new NoSuchFolderException();
-			}
-		}
-
-		DLFolder dlFolder = dlFolderPersistence.fetchByG_P_N(
-			groupId, folderId, title);
-
-		if (dlFolder != null) {
-			throw new DuplicateFolderNameException(
-				"A folder already exists with name " + title);
-		}
+		_validateFolder(groupId, folderId, title);
 
 		DLFileEntry dlFileEntry = dlFileEntryPersistence.fetchByG_F_T(
 			groupId, folderId, title);
@@ -2236,9 +2231,8 @@ public class DLFileEntryLocalServiceImpl
 		UnicodeProperties extraSettingsProperties =
 			dlFileVersion.getExtraSettingsProperties();
 
-		ExpandoBridge expandoBridge = dlFileVersion.getExpandoBridge();
-
-		convertExtraSettings(extraSettingsProperties, expandoBridge, keys);
+		convertExtraSettings(
+			extraSettingsProperties, dlFileVersion.getExpandoBridge(), keys);
 
 		dlFileVersion.setExtraSettingsProperties(extraSettingsProperties);
 
@@ -2262,9 +2256,8 @@ public class DLFileEntryLocalServiceImpl
 		UnicodeProperties extraSettingsProperties =
 			dlFileEntry.getExtraSettingsProperties();
 
-		ExpandoBridge expandoBridge = dlFileEntry.getExpandoBridge();
-
-		convertExtraSettings(extraSettingsProperties, expandoBridge, keys);
+		convertExtraSettings(
+			extraSettingsProperties, dlFileEntry.getExpandoBridge(), keys);
 
 		dlFileEntry.setExtraSettingsProperties(extraSettingsProperties);
 
@@ -2450,6 +2443,8 @@ public class DLFileEntryLocalServiceImpl
 		validateFile(
 			dlFileEntry.getGroupId(), newFolderId, dlFileEntry.getFileEntryId(),
 			dlFileEntry.getFileName(), dlFileEntry.getTitle());
+
+		dlFileEntry = dlFileEntryPersistence.findByPrimaryKey(fileEntryId);
 
 		dlFileEntry.setFolderId(newFolderId);
 		dlFileEntry.setTreePath(dlFileEntry.buildTreePath());
@@ -3048,6 +3043,27 @@ public class DLFileEntryLocalServiceImpl
 		// Latest file version
 
 		removeFileVersion(dlFileEntry, latestDLFileVersion);
+	}
+
+	private void _validateFolder(long groupId, long folderId, String title)
+		throws PortalException {
+
+		if (folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+			DLFolder parentDLFolder = dlFolderPersistence.findByPrimaryKey(
+				folderId);
+
+			if (groupId != parentDLFolder.getGroupId()) {
+				throw new NoSuchFolderException();
+			}
+		}
+
+		DLFolder dlFolder = dlFolderPersistence.fetchByG_P_N(
+			groupId, folderId, title);
+
+		if (dlFolder != null) {
+			throw new DuplicateFolderNameException(
+				"A folder already exists with name " + title);
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

@@ -58,8 +58,6 @@ import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * The base model implementation for the DDMStructureLayout service. Represents a row in the &quot;DDMStructureLayout&quot; database table, with each column mapped to a property of this class.
  *
@@ -72,12 +70,11 @@ import org.osgi.annotation.versioning.ProviderType;
  * @generated
  */
 @JSON(strict = true)
-@ProviderType
 public class DDMStructureLayoutModelImpl
 	extends BaseModelImpl<DDMStructureLayout>
 	implements DDMStructureLayoutModel {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never modify or reference this class directly. All methods that expect a ddm structure layout model instance should use the <code>DDMStructureLayout</code> interface instead.
@@ -85,11 +82,12 @@ public class DDMStructureLayoutModelImpl
 	public static final String TABLE_NAME = "DDMStructureLayout";
 
 	public static final Object[][] TABLE_COLUMNS = {
-		{"uuid_", Types.VARCHAR}, {"structureLayoutId", Types.BIGINT},
-		{"groupId", Types.BIGINT}, {"companyId", Types.BIGINT},
-		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
-		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
-		{"classNameId", Types.BIGINT}, {"structureLayoutKey", Types.VARCHAR},
+		{"mvccVersion", Types.BIGINT}, {"uuid_", Types.VARCHAR},
+		{"structureLayoutId", Types.BIGINT}, {"groupId", Types.BIGINT},
+		{"companyId", Types.BIGINT}, {"userId", Types.BIGINT},
+		{"userName", Types.VARCHAR}, {"createDate", Types.TIMESTAMP},
+		{"modifiedDate", Types.TIMESTAMP}, {"classNameId", Types.BIGINT},
+		{"structureLayoutKey", Types.VARCHAR},
 		{"structureVersionId", Types.BIGINT}, {"name", Types.CLOB},
 		{"description", Types.CLOB}, {"definition", Types.CLOB}
 	};
@@ -98,6 +96,7 @@ public class DDMStructureLayoutModelImpl
 		new HashMap<String, Integer>();
 
 	static {
+		TABLE_COLUMNS_MAP.put("mvccVersion", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("uuid_", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("structureLayoutId", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("groupId", Types.BIGINT);
@@ -115,7 +114,7 @@ public class DDMStructureLayoutModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table DDMStructureLayout (uuid_ VARCHAR(75) null,structureLayoutId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,structureLayoutKey VARCHAR(75) null,structureVersionId LONG,name TEXT null,description TEXT null,definition TEXT null)";
+		"create table DDMStructureLayout (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,structureLayoutId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,structureLayoutKey VARCHAR(75) null,structureVersionId LONG,name TEXT null,description TEXT null,definition TEXT null)";
 
 	public static final String TABLE_SQL_DROP = "drop table DDMStructureLayout";
 
@@ -131,21 +130,6 @@ public class DDMStructureLayoutModelImpl
 
 	public static final String TX_MANAGER = "liferayTransactionManager";
 
-	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.dynamic.data.mapping.service.util.ServiceProps.get(
-			"value.object.entity.cache.enabled.com.liferay.dynamic.data.mapping.model.DDMStructureLayout"),
-		true);
-
-	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(
-		com.liferay.dynamic.data.mapping.service.util.ServiceProps.get(
-			"value.object.finder.cache.enabled.com.liferay.dynamic.data.mapping.model.DDMStructureLayout"),
-		true);
-
-	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(
-		com.liferay.dynamic.data.mapping.service.util.ServiceProps.get(
-			"value.object.column.bitmask.enabled.com.liferay.dynamic.data.mapping.model.DDMStructureLayout"),
-		true);
-
 	public static final long CLASSNAMEID_COLUMN_BITMASK = 1L;
 
 	public static final long COMPANYID_COLUMN_BITMASK = 2L;
@@ -160,6 +144,14 @@ public class DDMStructureLayoutModelImpl
 
 	public static final long STRUCTURELAYOUTID_COLUMN_BITMASK = 64L;
 
+	public static void setEntityCacheEnabled(boolean entityCacheEnabled) {
+		_entityCacheEnabled = entityCacheEnabled;
+	}
+
+	public static void setFinderCacheEnabled(boolean finderCacheEnabled) {
+		_finderCacheEnabled = finderCacheEnabled;
+	}
+
 	/**
 	 * Converts the soap model instance into a normal model instance.
 	 *
@@ -173,6 +165,7 @@ public class DDMStructureLayoutModelImpl
 
 		DDMStructureLayout model = new DDMStructureLayoutImpl();
 
+		model.setMvccVersion(soapModel.getMvccVersion());
 		model.setUuid(soapModel.getUuid());
 		model.setStructureLayoutId(soapModel.getStructureLayoutId());
 		model.setGroupId(soapModel.getGroupId());
@@ -213,10 +206,6 @@ public class DDMStructureLayoutModelImpl
 
 		return models;
 	}
-
-	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(
-		com.liferay.dynamic.data.mapping.service.util.ServiceProps.get(
-			"lock.expiration.time.com.liferay.dynamic.data.mapping.model.DDMStructureLayout"));
 
 	public DDMStructureLayoutModelImpl() {
 	}
@@ -346,6 +335,12 @@ public class DDMStructureLayoutModelImpl
 			attributeSetterBiConsumers =
 				new LinkedHashMap<String, BiConsumer<DDMStructureLayout, ?>>();
 
+		attributeGetterFunctions.put(
+			"mvccVersion", DDMStructureLayout::getMvccVersion);
+		attributeSetterBiConsumers.put(
+			"mvccVersion",
+			(BiConsumer<DDMStructureLayout, Long>)
+				DDMStructureLayout::setMvccVersion);
 		attributeGetterFunctions.put("uuid", DDMStructureLayout::getUuid);
 		attributeSetterBiConsumers.put(
 			"uuid",
@@ -431,6 +426,17 @@ public class DDMStructureLayoutModelImpl
 			attributeGetterFunctions);
 		_attributeSetterBiConsumers = Collections.unmodifiableMap(
 			(Map)attributeSetterBiConsumers);
+	}
+
+	@JSON
+	@Override
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
 	}
 
 	@JSON
@@ -1049,6 +1055,7 @@ public class DDMStructureLayoutModelImpl
 		DDMStructureLayoutImpl ddmStructureLayoutImpl =
 			new DDMStructureLayoutImpl();
 
+		ddmStructureLayoutImpl.setMvccVersion(getMvccVersion());
 		ddmStructureLayoutImpl.setUuid(getUuid());
 		ddmStructureLayoutImpl.setStructureLayoutId(getStructureLayoutId());
 		ddmStructureLayoutImpl.setGroupId(getGroupId());
@@ -1113,12 +1120,12 @@ public class DDMStructureLayoutModelImpl
 
 	@Override
 	public boolean isEntityCacheEnabled() {
-		return ENTITY_CACHE_ENABLED;
+		return _entityCacheEnabled;
 	}
 
 	@Override
 	public boolean isFinderCacheEnabled() {
-		return FINDER_CACHE_ENABLED;
+		return _finderCacheEnabled;
 	}
 
 	@Override
@@ -1162,6 +1169,8 @@ public class DDMStructureLayoutModelImpl
 	public CacheModel<DDMStructureLayout> toCacheModel() {
 		DDMStructureLayoutCacheModel ddmStructureLayoutCacheModel =
 			new DDMStructureLayoutCacheModel();
+
+		ddmStructureLayoutCacheModel.mvccVersion = getMvccVersion();
 
 		ddmStructureLayoutCacheModel.uuid = getUuid();
 
@@ -1321,6 +1330,10 @@ public class DDMStructureLayoutModelImpl
 
 	}
 
+	private static boolean _entityCacheEnabled;
+	private static boolean _finderCacheEnabled;
+
+	private long _mvccVersion;
 	private String _uuid;
 	private String _originalUuid;
 	private long _structureLayoutId;

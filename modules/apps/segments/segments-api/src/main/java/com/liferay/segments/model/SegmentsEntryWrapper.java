@@ -22,8 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.osgi.annotation.versioning.ProviderType;
-
 /**
  * <p>
  * This class is a wrapper for {@link SegmentsEntry}.
@@ -33,10 +31,9 @@ import org.osgi.annotation.versioning.ProviderType;
  * @see SegmentsEntry
  * @generated
  */
-@ProviderType
 public class SegmentsEntryWrapper
 	extends BaseModelWrapper<SegmentsEntry>
-	implements SegmentsEntry, ModelWrapper<SegmentsEntry> {
+	implements ModelWrapper<SegmentsEntry>, SegmentsEntry {
 
 	public SegmentsEntryWrapper(SegmentsEntry segmentsEntry) {
 		super(segmentsEntry);
@@ -46,6 +43,7 @@ public class SegmentsEntryWrapper
 	public Map<String, Object> getModelAttributes() {
 		Map<String, Object> attributes = new HashMap<String, Object>();
 
+		attributes.put("mvccVersion", getMvccVersion());
 		attributes.put("uuid", getUuid());
 		attributes.put("segmentsEntryId", getSegmentsEntryId());
 		attributes.put("groupId", getGroupId());
@@ -68,6 +66,12 @@ public class SegmentsEntryWrapper
 
 	@Override
 	public void setModelAttributes(Map<String, Object> attributes) {
+		Long mvccVersion = (Long)attributes.get("mvccVersion");
+
+		if (mvccVersion != null) {
+			setMvccVersion(mvccVersion);
+		}
+
 		String uuid = (String)attributes.get("uuid");
 
 		if (uuid != null) {
@@ -327,6 +331,16 @@ public class SegmentsEntryWrapper
 	}
 
 	/**
+	 * Returns the mvcc version of this segments entry.
+	 *
+	 * @return the mvcc version of this segments entry
+	 */
+	@Override
+	public long getMvccVersion() {
+		return model.getMvccVersion();
+	}
+
+	/**
 	 * Returns the name of this segments entry.
 	 *
 	 * @return the name of this segments entry
@@ -502,6 +516,11 @@ public class SegmentsEntryWrapper
 		return model.isActive();
 	}
 
+	/**
+	 * NOTE FOR DEVELOPERS:
+	 *
+	 * Never modify or reference this class directly. All methods that expect a segments entry model instance should use the <code>SegmentsEntry</code> interface instead.
+	 */
 	@Override
 	public void persist() {
 		model.persist();
@@ -657,6 +676,16 @@ public class SegmentsEntryWrapper
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
 		model.setModifiedDate(modifiedDate);
+	}
+
+	/**
+	 * Sets the mvcc version of this segments entry.
+	 *
+	 * @param mvccVersion the mvcc version of this segments entry
+	 */
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		model.setMvccVersion(mvccVersion);
 	}
 
 	/**
